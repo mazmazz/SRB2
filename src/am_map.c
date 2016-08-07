@@ -198,8 +198,8 @@ static fixed_t m_x2, m_y2; // UR x,y where the window is on the map (map coords)
 //
 // width/height of window on map (map coords)
 //
-static fixed_t m_w;
-static fixed_t m_h;
+static INT64 m_w;
+static INT64 m_h;
 
 // based on level size
 static fixed_t min_x;
@@ -207,8 +207,8 @@ static fixed_t min_y;
 static fixed_t max_x;
 static fixed_t max_y;
 
-static fixed_t max_w; // max_x-min_x,
-static fixed_t max_h; // max_y-min_y
+static INT64 max_w; // max_x-min_x,
+static INT64 max_h; // max_y-min_y
 
 // based on player size
 static fixed_t min_w;
@@ -219,7 +219,7 @@ static fixed_t min_scale_mtof; // used to tell when to stop zooming out
 static fixed_t max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
-static fixed_t old_m_w, old_m_h;
+static INT64 old_m_w, old_m_h;
 static fixed_t old_m_x, old_m_y;
 
 // old location used by the Follower routine
@@ -248,14 +248,14 @@ static void AM_drawFline_soft(const fline_t *fl, INT32 color);
 
 static void AM_activateNewScale(void)
 {
-	m_x += m_w/2;
-	m_y += m_h/2;
-	m_w = FTOM(f_w);
-	m_h = FTOM(f_h);
-	m_x -= m_w/2;
-	m_y -= m_h/2;
-	m_x2 = m_x + m_w;
-	m_y2 = m_y + m_h;
+	m_x += (fixed_t)(m_w/2);
+	m_y += (fixed_t)(m_h/2);
+	m_w = (INT64)FTOM(f_w);
+	m_h = (INT64)FTOM(f_h);
+	m_x -= (fixed_t)(m_w/2);
+	m_y -= (fixed_t)(m_h/2);
+	m_x2 = (fixed_t)((INT64)m_x + m_w);
+	m_y2 = (fixed_t)((INT64)m_y + m_h);
 }
 
 static inline void AM_saveScaleAndLoc(void)
@@ -277,14 +277,14 @@ static inline void AM_restoreScaleAndLoc(void)
 	}
 	else
 	{
-		m_x = plr->mo->x - m_w/2;
-		m_y = plr->mo->y - m_h/2;
+		m_x = plr->mo->x - (fixed_t)(m_w/2);
+		m_y = plr->mo->y - (fixed_t)(m_h/2);
 	}
-	m_x2 = m_x + m_w;
-	m_y2 = m_y + m_h;
+	m_x2 = (fixed_t)((INT64)m_x + m_w);
+	m_y2 = (fixed_t)((INT64)m_y + m_h);
 
 	// Change the scaling multipliers
-	scale_mtof = FixedDiv(f_w<<FRACBITS, m_w);
+	scale_mtof = (fixed_t)((((INT64)(f_w<<FRACBITS) * FRACUNIT))/m_w);
 	scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
 }
 
@@ -292,8 +292,8 @@ static inline void AM_restoreScaleAndLoc(void)
   */
 static inline void AM_addMark(void)
 {
-	markpoints[markpointnum].x = m_x + m_w/2;
-	markpoints[markpointnum].y = m_y + m_h/2;
+	markpoints[markpointnum].x = m_x + (fixed_t)(m_w/2);
+	markpoints[markpointnum].y = m_y + (fixed_t)(m_h/2);
 	markpointnum = (markpointnum + 1) % AM_NUMMARKPOINTS;
 }
 
@@ -322,14 +322,14 @@ static void AM_findMinMaxBoundaries(void)
 			max_y = vertexes[i].y;
 	}
 
-	max_w = max_x - min_x;
-	max_h = max_y - min_y;
+	max_w = (INT64)max_x - (INT64)min_x;
+	max_h = (INT64)max_y - (INT64)min_y;
 
 	min_w = 2*PLAYERRADIUS; // const? never changed?
 	min_h = 2*PLAYERRADIUS;
 
-	a = FixedDiv(f_w<<FRACBITS, max_w);
-	b = FixedDiv(f_h<<FRACBITS, max_h);
+	a = (fixed_t)((((INT64)(f_w<<FRACBITS) * FRACUNIT))/ max_w);
+	b = (fixed_t)((((INT64)(f_h<<FRACBITS) * FRACUNIT))/ max_h);
 
 	min_scale_mtof = a < b ? a : b;
 	max_scale_mtof = FixedDiv(f_h<<FRACBITS, 2*PLAYERRADIUS);
@@ -346,18 +346,18 @@ static void AM_changeWindowLoc(void)
 	m_x += m_paninc.x;
 	m_y += m_paninc.y;
 
-	if (m_x + m_w/2 > max_x)
-		m_x = max_x - m_w/2;
-	else if (m_x + m_w/2 < min_x)
-		m_x = min_x - m_w/2;
+	if (m_x + (fixed_t)(m_w/2) > max_x)
+		m_x = (fixed_t)(max_x - m_w/2);
+	else if (m_x + (fixed_t)(m_w/2) < min_x)
+		m_x = (fixed_t)(min_x - m_w/2);
 
-	if (m_y + m_h/2 > max_y)
-		m_y = max_y - m_h/2;
-	else if (m_y + m_h/2 < min_y)
-		m_y = min_y - m_h/2;
+	if (m_y + (fixed_t)(m_h/2) > max_y)
+		m_y = (fixed_t)(max_y - m_h/2);
+	else if (m_y + (fixed_t)(m_h/2) < min_y)
+		m_y = (fixed_t)(min_y - m_h/2);
 
-	m_x2 = m_x + m_w;
-	m_y2 = m_y + m_h;
+	m_x2 = (fixed_t)((INT64)m_x + m_w);
+	m_y2 = (fixed_t)((INT64)m_y + m_h);
 }
 
 static void AM_initVariables(void)
@@ -375,8 +375,8 @@ static void AM_initVariables(void)
 	ftom_zoommul = FRACUNIT;
 	mtof_zoommul = FRACUNIT;
 
-	m_w = FTOM(f_w);
-	m_h = FTOM(f_h);
+	m_w = (INT64)FTOM(f_w);
+	m_h = (INT64)FTOM(f_h);
 
 	// find player to center on initially
 	if (!playeringame[pnum = consoleplayer])
@@ -385,8 +385,8 @@ static void AM_initVariables(void)
 				break;
 
 	plr = &players[pnum];
-	m_x = plr->mo->x - m_w/2;
-	m_y = plr->mo->y - m_h/2;
+	m_x = plr->mo->x - (fixed_t)(m_w/2);
+	m_y = plr->mo->y - (fixed_t)(m_h/2);
 	AM_changeWindowLoc();
 
 	// for saving & restoring
@@ -632,10 +632,10 @@ static inline void AM_doFollowPlayer(void)
 {
 	if (f_oldloc.x != plr->mo->x || f_oldloc.y != plr->mo->y)
 	{
-		m_x = FTOM(MTOF(plr->mo->x)) - m_w/2;
-		m_y = FTOM(MTOF(plr->mo->y)) - m_h/2;
-		m_x2 = m_x + m_w;
-		m_y2 = m_y + m_h;
+		m_x = FTOM(MTOF(plr->mo->x)) - (fixed_t)(m_w/2);
+		m_y = FTOM(MTOF(plr->mo->y)) - (fixed_t)(m_h/2);
+		m_x2 = (fixed_t)((INT64)m_x + m_w);
+		m_y2 = (fixed_t)((INT64)m_y + m_h);
 		f_oldloc.x = plr->mo->x;
 		f_oldloc.y = plr->mo->y;
 	}
@@ -952,39 +952,39 @@ static void AM_drawMline(const mline_t *ml, INT32 color)
 //
 static void AM_drawGrid(INT32 color)
 {
-	fixed_t x, y;
-	fixed_t start, end;
+	INT64 x, y;
+	INT64 start, end;
 	mline_t ml;
 
 	// Figure out start of vertical gridlines
-	start = m_x;
-	if ((start - bmaporgx) % (MAPBLOCKUNITS<<FRACBITS))
-		start += (MAPBLOCKUNITS<<FRACBITS) - ((start - bmaporgx) % (MAPBLOCKUNITS<<FRACBITS));
-	end = m_x + m_w;
+	start = (INT64)m_x;
+	if ((start - (INT64)bmaporgx) % (MAPBLOCKUNITS<<FRACBITS))
+		start += (MAPBLOCKUNITS<<FRACBITS) - ((start - (INT64)bmaporgx) % (MAPBLOCKUNITS<<FRACBITS));
+	end = (INT64)m_x + m_w;
 
 	// draw vertical gridlines
 	ml.a.y = m_y;
-	ml.b.y = m_y + m_h;
+	ml.b.y = (fixed_t)((INT64)m_y + m_h);
 	for (x = start; x < end; x += (MAPBLOCKUNITS<<FRACBITS))
 	{
-		ml.a.x = x;
-		ml.b.x = x;
+		ml.a.x = (fixed_t)x;
+		ml.b.x = (fixed_t)x;
 		AM_drawMline(&ml, color);
 	}
 
 	// Figure out start of horizontal gridlines
-	start = m_y;
-	if ((start - bmaporgy) % (MAPBLOCKUNITS<<FRACBITS))
-		start += (MAPBLOCKUNITS<<FRACBITS) - ((start - bmaporgy) % (MAPBLOCKUNITS<<FRACBITS));
-	end = m_y + m_h;
+	start = (INT64)m_y;
+	if ((start - (INT64)bmaporgy) % (MAPBLOCKUNITS<<FRACBITS))
+		start += (MAPBLOCKUNITS<<FRACBITS) - ((start - (INT64)bmaporgy) % (MAPBLOCKUNITS<<FRACBITS));
+	end = (INT64)m_y + m_h;
 
 	// draw horizontal gridlines
 	ml.a.x = m_x;
-	ml.b.x = m_x + m_w;
+	ml.b.x = (fixed_t)((INT64)m_x + m_w);
 	for (y = start; y < end; y += (MAPBLOCKUNITS<<FRACBITS))
 	{
-		ml.a.y = y;
-		ml.b.y = y;
+		ml.a.y = (fixed_t)y;
+		ml.b.y = (fixed_t)y;
 		AM_drawMline(&ml, color);
 	}
 }
