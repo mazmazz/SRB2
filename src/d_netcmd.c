@@ -3884,7 +3884,7 @@ static void Command_Tunes_f(void)
 
 	if (argc < 2) //tunes slot ...
 	{
-		CONS_Printf("tunes <name/num> [track] [speed] / <-show> / <-default> / <-none>:\n");
+		CONS_Printf("tunes <name/num> [track] [speed] [position] / <-show> / <-default> / <-none>:\n");
 		CONS_Printf(M_GetText("Play an arbitrary music lump. If a map number is used, 'MAP##M' is played.\n"));
 		CONS_Printf(M_GetText("If the format supports multiple songs, you can specify which one to play.\n\n"));
 		CONS_Printf(M_GetText("* With \"-show\", shows the currently playing tune and track.\n"));
@@ -3941,6 +3941,13 @@ static void Command_Tunes_f(void)
 		float speed = (float)atof(COM_Argv(3));
 		if (speed > 0.0f)
 			S_SpeedMusic(speed);
+	}
+
+	if (argc > 4)
+	{
+		float position = (float)atof(COM_Argv(4));
+		if (position > 0.0f)
+			S_PositionMusic(position);
 	}
 }
 

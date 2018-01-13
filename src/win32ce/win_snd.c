@@ -1809,6 +1809,17 @@ int I_SetSongSpeed(unsigned int speed)
 	return 0;
 }
 
+boolean I_SetSongPosition(float position)
+{
+	(void)position;
+	return false;
+}
+
+float I_GetSongPosition(void)
+{
+	return 0.0f;
+}
+
 // Special FMOD support Tails 11-21-2002
 boolean I_StartDigSong(const char *musicname, INT32 looping)
 {
