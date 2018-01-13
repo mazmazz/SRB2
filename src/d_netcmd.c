@@ -3945,9 +3945,8 @@ static void Command_Tunes_f(void)
 
 	if (argc > 4)
 	{
-		float position = (float)atof(COM_Argv(4));
-		if (position > 0.0f)
-			S_PositionMusic(position);
+		UINT32 position = (UINT32)atoi(COM_Argv(4));
+		S_PositionMusic(position);
 	}
 }
 

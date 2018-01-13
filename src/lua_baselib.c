@@ -1796,7 +1796,7 @@ static int lib_sSpeedMusic(lua_State *L)
 
 static int lib_sPositionMusic(lua_State *L)
 {
-	float position = 0;
+	UINT32 position = (UINT32)luaL_checkinteger(L, 1);
 	player_t *player = NULL;
 	NOHUD
 	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
@@ -1814,7 +1814,7 @@ static int lib_sPositionMusic(lua_State *L)
 
 static int lib_sGetPositionMusic(lua_State *L)
 {
-	lua_pushinteger(L, (UINT32)S_GetPositionMusic());
+	lua_pushinteger(L, (int)S_GetPositionMusic());
 	return 1;
 }
 

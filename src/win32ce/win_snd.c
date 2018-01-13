@@ -1809,15 +1809,15 @@ int I_SetSongSpeed(unsigned int speed)
 	return 0;
 }
 
-boolean I_SetSongPosition(float position)
+boolean I_SetSongPosition(UINT32 position)
 {
 	(void)position;
 	return false;
 }
 
-float I_GetSongPosition(void)
+UINT32 I_GetSongPosition(void)
 {
-	return 0.0f;
+	return 0;
 }
 
 // Special FMOD support Tails 11-21-2002
