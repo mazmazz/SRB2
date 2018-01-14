@@ -1769,6 +1769,21 @@ void I_UnRegisterSong(INT32 handle)
 #endif
 }
 
+boolean I_MIDIPlaying(void)
+{
+	return bMusicStarted;
+}
+
+boolean I_MusicPlaying(void)
+{
+	return bMusicStarted || (boolean)mod || (boolean)fmus;
+}
+
+boolean I_MusicPaused(void)
+{
+	return FSOUND_GetPaused(fsoundchannel);
+}
+
 int I_SetSongSpeed(unsigned int speed)
 {
 #ifdef FMODSOUND

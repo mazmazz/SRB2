@@ -159,3 +159,18 @@ UINT32 I_GetSongPosition(void)
 {
     return 0;
 }
+
+boolean I_MIDIPlaying(void)
+{
+	return false;
+}
+
+boolean I_MusicPlaying(void)
+{
+	return false;
+}
+
+boolean I_MusicPaused(void)
+{
+	return false;
+}
