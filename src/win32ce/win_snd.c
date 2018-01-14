@@ -1849,8 +1849,8 @@ UINT32 I_GetSongPosition(void)
 	{
 		if (FSOUND_IsPlaying(fsoundchannel))
 		{
-			UINT32 fmPosition = FSOUND_GetCurrentPosition(fsoundchannel)
-			return fmPosition/fsoundfreq*1000
+			UINT32 fmPosition = FSOUND_GetCurrentPosition(fsoundchannel);
+			return fmPosition/fsoundfreq*1000;
 		}
 		return 0;
 	}
