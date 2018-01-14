@@ -1811,13 +1811,37 @@ int I_SetSongSpeed(unsigned int speed)
 
 boolean I_SetSongPosition(UINT32 position)
 {
-	(void)position;
-	return false;
+	if (fmus)
+	{
+		if (FSOUND_IsPlaying(fsoundchannel)
+		&& !FSOUND_SetCurrentPosition(fsoundchannel,(int)position/1000*fsoundfreq))
+		{
+			if (devparm)
+				CONS_Printf("FMOD(SetSongPosition,FSOUND_SetCurrentPosition): %s\n", FMOD_ErrorString(FSOUND_GetError()));
+			return 0;
+		}
+		else
+			return 1;
+	}
+	return 0;
+	// else mod
+	// else midi
 }
 
 UINT32 I_GetSongPosition(void)
 {
+	if (fmus)
+	{
+		if (FSOUND_IsPlaying(fsoundchannel))
+		{
+			UINT32 fmPosition = FSOUND_GetCurrentPosition(fsoundchannel)
+			return fmPosition/fsoundfreq*1000
+		}
+		return 0;
+	}
 	return 0;
+	// else mod
+	// else midi
 }
 
 // Special FMOD support Tails 11-21-2002
