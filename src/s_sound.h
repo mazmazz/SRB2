@@ -126,6 +126,9 @@ boolean S_MIDIPlaying(void);
 // Gets general music status
 boolean S_MusicPlaying(void);
 
+// Gets music pause status
+boolean S_MusicPaused(void);
+
 //
 // Updates music & sounds
 //

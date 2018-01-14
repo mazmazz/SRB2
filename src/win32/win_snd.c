@@ -480,6 +480,14 @@ boolean I_MusicPlaying(void)
 	return (boolean)music_stream;
 }
 
+boolean I_MusicPaused(void)
+{
+	boolean fmpaused = false;
+	if (music_stream)
+		FMOD_Channel_GetPaused(music_channel, &fmpaused);
+	return fmpaused;
+}
+
 void I_InitDigMusic(void)
 {
 }

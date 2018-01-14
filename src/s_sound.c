@@ -1451,3 +1451,8 @@ boolean S_MusicPlaying(void)
 {
 	return I_MusicPlaying();
 }
+
+boolean S_MusicPaused(void)
+{
+	return I_MusicPaused();
+}
