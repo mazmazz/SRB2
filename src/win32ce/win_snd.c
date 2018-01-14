@@ -1776,12 +1776,22 @@ boolean I_MIDIPlaying(void)
 
 boolean I_MusicPlaying(void)
 {
-	return bMusicStarted || (boolean)mod || (boolean)fmus;
+	if(fmus) 
+		return FSOUND_IsPlaying(fsoundchannel);
+	else if(mod)
+		return FMUSIC_IsPlaying(mod);
+	else
+		return bMusicStarted;
 }
 
 boolean I_MusicPaused(void)
 {
-	return FSOUND_GetPaused(fsoundchannel);
+	if(fmus) 
+		return FSOUND_GetPaused(fsoundchannel);
+	else if(mod)
+		return FMUSIC_GetPaused(mod);
+	else
+		return bMusicStarted;
 }
 
 int I_SetSongSpeed(unsigned int speed)
