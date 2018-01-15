@@ -420,7 +420,7 @@ static void music_loop(void)
 {
 	Mix_PlayMusic(music, 0);
 	Mix_SetMusicPosition(loop_point);
-	music_bytes = loop_point/1000.0L*44100.0L*4; //assume 44.1khz, 4-byte length (see I_GetSongPosition)
+	music_bytes = loop_point/1000.0L*44100.0L*4; //assume 44.1khz, 4-byte length (see I_GetMusicPosition)
 }
 
 static void count_music_bytes(int chan, void *stream, int len, void *udata)
@@ -763,7 +763,7 @@ boolean I_SetSongSpeed(float speed)
 	return false;
 }
 
-boolean I_SetSongPosition(UINT32 position)
+boolean I_SetMusicPosition(UINT32 position)
 	if(midimode || !music)
 		return false;
 	Mix_RewindMusic(); // needed for mp3
@@ -778,7 +778,7 @@ boolean I_SetSongPosition(UINT32 position)
 	return true;
 }
 
-UINT32 I_GetSongPosition(void)
+UINT32 I_GetMusicPosition(void)
 {
 	if(midimode)
 		return 0;
