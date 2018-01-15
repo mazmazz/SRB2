@@ -4,8 +4,8 @@ SRB2 MusicPlus implements Lua functions for scriptable, gameplay-adaptable music
 
 ## Lua Functions
 
-* `S_PositionMusic(position)` -- set position in milliseconds
-* `S_GetPositionMusic()` -- get position in milliseconds
+* `S_SetMusicPosition(position)` -- set position in milliseconds
+* `S_GetMusicPosition()` -- get position in milliseconds
 * `S_DigitalPlaying()` -- is current song digital?
 * `S_MidiPlaying()` -- is current song a MIDI?
 * `S_MusicPlaying()` -- is any music playing (either MIDI or digital)?
@@ -13,11 +13,11 @@ SRB2 MusicPlus implements Lua functions for scriptable, gameplay-adaptable music
 * `S_MusicPause()` -- pause music
 * `S_MusicResume()` -- resume music
 * `S_MusicName()` -- get current music name
-* `S_MusicExists(name[, checkMIDI[, checkDigi]])` -- check if musicname exists. Set `checkMIDI` or `checkDigi` flags to enable checking `D_` or `O_` lumps, respectively. Both flags default to true.
+* `S_MusicExists(name[, checkMIDI[, checkDigi]])` -- check if musicname exists. Set `checkMIDI` or `checkDigi` flags to enable checking D_ or O_ lumps, respectively. Both flags default to true.
 
 ## Lua Hooks
 
-* `ChangeMusic function(oldname, newname, flags, looping)` -- Get notified of music changes. 
+* `MusicChange function(oldname, newname, flags, looping)` -- Get notified of music changes. 
 
 Return true to not change music; false or nil to continue changing music; or return a string to override to another music name. Return an empty string to stop playing music. 
 
@@ -29,7 +29,7 @@ TUNES is changed to allow seeking position.
 
 * `TUNES [name] [track] [speed] [position milliseconds]`
 
-Note that TUNES -show may not show the correct track if it was changed by Lua -- use MUSICNAME in this case.
+Note that `TUNES -show` may not show the correct track if it was changed by Lua -- use `MUSICNAME` in this case.
 
 Use the following commands by adding test_musicplus.wad:
 
@@ -41,13 +41,13 @@ Use the following commands by adding test_musicplus.wad:
 
 ## Notes
 
-Adding `test_underwatermusic.wad` demonstrates music-changing underwater if you warp to `MAP07`.
+Adding `test_underwatermusic.wad` demonstrates music-changing underwater if you warp to MAP07.
 
 For a timing demo, add `test_musicplus.wad` and `PLAYDEMO test_musicplus-demo.lmp`.
 
 ### Technical Details
 
-MusicPlus implements for SDL2, SDL1.2, and FMOD (`srb2dd.exe`). Compared to PLUSC, MusicPlus aims to provide a more feature-complete and stable solution for scriptable music.
+MusicPlus implements for SDL2, SDL1.2, and FMOD (srb2dd.exe). Compared to PLUSC, MusicPlus aims to provide a more feature-complete and stable solution for scriptable music.
 
 ## Links
 
