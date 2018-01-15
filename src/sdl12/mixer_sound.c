@@ -416,6 +416,13 @@ void I_SetSfxVolume(UINT8 volume)
 // Music
 //
 
+static void count_music_bytes(int chan, void *stream, int len, void *udata)
+{
+	if(midimode || !music)
+		return;
+	music_bytes += len;
+}
+
 // Music hooks
 static void music_loop(void)
 {
@@ -426,14 +433,10 @@ static void music_loop(void)
 		music_bytes = loop_point/1000.0L*44100.0L*4; //assume 44.1khz, 4-byte length (see I_GetMusicPosition)
 	}
 	else
+		Mix_UnregisterEffect(MIX_CHANNEL_POST, count_music_bytes);
 		music_bytes = 0;
-}
-
-static void count_music_bytes(int chan, void *stream, int len, void *udata)
-{
-	if(midimode || !music)
-		return;
-	music_bytes += len;
+			// be consistent with FMOD, otherwise I'd prefer to freeze music_bytes
+			// since the other flags indicate music is still playing.
 }
 
 #ifdef HAVE_LIBGME
