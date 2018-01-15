@@ -1809,7 +1809,7 @@ int I_SetSongSpeed(unsigned int speed)
 	return 0;
 }
 
-boolean I_SetSongPosition(UINT32 position)
+boolean I_SetMusicPosition(UINT32 position)
 {
 	if (fmus)
 	{
@@ -1817,7 +1817,7 @@ boolean I_SetSongPosition(UINT32 position)
 		&& !FSOUND_SetCurrentPosition(fsoundchannel,(int)position/1000*fsoundfreq))
 		{
 			if (devparm)
-				CONS_Printf("FMOD(SetSongPosition,FSOUND_SetCurrentPosition): %s\n", FMOD_ErrorString(FSOUND_GetError()));
+				CONS_Printf("FMOD(SetMusicPosition,FSOUND_SetCurrentPosition): %s\n", FMOD_ErrorString(FSOUND_GetError()));
 			return 0;
 		}
 		else
@@ -1828,7 +1828,7 @@ boolean I_SetSongPosition(UINT32 position)
 	// else midi
 }
 
-UINT32 I_GetSongPosition(void)
+UINT32 I_GetMusicPosition(void)
 {
 	if (fmus)
 	{
