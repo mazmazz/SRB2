@@ -680,7 +680,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 		}
 	}
 
-	if (Mix_PlayMusic(music, looping && loop_point == 0.0f ? -1 : 0) == -1)
+	if (Mix_PlayMusic(music, 0) == -1)
 	{
 		CONS_Alert(CONS_ERROR, "Mix_PlayMusic: %s\n", Mix_GetError());
 		return true;
@@ -690,8 +690,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 	else
 		Mix_VolumeMusic((UINT32)music_volume*128/31);
 
-	if (loop_point != 0.0f)
-		Mix_HookMusicFinished(music_loop);
+	Mix_HookMusicFinished(music_loop);
 
 	music_bytes = 0;
 	if(!Mix_RegisterEffect(MIX_CHANNEL_POST, count_music_bytes, NULL, NULL))
