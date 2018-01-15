@@ -1289,14 +1289,14 @@ boolean S_SpeedMusic(float speed)
 	return I_SetSongSpeed(speed);
 }
 
-boolean S_PositionMusic(UINT32 position)
+boolean S_SetMusicPosition(UINT32 position)
 {
-	return I_SetSongPosition(position);
+	return I_SetMusicPosition(position);
 }
 
-UINT32 S_GetPositionMusic(void)
+UINT32 S_GetMusicPosition(void)
 {
-	return I_GetSongPosition();
+	return I_GetMusicPosition();
 }
 
 void S_StopMusic(void)
@@ -1472,11 +1472,11 @@ boolean S_MusicPaused(void)
 
 const char *S_MusicName(void)
 {
-	// char *result[7];
-	// strncpy(result, music_name, 7);
-	// result[6] = 0;
-	// return (const char *)&result;
-	return music_name;
+	//return music_name;
+	char *result = (char *)malloc(7);
+	strncpy(result, music_name, 7);
+	result[6] = 0;
+	return result;
 }
 
 boolean S_MusicExists(const char *mname, boolean checkMIDI, boolean checkDigi)
