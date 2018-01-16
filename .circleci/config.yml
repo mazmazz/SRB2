@@ -1,4 +1,8 @@
 version: 2
+general:
+  branches:
+    only:
+      - musicplus
 jobs:
   build:
     working_directory: /root/SRB2
