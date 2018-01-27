@@ -9517,15 +9517,15 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		hoopcenter->movecount = FixedInt(AngleFixed(closestangle));
 
 		// For the hoop when it flies away
-		hoopcenter->extravalue1 = 32;
+		hoopcenter->extravalue1 = 24;
 		hoopcenter->extravalue2 = 8 * FRACUNIT;
 
 		spewangle = (INT16)hoopcenter->movedir;
 
 		// Create the hoop!
-		for (i = 0; i < 32; i++)
+		for (i = 0; i < 24; i++)
 		{
-			fa = i*(FINEANGLES/32);
+			fa = i*(FINEANGLES/24);
 			v[0] = FixedMul(FINECOSINE(fa),96*FRACUNIT);
 			v[1] = 0;
 			v[2] = FixedMul(FINESINE(fa),96*FRACUNIT);
