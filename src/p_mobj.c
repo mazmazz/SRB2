@@ -9517,15 +9517,15 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		hoopcenter->movecount = FixedInt(AngleFixed(closestangle));
 
 		// For the hoop when it flies away
-		hoopcenter->extravalue1 = 24;
+		hoopcenter->extravalue1 = 20;
 		hoopcenter->extravalue2 = 8 * FRACUNIT;
 
 		spewangle = (INT16)hoopcenter->movedir;
 
 		// Create the hoop!
-		for (i = 0; i < 24; i++)
+		for (i = 0; i < 20; i++)
 		{
-			fa = i*(FINEANGLES/24);
+			fa = i*(FINEANGLES/20);
 			v[0] = FixedMul(FINECOSINE(fa),96*FRACUNIT);
 			v[1] = 0;
 			v[2] = FixedMul(FINESINE(fa),96*FRACUNIT);
@@ -9625,6 +9625,7 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		INT16 spewangle;
 		INT32 hoopsize;
 		INT32 hoopplacement;
+		INT32 spritecount;
 
 		// Save our flags!
 		z = (mthing->options>>ZSHIFT) << FRACBITS;
@@ -9659,15 +9660,17 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		// Default (0 flags) is 8 fracunits
 		hoopsize = 8 + (4 * (mthing->options & 0xF));
 		hoopplacement = hoopsize * (4*FRACUNIT);
+		// Reduce >24 hoop mobjs to an approximate fraction (5/6) to account for decimal dropping
+		spritecount = hoopsize < 24 ? hoopsize : hoopsize * 0.834;
 
 		// For the hoop when it flies away
-		hoopcenter->extravalue1 = hoopsize;
+		hoopcenter->extravalue1 = spritecount;
 		hoopcenter->extravalue2 = FixedDiv(hoopplacement, 12*FRACUNIT);
 
 		// Create the hoop!
-		for (i = 0; i < hoopsize; i++)
+		for (i = 0; i < spritecount; i++)
 		{
-			fa = i*(FINEANGLES/hoopsize);
+			fa = i*(FINEANGLES/spritecount);
 			v[0] = FixedMul(FINECOSINE(fa), hoopplacement);
 			v[1] = 0;
 			v[2] = FixedMul(FINESINE(fa), hoopplacement);
