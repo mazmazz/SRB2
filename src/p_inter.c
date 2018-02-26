@@ -677,6 +677,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			if (!(netgame || multiplayer) && !(player->pflags & PF_NIGHTSMODE))
 				P_SetTarget(&special->tracer, toucher);
 			P_NightserizePlayer(player, special->health); // Transform!
+			P_SetTarget(&player->drone, special); // Mark the player as 'pull into the drone'
 			return;
 		case MT_NIGHTSLOOPHELPER:
 			// One second delay
