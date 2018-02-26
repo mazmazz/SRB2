@@ -1814,7 +1814,6 @@ static int lib_sSetMusicPosition(lua_State *L)
 
 static int lib_sGetMusicPosition(lua_State *L)
 {
-	UINT32 position = (UINT32)luaL_checkinteger(L, 1);
 	player_t *player = NULL;
 	NOHUD
 	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
