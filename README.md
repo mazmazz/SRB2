@@ -4,8 +4,8 @@ SRB2 MusicPlus implements Lua functions for scriptable, gameplay-adaptable music
 
 ## Lua Functions
 
-* `S_PositionMusic(position)` -- set position in milliseconds
-* `S_GetPositionMusic()` -- get position in milliseconds
+* `S_SetMusicPosition(position)` -- set position in milliseconds
+* `S_GetMusicPosition()` -- get position in milliseconds
 * `S_DigitalPlaying()` -- is current song digital?
 * `S_MidiPlaying()` -- is current song a MIDI?
 * `S_MusicPlaying()` -- is any music playing (either MIDI or digital)?
@@ -44,6 +44,14 @@ Use the following commands by adding test_musicplus.wad:
 Adding `test_underwatermusic.wad` demonstrates music-changing underwater if you warp to `MAP07`.
 
 For a timing demo, add `test_musicplus.wad` and `PLAYDEMO test_musicplus-demo.lmp`.
+
+### Network Safety
+
+All Lua functions take `player_t` as their last variable, except `S_MusicExists()` which should be netsafe because it only checks for music lumps. 
+
+To be net-safe with these functions, iterate through every player and pass each `player_t` object to the desired function. The function, if passed a non-local player, will bypass the internal music calls and return `nil`, in order to remain network safe.
+
+It is unknown if the `ChangeMusic` hook is network safe. Again, if making any music calls, pass each `player_t` object to the call to attempt network safety.
 
 ### Technical Details
 
