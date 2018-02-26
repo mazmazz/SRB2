@@ -982,13 +982,6 @@ void OP_NightsObjectplace(player_t *player)
 	{
 		UINT16 angle = (UINT16)(player->anotherflyangle % 360);
 		INT16 temp = (INT16)FixedInt(AngleFixed(player->mo->angle)); // Traditional 2D Angle
-		sector_t *sec = player->mo->subsector->sector;
-#ifdef ESLOPE
-		fixed_t fheight = sec->f_slope ? P_GetZAt(sec->f_slope, player->mo->x & 0xFFFF0000, player->mo->y & 0xFFFF0000) : sec->floorheight;
-#else
-		fixed_t fheight = sec->floorheight;
-#endif
-
 
 		player->pflags |= PF_ATTACKDOWN;
 
@@ -1003,11 +996,9 @@ void OP_NightsObjectplace(player_t *player)
 			temp += 90;
 		temp %= 360;
 
-		// rebuild options here to override cv_opflags
-		mt->options = (UINT16)((player->mo->z - fheight)>>FRACBITS);
-		mt->options <<= ZSHIFT;
+		// Override cv_opflags with radius value
 		mt->options |= (UINT16)cv_ophoopflags.value;
-		
+
 		mt->angle = (INT16)(mt->angle+(INT16)((FixedInt(FixedDiv(temp*FRACUNIT, 360*(FRACUNIT/256))))<<8));
 
 		P_SpawnHoopsAndRings(mt);
