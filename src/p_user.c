@@ -5508,6 +5508,87 @@ static void P_DoNiGHTSCapsule(player_t *player)
 }
 
 //
+// P_MoveNiGHTSToDrone
+//
+// Pull NiGHTS to the drone during Nightserizing
+//
+static void P_MoveNiGHTSToDrone(player_t *player)
+{
+	INT32 finishedcoords = 0;
+	
+	// Uncomment this for immediate position correction
+	// It looks abrupt so some transition momentum is desirable.
+	
+	P_UnsetThingPosition(player->mo);
+	player->mo->x = player->drone->x;
+	player->mo->y = player->drone->y;
+	player->mo->z = player->drone->z;
+	P_SetThingPosition(player->mo);
+	player->mo->momx = 0;
+	player->mo->momy = 0;
+	player->mo->momz = 0;
+
+	P_SetTarget(&player->drone, NULL);
+	return;
+
+	// Dummying the below because I don't know how to transition
+	// the position gracefully.
+
+	if (abs(player->mo->x-player->drone->x) <= 2*FRACUNIT)
+	{
+		P_UnsetThingPosition(player->mo);
+		player->mo->x = player->drone->x;
+		P_SetThingPosition(player->mo);
+		player->mo->momx = 0;
+
+        finishedcoords++;
+	}
+
+	if (abs(player->mo->y-player->drone->y) <= 2*FRACUNIT)
+	{
+		P_UnsetThingPosition(player->mo);
+		player->mo->y = player->drone->y;
+		P_SetThingPosition(player->mo);
+		player->mo->momy = 0;
+
+        finishedcoords++;
+	}
+
+	if (abs(player->mo->z-player->drone->z) <= 2*FRACUNIT)
+	{
+		P_UnsetThingPosition(player->mo);
+		player->mo->z = player->drone->z;
+		P_SetThingPosition(player->mo);
+		player->mo->momz = 0;
+
+        finishedcoords++;
+	}
+
+	// finish correction phase if all coords are set
+	if (finishedcoords >= 3)
+	{
+		P_SetTarget(&player->drone, NULL);
+		return;
+	}
+
+	// else, set player's momentum towards drone
+	if (player->mo->x > player->drone->x)
+		player->mo->momx = -2*FRACUNIT;
+	else if (player->mo->x < player->drone->x) 
+		player->mo->momx = 2*FRACUNIT;
+
+	if (player->mo->y > player->drone->y)
+		player->mo->momy = -2*FRACUNIT;
+	else if (player->mo->y < player->drone->y)
+		player->mo->momy = 2*FRACUNIT;
+
+	if (player->mo->z > player->drone->z)
+		player->mo->momz = -2*FRACUNIT;
+	else if (player->mo->z < player->drone->z)
+		player->mo->momz = 2*FRACUNIT;
+}
+
+//
 // P_NiGHTSMovement
 //
 // Movement code for NiGHTS!
@@ -6411,6 +6492,13 @@ static void P_MovePlayer(player_t *player)
 		else if (player->capsule && player->capsule->reactiontime > 0 && player == &players[player->capsule->reactiontime-1])
 		{
 			P_DoNiGHTSCapsule(player);
+			return;
+		}
+
+		// Suck player into their drone
+		if (player->drone)
+		{
+			P_MoveNiGHTSToDrone(player);
 			return;
 		}
 
