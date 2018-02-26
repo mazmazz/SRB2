@@ -51,7 +51,7 @@ All Lua functions take `player_t` as their last variable, except `S_MusicExists(
 
 To be net-safe with these functions, iterate through every player and pass each `player_t` object to the desired function. The function, if passed a non-local player, will bypass the internal music calls and return `nil`, in order to remain network safe.
 
-It is unknown if the `ChangeMusic` hook is network safe. Again, if making any music calls, pass each `player_t` object to the call to attempt network safety.
+It is unknown if the `MusicChange` hook is network safe. Again, if making any music calls, pass each `player_t` object to the call to attempt network safety.
 
 ### Technical Details
 
