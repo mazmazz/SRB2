@@ -1808,7 +1808,7 @@ static int lib_sSetMusicPosition(lua_State *L)
 	if (!player || P_IsLocalPlayer(player))
 		lua_pushboolean(L, S_SetMusicPosition(position));
 	else
-		lua_pushboolean(L, false);
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -1826,7 +1826,7 @@ static int lib_sGetMusicPosition(lua_State *L)
 	if (!player || P_IsLocalPlayer(player))
 		lua_pushinteger(L, (int)S_GetMusicPosition());
 	else
-		lua_pushboolean(L, false);
+		lua_pushnil(L);
 	return 1;
 }
 
