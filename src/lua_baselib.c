@@ -1814,7 +1814,19 @@ static int lib_sSetMusicPosition(lua_State *L)
 
 static int lib_sGetMusicPosition(lua_State *L)
 {
-	lua_pushinteger(L, (int)S_GetMusicPosition());
+	UINT32 position = (UINT32)luaL_checkinteger(L, 1);
+	player_t *player = NULL;
+	NOHUD
+	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
+	{
+		player = *((player_t **)luaL_checkudata(L, 2, META_PLAYER));
+		if (!player)
+			return LUA_ErrInvalid(L, "player_t");
+	}
+	if (!player || P_IsLocalPlayer(player))
+		lua_pushinteger(L, (int)S_GetMusicPosition());
+	else
+		lua_pushboolean(L, false);
 	return 1;
 }
 
