@@ -772,6 +772,25 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		mobj_t *droneobj = (tmthing->type == MT_NIGHTSDRONE) ? tmthing : thing;
 		player_t *pl = (droneobj == thing) ? tmthing->player : thing->player;
 
+		CONS_Printf(
+			"TIME %i | StoredAng %i | CurrntAng %i | Looped %i \n"
+			, (INT32)leveltime
+			, droneobj->extravalue1
+			, pl->anotherflyangle
+			, (/*pl->bonustime && */(pl->pflags & PF_NIGHTSMODE) && (INT32)leveltime > droneobj->extravalue2 && (
+				!(pl->anotherflyangle >= 90 &&   pl->anotherflyangle <= 270)
+				^ (droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
+				)) // don't check bonustime, we want to know if the game thinks we're looping at all
+		);
+
+		if ((pl->pflags & PF_NIGHTSMODE) && (INT32)leveltime > droneobj->extravalue2 && (
+			!(pl->anotherflyangle >= 90 &&   pl->anotherflyangle <= 270)
+			^ (droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
+			)) 
+		{
+			CONS_Printf("We looped!!!\n");
+		}
+
 		// Must be in bonus time, and must be NiGHTS, must wait about a second
 		// must be flying in the SAME DIRECTION as the last time you came through.
 		// not (your direction) xor (stored direction)
