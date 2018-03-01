@@ -773,10 +773,12 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		player_t *pl = (droneobj == thing) ? tmthing->player : thing->player;
 
 		CONS_Printf(
-			"TIME %i | StoredAng %i | CurrntAng %i | Looped %i \n"
+			"TIME %i | StoAng %i | CurAng %i | StoCond %i | CurCond %i | Looped %i \n"
 			, (INT32)leveltime
 			, droneobj->extravalue1
 			, pl->anotherflyangle
+			, (droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
+			, (pl->anotherflyangle >= 90 &&   pl->anotherflyangle <= 270)
 			, (/*pl->bonustime && */(pl->pflags & PF_NIGHTSMODE) && (INT32)leveltime > droneobj->extravalue2 && (
 				!(pl->anotherflyangle >= 90 &&   pl->anotherflyangle <= 270)
 				^ (droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
