@@ -997,6 +997,7 @@ void OP_NightsObjectplace(player_t *player)
 		temp %= 360;
 
 		// Override cv_opflags with radius value
+		mt->options |= ~(UINT16)cv_opflags.value;
 		mt->options |= (UINT16)cv_ophoopflags.value;
 
 		mt->angle = (INT16)(mt->angle+(INT16)((FixedInt(FixedDiv(temp*FRACUNIT, 360*(FRACUNIT/256))))<<8));
