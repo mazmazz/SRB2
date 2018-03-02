@@ -1872,7 +1872,7 @@ static int lib_sStopMusic(lua_State *L)
 	if (!player || P_IsLocalPlayer(player))
 	{
 		S_StopMusic();
-		lua_pushboolean(L, true)
+		lua_pushboolean(L, true);
 	}
 	else
 		lua_pushnil(L);
