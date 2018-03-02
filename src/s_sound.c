@@ -1252,7 +1252,7 @@ static boolean S_DigMusicFadeIn(const char *mname, boolean looping, UINT32 fadei
 	if (nodigimusic || digital_disabled)
 		return false; // try midi
 
-	if (!I_FadeInDigSong(mname, looping, fadein_ms))
+	if (!I_StartDigSongFadeIn(mname, looping, fadein_ms))
 		return false;
 
 	strncpy(music_name, mname, 7);

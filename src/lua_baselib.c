@@ -1713,73 +1713,6 @@ static int lib_sStopSound(lua_State *L)
 	return 0;
 }
 
-static int lib_sChangeMusic(lua_State *L)
-{
-#ifdef MUSICSLOT_COMPATIBILITY
-	const char *music_name;
-	UINT32 music_num;
-	char music_compat_name[7];
-
-	boolean looping;
-	player_t *player = NULL;
-	UINT16 music_flags = 0;
-	NOHUD
-
-	if (lua_isnumber(L, 1))
-	{
-		music_num = (UINT32)luaL_checkinteger(L, 1);
-		music_flags = (UINT16)(music_num & 0x0000FFFF);
-		if (music_flags && music_flags <= 1035)
-			snprintf(music_compat_name, 7, "%sM", G_BuildMapName((INT32)music_flags));
-		else if (music_flags && music_flags <= 1050)
-			strncpy(music_compat_name, compat_special_music_slots[music_flags - 1036], 7);
-		else
-			music_compat_name[0] = 0; // becomes empty string
-		music_compat_name[6] = 0;
-		music_name = (const char *)&music_compat_name;
-		music_flags = 0;
-	}
-	else
-	{
-		music_num = 0;
-		music_name = luaL_checkstring(L, 1);
-	}
-
-
-	looping = (boolean)lua_opttrueboolean(L, 2);
-
-#else
-	const char *music_name = luaL_checkstring(L, 1);
-	boolean looping = (boolean)lua_opttrueboolean(L, 2);
-	player_t *player = NULL;
-	UINT16 music_flags = 0;
-	NOHUD
-
-#endif
-	if (!lua_isnone(L, 3) && lua_isuserdata(L, 3))
-	{
-		player = *((player_t **)luaL_checkudata(L, 3, META_PLAYER));
-		if (!player)
-			return LUA_ErrInvalid(L, "player_t");
-	}
-
-#ifdef MUSICSLOT_COMPATIBILITY
-	if (music_num)
-		music_flags = (UINT16)((music_num & 0x7FFF0000) >> 16);
-	else
-#endif
-	music_flags = (UINT16)luaL_optinteger(L, 4, 0);
-
-	if (!player || P_IsLocalPlayer(player))
-	{
-		S_ChangeMusic(music_name, music_flags, looping);
-		lua_pushboolean(L, true);
-	}
-	else
-		lua_pushnil(L);
-	return 0;
-}
-
 //=====================================================================
 //miru: A block where I can put my open functions to Lua...they can be organized later
 //(or just shoved into a future mir_lua.c like before)
@@ -1839,7 +1772,7 @@ static int lib_sMusicVolume(lua_State *L)
 	return 0;
 }
 
-static int lib_sChangeMusicFadeIn(lua_State *L)
+static int lib_sChangeMusic(lua_State *L)
 {
 #ifdef MUSICSLOT_COMPATIBILITY
 	const char *music_name;
@@ -1875,7 +1808,7 @@ static int lib_sChangeMusicFadeIn(lua_State *L)
 
 	looping = (boolean)lua_opttrueboolean(L, 2);
 
-	fadein_ms = (boolean)luaL_checkint(L, 3);
+	fadein_ms = (boolean)luaL_checkint(L, 5);
 
 #else
 	const char *music_name = luaL_checkstring(L, 1);
@@ -1885,9 +1818,9 @@ static int lib_sChangeMusicFadeIn(lua_State *L)
 	NOHUD
 
 #endif
-	if (!lua_isnone(L, 4) && lua_isuserdata(L, 4))
+	if (!lua_isnone(L, 3) && lua_isuserdata(L, 3))
 	{
-		player = *((player_t **)luaL_checkudata(L, 4, META_PLAYER));
+		player = *((player_t **)luaL_checkudata(L, 3, META_PLAYER));
 		if (!player)
 			return LUA_ErrInvalid(L, "player_t");
 	}
@@ -1897,10 +1830,18 @@ static int lib_sChangeMusicFadeIn(lua_State *L)
 		music_flags = (UINT16)((music_num & 0x7FFF0000) >> 16);
 	else
 #endif
-	music_flags = (UINT16)luaL_optinteger(L, 5, 0);
+	music_flags = (UINT16)luaL_optinteger(L, 4, 0);
 
 	if (!player || P_IsLocalPlayer(player))
-		S_ChangeMusicFadeIn(music_name, music_flags, looping, fadein_ms);
+	{
+		if (fadein_ms)
+			S_ChangeMusicFadeIn(music_name, music_flags, looping, fadein_ms);
+		else
+			S_ChangeMusic(music_name, music_flags, looping);
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
 	return 0;
 }
 
@@ -2477,7 +2418,6 @@ static luaL_Reg lib[] = {
     //miru: Put everything added here, categorizing right now isn't something I want to wander through
 	{"S_MusicVolume",lib_sMusicVolume},
 	{"S_FadeOutMusic",lib_sFadeOutMusic},
-	{"S_ChangeMusicFadeIn",lib_sChangeMusicFadeIn},
 
 	{NULL, NULL}
 };

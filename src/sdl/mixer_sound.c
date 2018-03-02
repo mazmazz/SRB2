@@ -79,9 +79,6 @@ static INT32 current_track;
 //miru: new variables for use involving music infos
 int const SAMPLE_RATE = 44100;
 
-static double music_pos = 0.0;
-static long music_pos_time = -1;
-
 //static int music_frequency = 0;
 //static Uint16 music_format = 0;
 //static int music_channels = 0;
@@ -459,28 +456,41 @@ static void count_music_bytes(int chan, void *stream, int len, void *udata)
 // Music hooks
 static void music_loop(void)
 {
-	Mix_PlayMusic(music, 0);
-	Mix_SetMusicPosition(loop_point);
-	music_pos = (int)(loop_point * SAMPLE_RATE);
-
-	if (fadeout_start_ticks)
+	if (is_looping)
 	{
-		Uint32 diff = SDL_GetTicks() - fadeout_start_ticks;
+		Mix_PlayMusic(music, 0);
+		Mix_SetMusicPosition(loop_point);
+		music_bytes = loop_point/1000.0L*44100.0L*4; //assume 44.1khz, 4-byte length (see I_GetMusicPosition)
 
-		//CONS_Printf("%d\n", diff);
-		if (diff > fadeout_ms - 100) // Fadeout is done (or will finish in less than 1/10 second; not worth continuing)
+		if (fadeout_start_ticks)
 		{
-			//CONS_Printf("faded... get owned...\n");
-			Mix_HookMusicFinished(NULL);
-			Mix_HaltMusic();
+			Uint32 diff = SDL_GetTicks() - fadeout_start_ticks;
 
-			return;
+			//CONS_Printf("%d\n", diff);
+			if (diff > fadeout_ms - 100) // Fadeout is done (or will finish in less than 1/10 second; not worth continuing)
+			{
+				// todo: stop dig song properly?
+				// in s_sound, current music track still reads the track (probably intended, not introduced by this)
+				// also, TUNES into the current track will not reset the track.
+				Mix_UnregisterEffect(MIX_CHANNEL_POST, count_music_bytes);
+				music_bytes = 0; 
+				Mix_HookMusicFinished(NULL);
+				Mix_HaltMusic();
+				return;
+			}
+
+			Mix_VolumeMusic((UINT32)music_volume*128 * (fadeout_ms - diff) / fadeout_ms /31);
+			Mix_FadeOutMusic(fadeout_ms - diff);
 		}
-
-		Mix_VolumeMusic((UINT32)music_volume*128 * (fadeout_ms - diff) / fadeout_ms /31);
-		Mix_FadeOutMusic(fadeout_ms - diff);
+		//TODO: Maximum volume is hit on fade-in loop
 	}
-	//TODO: Maximum volume is hit on fade-in loop
+	else
+	{
+		Mix_UnregisterEffect(MIX_CHANNEL_POST, count_music_bytes);
+		music_bytes = 0; 
+			// be consistent with FMOD, otherwise I'd prefer to freeze music_bytes
+			// since the other flags indicate music is still playing.
+	}
 }
 
 
@@ -586,8 +596,14 @@ void I_ShutdownDigMusic(void)
 	music = NULL;
 }
 
-boolean I_FadeInDigSong(const char *musicname, boolean looping, UINT32 fadein_ms)
+boolean I_StartDigSongFadeIn(const char *musicname, boolean looping, UINT32 fadein_ms)
 {
+	// todo: best way to introduce the fadein_ms argument?
+	// can I instead keep this as I_StartDigSong
+	// introduce I_FadeInDigSong
+	// and keep a private function StartDigSong, and FadeDigSong, that handles the
+	// actual call?
+	
 	char *data;
 	size_t len;
 	lumpnum_t lumpnum = W_CheckNumForName(va("O_%s",musicname));
@@ -753,7 +769,7 @@ boolean I_FadeInDigSong(const char *musicname, boolean looping, UINT32 fadein_ms
 			return true;
 		}
 	}
-	else if (Mix_PlayMusic(music, /*looping && loop_point == 0.0f ? -1 :*/ 0) == -1)
+	else if (Mix_PlayMusic(music, 0) == -1)
 	{
 		CONS_Alert(CONS_ERROR, "Mix_PlayMusic: %s\n", Mix_GetError());
 		return true;
@@ -810,9 +826,8 @@ void I_FadeInMusic(int ms)
 void I_FadeInMusicPos(int ms, float position)
 {
     Mix_FadeInMusicPos(music, 0, ms, position);
-    //music_pos = (int)(position * SAMPLE_RATE);
 }
-/*
+
 void I_VolumeMusic(int volume)
 {
 	Mix_VolumeMusic(volume);
@@ -845,6 +860,7 @@ boolean I_SetSongSpeed(float speed)
 
 boolean I_SetMusicPosition(UINT32 position)
 {
+	// todo: also set volume to 100, if currently fading in
 	if(midimode || !music)
 		return false;
 	Mix_RewindMusic(); // needed for mp3

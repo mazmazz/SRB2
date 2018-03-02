@@ -237,8 +237,8 @@ boolean I_SetSongTrack(INT32 track);
 
 	\return	if true, song playing
 */
-#define I_StartDigSong(musicname, looping) I_FadeInDigSong(musicname, looping, 0)
-boolean I_FadeInDigSong(const char *musicname, boolean looping, UINT32 fadein_ms);
+#define I_StartDigSong(musicname, looping) I_StartDigSongFadeIn(musicname, looping, 0)
+boolean I_StartDigSongFadeIn(const char *musicname, boolean looping, UINT32 fadein_ms);
 
 /**	\brief stop non-MIDI song
 */
