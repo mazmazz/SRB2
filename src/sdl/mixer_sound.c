@@ -74,6 +74,17 @@ static Music_Emu *gme;
 static INT32 current_track;
 #endif
 
+//miru: new variables for use involving music infos
+int const SAMPLE_RATE = 44100;
+
+static double music_pos = 0.0;
+static long music_pos_time = -1;
+
+//static int music_frequency = 0;
+//static Uint16 music_format = 0;
+//static int music_channels = 0;
+
+
 void I_StartupSound(void)
 {
 	I_Assert(!sound_started);
@@ -461,6 +472,17 @@ static void music_loop(void)
 	}
 }
 
+//miru: some music hooks and callbacks (including music_pos above)
+/*static void music_fadeloop(void)
+{
+    Mix_HookMusicFinished(NULL);
+    // Mix_PlayMusic(music, 0);
+    //if (music_pos >= I_GetMusicPosition() - 1000)
+    //    Mix_SetMusicPosition(loop_point);
+
+    music_pos = (int)(loop_point * SAMPLE_RATE);
+}*/
+
 #ifdef HAVE_LIBGME
 static void mix_gme(void *udata, Uint8 *stream, int len)
 {
@@ -768,6 +790,31 @@ void I_SetDigMusicVolume(UINT8 volume)
 	if (midimode || !music)
 		return;
 	Mix_VolumeMusic((UINT32)volume*128/31);
+}
+
+void I_FadeInMusic(int ms)
+{
+    Mix_FadeInMusic(music, 0, ms);
+}
+
+void I_FadeInMusicPos(int ms, float position)
+{
+    Mix_FadeInMusicPos(music, 0, ms, position);
+    //music_pos = (int)(position * SAMPLE_RATE);
+}
+/*
+void I_VolumeMusic(int volume)
+{
+}
+*/
+void I_FadeOutMusic(int ms)
+{
+    //TODO: music ends if fading before a loop point, fix it
+    Mix_PlayMusic(music, -1);
+    Mix_SetMusicPosition(I_GetMusicPosition());
+    Mix_FadeOutMusic(ms);
+    Mix_HookMusicFinished(NULL);
+    //Mix_HookMusicFinished(music_fadeloop);
 }
 
 boolean I_SetSongSpeed(float speed)

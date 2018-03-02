@@ -104,6 +104,20 @@ void S_StopSound(void *origin);
 #define S_ChangeMusicInternal(a,b) S_ChangeMusic(a,0,b)
 void S_ChangeMusic(const char *mmusic, UINT16 mflags, boolean looping);
 
+//miru: Let's open and add some music functions in SDL,
+// Fade in over milliseconds of time
+void S_FadeInMusic(int ms);
+
+// Fade in over ms milliseconds of time, at position
+void S_FadeInMusicPos(int ms, float position);
+
+// Set the volume, to volume
+//void S_VolumeMusic(void);
+
+// Gradually fade out the music over time starting from now
+void S_FadeOutMusic(int ms);
+//end miru
+
 // Set Speed of Music
 boolean S_SpeedMusic(float speed);
 

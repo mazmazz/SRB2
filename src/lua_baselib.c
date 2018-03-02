@@ -1780,6 +1780,29 @@ static int lib_sChangeMusic(lua_State *L)
 	return 0;
 }
 
+//=====================================================================
+//miru: A block where I can put my open functions to Lua...they can be organized later
+//(or just shoved into a future mir_lua.c like before)
+
+static int lib_sFadeOutMusic(lua_State *L)
+{
+	int millisecond = luaL_checkint(L, 1);
+	player_t *player = NULL;
+	//NOHUD
+	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
+	{
+		player = *((player_t **)luaL_checkudata(L, 2, META_PLAYER));
+		if (!player)
+			return LUA_ErrInvalid(L, "player_t");
+	}
+	if (!player || P_IsLocalPlayer(player))
+		S_FadeOutMusic(millisecond);
+	return 0;
+}
+
+//=====================================================================
+
+
 static int lib_sSpeedMusic(lua_State *L)
 {
 	fixed_t fixedspeed = luaL_checkfixed(L, 1);
@@ -2368,6 +2391,9 @@ static luaL_Reg lib[] = {
 	{"G_TicsToSeconds",lib_gTicsToSeconds},
 	{"G_TicsToCentiseconds",lib_gTicsToCentiseconds},
 	{"G_TicsToMilliseconds",lib_gTicsToMilliseconds},
+
+    //miru: Put everything added here, categorizing right now isn't something I want to wander through
+	{"S_FadeOutMusic",lib_sFadeOutMusic},
 
 	{NULL, NULL}
 };
