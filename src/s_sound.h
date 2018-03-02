@@ -101,8 +101,9 @@ void S_StopSound(void *origin);
 // note: music flags 12 bits for tracknum (gme, other formats with more than one track)
 //       13-15 aren't used yet
 //       and the last bit we ignore (internal game flag for resetting music on reload)
-#define S_ChangeMusicInternal(a,b) S_ChangeMusic(a,0,b)
-void S_ChangeMusic(const char *mmusic, UINT16 mflags, boolean looping);
+#define S_ChangeMusicInternal(a,b) S_ChangeMusicFadeIn(a,0,b,0)
+#define S_ChangeMusic(mmusic,mflags,looping) S_ChangeMusicFadeIn(mmusic,mflags,looping,0)
+void S_ChangeMusicFadeIn(const char *mmusic, UINT16 mflags, boolean looping, UINT32 fadein_ms);
 
 //miru: Let's open and add some music functions in SDL,
 // Fade in over milliseconds of time
@@ -112,7 +113,7 @@ void S_FadeInMusic(int ms);
 void S_FadeInMusicPos(int ms, float position);
 
 // Set the volume, to volume
-//void S_VolumeMusic(void);
+void S_MusicVolume(int volume);
 
 // Gradually fade out the music over time starting from now
 void S_FadeOutMusic(int ms);

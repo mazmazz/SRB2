@@ -237,7 +237,8 @@ boolean I_SetSongTrack(INT32 track);
 
 	\return	if true, song playing
 */
-boolean I_StartDigSong(const char *musicname, boolean looping);
+#define I_StartDigSong(musicname, looping) I_FadeInDigSong(musicname, looping, 0)
+boolean I_FadeInDigSong(const char *musicname, boolean looping, UINT32 fadein_ms);
 
 /**	\brief stop non-MIDI song
 */
@@ -253,24 +254,13 @@ void I_SetDigMusicVolume(UINT8 volume);
 
 //miru: Let's open up and add some music functions to SDL
 
-/** \brief Fade in Music
+/** \brief Set music Volume
 
-    \param ms How long the effect should last
-
-    \return void
-*/
-void I_FadeInMusic(int ms);
-
-/** \brief Fade in Music at position
-
-    \param ms How long the effect should last
-    \param position the position the song should start at
+    \param volume Volume to set the music to
 
     \return void
 */
-void I_FadeInMusicPos(int ms, float position);
-
-//void I_VolumeMusic(int volume);
+void I_VolumeMusic(int volume);
 
 /** \brief Fade out Music
 
