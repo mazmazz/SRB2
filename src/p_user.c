@@ -5990,13 +5990,6 @@ static void P_NiGHTSMovement(player_t *player)
 
 		movingangle = R_PointToAngle2(0, 0, neg*R_PointToDist2(player->mo->momx, player->mo->momy, 0, 0), player->mo->momz);
 		player->anotherflyangle = (movingangle >> ANGLETOFINESHIFT) * 360/FINEANGLES;
-
-		CONS_Printf("TIME %i | AFA %i | FA %i | Invert %i\n"
-			, (INT32)leveltime
-			, player->anotherflyangle
-			, player->flyangle
-			, backwardaxis
-		);
 	}
 
 	// NiGHTS flying state

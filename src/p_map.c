@@ -772,34 +772,6 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		mobj_t *droneobj = (tmthing->type == MT_NIGHTSDRONE) ? tmthing : thing;
 		player_t *pl = (droneobj == thing) ? tmthing->player : thing->player;
 
-		INT32 looped = (/*pl->bonustime && */(pl->pflags & PF_NIGHTSMODE) && (INT32)leveltime > droneobj->extravalue2 && (
-				((pl->flyangle >= 90 &&   pl->flyangle <= 270)
-					&& (droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
-				)
-
-				||
-
-				(!(pl->flyangle >= 90 &&   pl->flyangle <= 270)
-					&& !(droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
-				)
-				)
-			); // don't check bonustime, we want to know if the game thinks we're looping at all
-
-		// CONS_Printf(
-		// 	"TIME %i | StoAng %i | CurAng %i | StoCond %i | CurCond %i | Looped %i \n"
-		// 	, (INT32)leveltime
-		// 	, droneobj->extravalue1
-		// 	, pl->flyangle
-		// 	, (droneobj->extravalue1 >= 90 && droneobj->extravalue1 <= 270)
-		// 	, (pl->flyangle >= 90 &&   pl->flyangle <= 270)
-		// 	, looped
-		// );
-
-		if ((pl->pflags & PF_NIGHTSMODE) && (INT32)leveltime > droneobj->extravalue2 && looped) 
-		{
-			CONS_Printf("We looped!!! We looped!!! We looped!!! We looped!!! We looped!!!\n");
-		}
-
 		// Must be in bonus time, and must be NiGHTS, must wait about a second
 		// must be flying in the SAME DIRECTION as the last time you came through.
 		// not (your direction) xor (stored direction)
