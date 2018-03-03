@@ -1183,10 +1183,16 @@ const char *compat_special_music_slots[16] =
 
 #define music_playing (music_name[0]) // String is empty if no music is playing
 
-static char      music_name[7]; // up to 6-character name
-static lumpnum_t music_lumpnum; // lump number of music (used??)
-static void     *music_data;    // music raw data
-static INT32     music_handle;  // once registered, the handle for the music
+static char      music_name[7];       // up to 6-character name
+static lumpnum_t music_lumpnum;       // lump number of music (used??)
+static void     *music_data;          // music raw data
+static INT32     music_handle;        // once registered, the handle for the music
+static char      music_storedname[7] = ""; // Remember music name for jingles
+static UINT32    music_storedpos = 0;      // Remember music position for jingles
+static UINT32    music_storeddelay = 0;    // Remember delay value for restoring music
+static UINT32    music_storedfade = 0;     // Remember fade value for restoring music
+//static UINT16    music_storedflags = 0;    // Remember music flags
+//static boolean   music_looping = false;    // Remember music looping
 
 static boolean mus_paused     = 0;  // whether songs are mus_paused
 
@@ -1298,6 +1304,61 @@ void S_ChangeMusicFadeIn(const char *mmusic, UINT16 mflags, boolean looping, UIN
 		}
 	}
 	I_SetSongTrack(mflags & MUSIC_TRACKMASK);
+}
+
+void S_StoreMusic(UINT32 delay, UINT32 fade)
+{
+	strncpy(music_storedname, music_name, 7);
+	music_storedname[6] = 0;
+	music_storedpos = S_GetMusicPosition();
+	music_storeddelay = delay;
+	music_storedfade = fade;
+}
+
+void S_GetStoredMusicName(char *storednameout)
+{
+	if (music_storedname[0]) // string is non-empty if we stored it previously
+	{
+		strncpy(storednameout, music_storedname, 7);
+		storednameout[6] = 0;
+	}
+	else
+		// make clear that we have nothing
+		storednameout[0] = 0;
+}
+
+UINT32 S_GetStoredMusicPos()
+{
+	return music_storedpos;
+}
+
+UINT32 S_GetStoredMusicDelay()
+{
+	return music_storeddelay;
+}
+
+UINT32 S_GetStoredMusicFade()
+{
+	return music_storedfade;
+}
+
+// \todo these need to be stored in the first place by S_ChangeMusic
+
+// UINT32 S_GetStoredMusicFlags()
+// {
+// 	return music_storedflags;
+// }
+
+// UINT32 S_GetStoredMusicFade()
+// {
+// 	return music_storedfade;
+// }
+
+void S_ResetStoredMusic()
+{
+	music_storedname[0] = 0;
+	music_storedpos = 0;
+	music_storeddelay = 0;
 }
 
 void S_FadeOutMusic(int ms)

@@ -105,6 +105,31 @@ void S_StopSound(void *origin);
 #define S_ChangeMusic(mmusic,mflags,looping) S_ChangeMusicFadeIn(mmusic,mflags,looping,0)
 void S_ChangeMusicFadeIn(const char *mmusic, UINT16 mflags, boolean looping, UINT32 fadein_ms);
 
+// Store music track and position for future use (jingles)
+// \todo: let mname be passed? other values?
+void S_StoreMusic(UINT32 delay, UINT32 fade); // char *mname, UINT16 flags, boolean looping
+
+// Retrieve previously stored music name
+void S_GetStoredMusicName(char *storednameout);
+
+// Retrieve previously stored music pos
+UINT32 S_GetStoredMusicPos();
+
+// Retrieve previously stored music delay value
+UINT32 S_GetStoredMusicDelay();
+
+// Retrieve previously stored music fadein value
+UINT32 S_GetStoredMusicFade();
+
+// // Retrieve previously stored music flags
+// UINT16 S_GetStoredMusicFlags();
+
+// // Retrieve previously stored music looping
+// boolean S_GetStoredMusicLooping();
+
+// Reset previously stored music
+void S_ResetStoredMusic();
+
 //miru: Let's open and add some music functions in SDL,
 // Fade in over milliseconds of time
 void S_FadeInMusic(int ms);

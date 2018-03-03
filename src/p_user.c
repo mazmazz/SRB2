@@ -1097,6 +1097,8 @@ void P_PlayLivesJingle(player_t *player)
 	{
 		if (player)
 			player->powers[pw_extralife] = extralifetics + 1;
+		S_StoreMusic(extralifedelay, extralifefade); // for P_RestoreMusic later
+			// \todo: is there a better way to store values for P_RestoreMusic?
 		S_StopMusic(); // otherwise it won't restart if this is done twice in a row
 		S_ChangeMusicInternal("xtlife", false);
 	}
@@ -1130,7 +1132,23 @@ void P_RestoreMusic(player_t *player)
 			S_ChangeMusicInternal("shoes", true);
 	}
 	else
-		S_ChangeMusic(mapmusname, mapmusflags, true);
+	{
+		static char musname[7];
+		UINT32 muspos = S_GetStoredMusicPos();
+		UINT32 musdelay = S_GetStoredMusicDelay();
+		UINT32 musfade = S_GetStoredMusicFade();
+		UINT16 musflags = mapmusflags; // S_GetStoredMusicFlags();
+		boolean muslooping = true; // S_GetStoredMusicLooping();
+		S_GetStoredMusicName(musname);
+		if (musname[0])
+		{
+			S_ChangeMusicFadeIn(musname, musflags, muslooping, musfade);
+			if (muspos > 0)
+				S_SetMusicPosition(muspos+musdelay);
+		}
+		else
+			S_ChangeMusic(mapmusname, mapmusflags, true);
+	}
 }
 
 //

@@ -397,6 +397,10 @@ extern UINT16 extralifetics;
 extern UINT8 introtoplay;
 extern UINT8 creditscutscene;
 
+// for S_StoreMusic and P_RestoreMusic
+extern UINT32 extralifedelay;
+extern UINT32 extralifefade;
+
 extern UINT8 use1upSound;
 extern UINT8 maxXtraLife; // Max extra lives from rings
 
