@@ -1808,7 +1808,7 @@ static int lib_sChangeMusic(lua_State *L)
 
 	looping = (boolean)lua_opttrueboolean(L, 2);
 
-	fadein_ms = (boolean)luaL_checkint(L, 5);
+	fadein_ms = (boolean)luaL_optinteger(L, 5, 0);
 
 #else
 	const char *music_name = luaL_checkstring(L, 1);
