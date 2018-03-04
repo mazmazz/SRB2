@@ -56,6 +56,74 @@
 static void P_NukeAllPlayers(player_t *player);
 #endif
 
+// \todo IDK where to put this. mazmazz
+// corresponds to jingles_t enum
+
+static const char *jinglemusnames[] = {
+	"", // MJ_CUSTOM
+	"xtlife",
+	"shoes",
+	"invinc",
+	"minvnc",
+	"drown",
+	"supers",
+	"gmover",
+	"drown" // MJ_NIGHTSTIMEOUT
+	// "lclear",
+	// "racent",
+	// "contsc",
+};
+
+static UINT32 jingledelays[] = { 
+	// in milliseconds
+	0, // MJ_CUSTOM
+	4*1000, // extralifetics
+	20*1000, // sneakertics
+	20*1000, // invulntics
+	20*1000, // MJ_MINVNC
+	10*1000, // drowning (11?)
+	0, // super
+	15*1000, // gameovertics
+	10*1000, // NiGHTS Time Out (11?)
+	// 0, // level clear
+	// 0, // multiplayer intermission
+	// 0, // continue screen
+};
+
+// \todo: which of these actually loop?
+
+static boolean jingleloopings[] = {
+	false,
+	false,
+	true, // shoes
+	false,
+	false,
+	false,
+	true, // super
+	false,
+	false,
+	// true, // intermission
+	// true, // continue
+	// false,
+};
+
+static boolean jingleresets[] = {
+	false,
+	false,
+	false, // shoes
+	false,
+	false,
+	false,
+	true, // super
+	false,
+	false,
+	// false, // intermission
+	// false, // continue
+	// false,
+};
+
+static UINT32 jinglefadein = 1000;
+
 //
 // Movement.
 //
@@ -961,8 +1029,7 @@ void P_DoSuperTransformation(player_t *player, boolean giverings)
 	player->powers[pw_super] = 1;
 	if (!(mapheaderinfo[gamemap-1]->levelflags & LF_NOSSMUSIC) && P_IsLocalPlayer(player))
 	{
-		S_StopMusic();
-		S_ChangeMusicInternal("supers", true);
+		P_PlayJingle(player, MJ_SUPERS);
 	}
 
 	S_StartSound(NULL, sfx_supert); //let all players hear it -mattw_cfi
@@ -1097,11 +1164,71 @@ void P_PlayLivesJingle(player_t *player)
 	{
 		if (player)
 			player->powers[pw_extralife] = extralifetics + 1;
-		S_StoreMusic(extralifedelay, extralifefade); // for P_RestoreMusic later
-			// \todo: is there a better way to store values for P_RestoreMusic?
-		S_StopMusic(); // otherwise it won't restart if this is done twice in a row
-		S_ChangeMusicInternal("xtlife", false);
+		P_PlayJingle(player, MJ_XTLIFE);
 	}
+}
+
+boolean P_IsJingle(const char *musname)
+{
+	// \todo this isn't the best way to do this. 
+
+	// \todo how to account for custom lua jingles?
+	
+	// musname[6] = 0;
+
+	return (
+		strncmp(musname, "xtlife", 6) == 0
+		|| strncmp(musname, "shoes", 6) == 0
+		|| strncmp(musname, "invinc", 6) == 0
+		|| strncmp(musname, "minvnc", 6) == 0
+		|| strncmp(musname, "drown", 6) == 0
+		|| strncmp(musname, "supers", 6) == 0
+		|| strncmp(musname, "gmover", 6) == 0
+		// || musname == "drown" // nights time out
+		// || musname == "lclear"
+		// || musname == "racent"
+		// || musname == "contsc"
+	);
+}
+
+void P_PlayJingle(player_t *player, jingles_t jingletype)
+{
+	P_PlayJingleMusic(player, jinglemusnames[jingletype], jingleloopings[jingletype], jingledelays[jingletype], jinglefadein, jingleresets[jingletype]);
+}
+
+//
+// P_PlayJingleMusic
+// 
+void P_PlayJingleMusic(player_t *player, const char *musname, boolean looping, UINT32 delay, UINT32 fadein, boolean resetpremus)
+{
+	const char *premusname = S_MusicName();
+
+	if (/*player && */!P_IsLocalPlayer(player)) // we need player
+		return;
+
+	// if current music name is a jingle itself, don't remember it
+	if (!P_IsJingle(premusname))
+	{
+		// remember pre-jingle music
+		strncpy(player->jinglepremusname, premusname, 7);
+		player->jinglepremusname[6] = 0;
+		player->jinglepremuspos = S_GetMusicPosition();
+		player->jingledelay = delay;
+		player->jinglefade = fadein;
+	}
+
+	if (resetpremus)
+	{
+		// restart post-jingle music from beginning
+		player->jinglepremuspos = 0;
+		player->jingledelay = 0;
+		player->jinglefade = 0;
+	}
+
+	//CONS_Printf("PreName %s | Pos %i | Delay %i | Fade %i | Jingle %s\n", player->jinglepremusname, player->jinglepremuspos, player->jingledelay, player->jinglefade, musname);
+
+	S_StopMusic(); // otherwise it won't restart if this is done twice in a row
+	S_ChangeMusicInternal(musname, looping);
 }
 
 //
@@ -1118,9 +1245,9 @@ void P_RestoreMusic(player_t *player)
 		return;
 	S_SpeedMusic(1.0f);
 	if (player->powers[pw_super] && !(mapheaderinfo[gamemap-1]->levelflags & LF_NOSSMUSIC))
-		S_ChangeMusicInternal("supers", true);
+		P_PlayJingle(player, MJ_SUPERS);
 	else if (player->powers[pw_invulnerability] > 1)
-		S_ChangeMusicInternal((mariomode) ? "minvnc" : "invinc", false);
+		P_PlayJingle(player, (mariomode) ? MJ_MINVNC : MJ_INVINC);
 	else if (player->powers[pw_sneakers] > 1 && !player->powers[pw_super])
 	{
 		if (mapheaderinfo[gamemap-1]->levelflags & LF_SPEEDMUSIC)
@@ -1129,22 +1256,35 @@ void P_RestoreMusic(player_t *player)
 			S_ChangeMusic(mapmusname, mapmusflags, true);
 		}
 		else
-			S_ChangeMusicInternal("shoes", true);
+			P_PlayJingle(player, MJ_SHOES);
 	}
 	else
 	{
 		static char musname[7];
-		UINT32 muspos = S_GetStoredMusicPos();
-		UINT32 musdelay = S_GetStoredMusicDelay();
-		UINT32 musfade = S_GetStoredMusicFade();
-		UINT16 musflags = mapmusflags; // S_GetStoredMusicFlags();
-		boolean muslooping = true; // S_GetStoredMusicLooping();
-		S_GetStoredMusicName(musname);
+		UINT32 muspos = player->jinglepremuspos;
+		//UINT32 musdelay = player->jingledelay;
+		UINT32 musfade = player->jinglefade;
+		UINT16 musflags = mapmusflags; // player->jinglepremusflags;
+		boolean muslooping = true; // player->jinglepremuslooping;
+
+		strncpy(musname, player->jinglepremusname, 7);
+		musname[6] = 0;
+
 		if (musname[0])
 		{
-			S_ChangeMusicFadeIn(musname, musflags, muslooping, musfade);
+			if (musfade == 0) // super
+				S_ChangeMusic(musname, musflags, muslooping);
+			else
+				S_ChangeMusicFadeIn(musname, musflags, muslooping, musfade);
+
+			// \todo disabling musdelay jump for now
+			// because there's no way yet for SDL mixer to report
+			// when seeking to musicpos GREATER than the total length
+			// of music. currently, the musicpos counter bugs out when doing this.
+			// https://github.com/mazmazz/SRB2/issues/4
+
 			if (muspos > 0)
-				S_SetMusicPosition(muspos+musdelay);
+			 	S_SetMusicPosition(muspos/* + musdelay*/);
 		}
 		else
 			S_ChangeMusic(mapmusname, mapmusflags, true);
@@ -2140,8 +2280,7 @@ static void P_CheckUnderwaterAndSpaceTimer(player_t *player)
 		if (player->powers[pw_underwater] == 11*TICRATE + 1
 		&& player == &players[consoleplayer])
 		{
-			S_StopMusic();
-			S_ChangeMusicInternal("drown", false);
+			P_PlayJingle(player, MJ_DROWN);
 		}
 
 		if (player->powers[pw_underwater] == 25*TICRATE + 1)
@@ -5600,7 +5739,7 @@ static void P_NiGHTSMovement(player_t *player)
 	}
 	else if (P_IsLocalPlayer(player) && player->nightstime == 10*TICRATE)
 //		S_StartSound(NULL, sfx_timeup); // that creepy "out of time" music from NiGHTS. Dummied out, as some on the dev team thought it wasn't Sonic-y enough (Mystic, notably). Uncomment to restore. -SH
-		S_ChangeMusicInternal("drown",false);
+		P_PlayJingle(player, MJ_NIGHTSTIMEOUT);
 
 
 	if (player->mo->z < player->mo->floorz)
@@ -8772,7 +8911,7 @@ void P_PlayerThink(player_t *player)
 		if (countdown == 11*TICRATE - 1)
 		{
 			if (P_IsLocalPlayer(player))
-				S_ChangeMusicInternal("drown", false);
+				P_PlayJingle(player, MJ_DROWN);
 		}
 
 		// If you've hit the countdown and you haven't made

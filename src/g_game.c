@@ -196,9 +196,6 @@ UINT16 extralifetics = 4*TICRATE;
 
 INT32 gameovertics = 15*TICRATE;
 
-UINT32 extralifedelay = 4000;
-UINT32 extralifefade = 1000;
-
 UINT8 use1upSound = 0;
 UINT8 maxXtraLife = 2; // Max extra lives from rings
 

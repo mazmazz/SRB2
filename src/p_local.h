@@ -184,6 +184,9 @@ void P_PlayLivesJingle(player_t *player);
 #define P_PlayDeathSound(s)		S_StartSound(s, sfx_altdi1 + P_RandomKey(4));
 #define P_PlayVictorySound(s)	S_StartSound(s, sfx_victr1 + P_RandomKey(4));
 
+boolean P_IsJingle(const char *musname);
+void P_PlayJingle(player_t *player, jingles_t jingletype);
+void P_PlayJingleMusic(player_t *player, const char *musname, boolean looping, UINT32 delay, UINT32 fadein, boolean resetpremus);
 
 //
 // P_MOBJ

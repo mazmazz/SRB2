@@ -248,6 +248,26 @@ typedef enum
 	RW_RAIL    = 32
 } ringweapons_t;
 
+typedef enum
+{
+	MJ_CUSTOM, // Custom jingle, set by MUSIC_JINGLE flag?
+	MJ_XTLIFE, // Extra life
+	MJ_SHOES,  // Speed shoes
+	MJ_INVINC, // Invincibility
+	MJ_MINVNC, // Mario Invincibility
+	MJ_DROWN,  // Drowning
+	MJ_SUPERS,  // Super Sonic
+	MJ_GMOVER, // Game Over
+	MJ_NIGHTSTIMEOUT, // NiGHTS Time Out (10 seconds)
+
+	// \todo does these belong here? not played as a jingle because they don't have player objects
+	// MJ_LCLEAR, // Level Clear 
+	// MJ_RACENT, // Multiplayer Intermission
+	// MJ_CONTSC, // Continue
+
+	NUMJINGLES
+} jingles_t;
+
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
@@ -285,6 +305,16 @@ typedef struct player_s
 
 	// Power ups. invinc and invis are tic counters.
 	UINT16 powers[NUMPOWERS];
+
+	// Jingle stuff. 
+	// \todo IDK where to store this. p_user? s_sound isn't
+	// the right place. mazmazz
+	char   jinglepremusname[7];
+	UINT32 jinglepremuspos;
+	UINT32 jingledelay;
+	UINT32 jinglefade;
+
+	// 
 
 	// Bit flags.
 	// See pflags_t, above.
