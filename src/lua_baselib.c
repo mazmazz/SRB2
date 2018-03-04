@@ -713,6 +713,26 @@ static int lib_pSetObjectMomZ(lua_State *L)
 	return 0;
 }
 
+static int lib_pPlayJingle(lua_State *L)
+{
+	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	NOHUD
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	P_RestoreMusic(player);
+	return 0;
+}
+
+static int lib_pPlayJingleMusic(lua_State *L)
+{
+	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	NOHUD
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	P_RestoreMusic(player);
+	return 0;
+}
+
 static int lib_pRestoreMusic(lua_State *L)
 {
 	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
@@ -2305,6 +2325,8 @@ static luaL_Reg lib[] = {
 	{"P_InSpaceSector",lib_pInSpaceSector},
 	{"P_InQuicksand",lib_pInQuicksand},
 	{"P_SetObjectMomZ",lib_pSetObjectMomZ},
+	{"P_PlayJingle",lib_pPlayJingle},
+	{"P_PlayJingleMusic",lib_pPlayJingleMusic},
 	{"P_RestoreMusic",lib_pRestoreMusic},
 	{"P_SpawnShieldOrb",lib_pSpawnShieldOrb},
 	{"P_SpawnGhostMobj",lib_pSpawnGhostMobj},
