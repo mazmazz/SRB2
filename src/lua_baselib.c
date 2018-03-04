@@ -1777,7 +1777,7 @@ static int lib_sChangeMusic(lua_State *L)
 	}
 	else
 		lua_pushnil(L);
-	return 0;
+	return 1;
 }
 
 static int lib_sSpeedMusic(lua_State *L)
@@ -1891,7 +1891,7 @@ static int lib_sStopMusic(lua_State *L)
 	}
 	else
 		lua_pushnil(L);
-	return 0;
+	return 1;
 }
 
 static int lib_sDigitalPlaying(lua_State *L)
