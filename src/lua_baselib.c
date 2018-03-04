@@ -739,8 +739,14 @@ static int lib_pRestoreMusic(lua_State *L)
 	NOHUD
 	if (!player)
 		return LUA_ErrInvalid(L, "player_t");
-	P_RestoreMusic(player);
-	return 0;
+	if (!player || P_IsLocalPlayer(player))
+	{
+		P_RestoreMusic(player);
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
 }
 
 static int lib_pSpawnShieldOrb(lua_State *L)
@@ -1867,7 +1873,7 @@ static int lib_sChangeMusic(lua_State *L)
 			S_ChangeMusicFadeIn(music_name, music_flags, looping, fadein_ms);
 		else
 			S_ChangeMusic(music_name, music_flags, looping);
-		lua_pushboolean(L, 1);
+		lua_pushboolean(L, true);
 	}
 	else
 		lua_pushnil(L);
