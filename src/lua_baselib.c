@@ -1729,8 +1729,13 @@ static int lib_sFadeOutMusic(lua_State *L)
 			return LUA_ErrInvalid(L, "player_t");
 	}
 	if (!player || P_IsLocalPlayer(player))
+	{
 		S_FadeOutMusic(millisecond);
-	return 0;
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
 }
 
 //=====================================================================
@@ -1768,8 +1773,13 @@ static int lib_sMusicVolume(lua_State *L)
 			return LUA_ErrInvalid(L, "player_t");
 	}
 	if (!player || P_IsLocalPlayer(player))
+	{
 		S_MusicVolume(volume);
-	return 0;
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
 }
 
 static int lib_sChangeMusic(lua_State *L)
@@ -1805,10 +1815,7 @@ static int lib_sChangeMusic(lua_State *L)
 		music_name = luaL_checkstring(L, 1);
 	}
 
-
 	looping = (boolean)lua_opttrueboolean(L, 2);
-
-	fadein_ms = (boolean)luaL_optinteger(L, 5, 0);
 
 #else
 	const char *music_name = luaL_checkstring(L, 1);
@@ -1832,17 +1839,19 @@ static int lib_sChangeMusic(lua_State *L)
 #endif
 	music_flags = (UINT16)luaL_optinteger(L, 4, 0);
 
+	fadein_ms = luaL_optinteger(L, 5, 0);
+
 	if (!player || P_IsLocalPlayer(player))
 	{
 		if (fadein_ms)
 			S_ChangeMusicFadeIn(music_name, music_flags, looping, fadein_ms);
 		else
 			S_ChangeMusic(music_name, music_flags, looping);
-		lua_pushboolean(L, true);
+		lua_pushboolean(L, 1);
 	}
 	else
 		lua_pushnil(L);
-	return 0;
+	return 1;
 }
 
 static int lib_sSetMusicPosition(lua_State *L)
@@ -1937,7 +1946,7 @@ static int lib_sStopMusic(lua_State *L)
 	}
 	else
 		lua_pushnil(L);
-	return 0;
+	return 1;
 }
 
 static int lib_sDigitalPlaying(lua_State *L)
