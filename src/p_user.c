@@ -1283,6 +1283,14 @@ void P_RestoreMusic(player_t *player)
 		boolean muslooping = true; // player->jinglepremuslooping;
 
 		strncpy(musname, player->jinglepremusname, 7);
+
+		if (!musname[0])
+		{
+			strncpy(musname, mapmusname, 7); // use mapmusname
+			//musflags = mapmusflags; // already set for now
+			//muslooping = true; // already set for now
+		}
+		
 		musname[6] = 0;
 
 		char newmusic[7];
@@ -1290,16 +1298,16 @@ void P_RestoreMusic(player_t *player)
 		if(LUAh_MusicRestore(musname, newmusic, &muspos, &musdelay, &musfade, &musflags, &muslooping))
 			return;
 #else
-		strncpy(newmusic, musname, 7);	
+		strncpy(newmusic, musname, 7);
 #endif
 		newmusic[6] = 0;
 
-		if (musname[0])
+		if (newmusic[0])
 		{
 			if (musfade == 0) // super
-				S_ChangeMusic(musname, musflags, muslooping);
+				S_ChangeMusic(newmusic, musflags, muslooping);
 			else
-				S_ChangeMusicFadeIn(musname, musflags, muslooping, musfade);
+				S_ChangeMusicFadeIn(newmusic, musflags, muslooping, musfade);
 
 			// \todo disabling musdelay jump for now
 			// because there's no way yet for SDL mixer to report
