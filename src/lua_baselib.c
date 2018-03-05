@@ -715,22 +715,44 @@ static int lib_pSetObjectMomZ(lua_State *L)
 
 static int lib_pPlayJingle(lua_State *L)
 {
-	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	jingles_t jingletype = (jingles_t)luaL_checknumber(L, 1);
+	player_t *player = NULL;
+	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
+		player = *((player_t **)luaL_checkudata(L, 2, META_PLAYER));
 	NOHUD
 	if (!player)
 		return LUA_ErrInvalid(L, "player_t");
-	P_RestoreMusic(player);
-	return 0;
+	if (!player || P_IsLocalPlayer(player))
+	{
+		P_PlayJingle(player, jingletype);
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
 }
 
 static int lib_pPlayJingleMusic(lua_State *L)
 {
-	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	const char *musname = luaL_checkstring(L, 1);
+	boolean looping = lua_optboolean(L, 2);
+	UINT32 delay = luaL_optnumber(L, 3, 0);
+	UINT32 fadein = luaL_optnumber(L, 4, 0);
+	boolean resetpremus = lua_optboolean(L, 5);
+	player_t *player = NULL;
+	if (!lua_isnone(L, 6) && lua_isuserdata(L, 6))
+		player = *((player_t **)luaL_checkudata(L, 6, META_PLAYER));
 	NOHUD
 	if (!player)
 		return LUA_ErrInvalid(L, "player_t");
-	P_RestoreMusic(player);
-	return 0;
+	if (!player || P_IsLocalPlayer(player))
+	{
+		P_PlayJingleMusic(player, musname, looping, delay, fadein, resetpremus);
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
 }
 
 static int lib_pRestoreMusic(lua_State *L)

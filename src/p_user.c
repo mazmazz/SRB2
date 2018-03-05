@@ -1193,7 +1193,22 @@ boolean P_IsJingle(const char *musname)
 
 void P_PlayJingle(player_t *player, jingles_t jingletype)
 {
-	P_PlayJingleMusic(player, jinglemusnames[jingletype], jingleloopings[jingletype], jingledelays[jingletype], jinglefadein, jingleresets[jingletype]);
+	const char *musname = jinglemusnames[jingletype];
+	boolean looping = jingleloopings[jingletype];
+	UINT32 delay = jingledelays[jingletype];
+	UINT32 fadein = jinglefadein;
+	boolean jinglereset = jingleresets[jingletype];
+
+	char newmusic[7];
+#ifdef HAVE_BLUA
+	if(LUAh_MusicJingle(jingletype, musname, newmusic, &looping, &delay, &fadein, &jinglereset))
+		return;
+#else
+	strncpy(newmusic, musname, 7);	
+#endif
+	newmusic[6] = 0;
+
+	P_PlayJingleMusic(player, newmusic, looping, delay, fadein, jinglereset);
 }
 
 //
@@ -1262,13 +1277,22 @@ void P_RestoreMusic(player_t *player)
 	{
 		static char musname[7];
 		UINT32 muspos = player->jinglepremuspos;
-		//UINT32 musdelay = player->jingledelay;
+		UINT32 musdelay = player->jingledelay;
 		UINT32 musfade = player->jinglefade;
 		UINT16 musflags = mapmusflags; // player->jinglepremusflags;
 		boolean muslooping = true; // player->jinglepremuslooping;
 
 		strncpy(musname, player->jinglepremusname, 7);
 		musname[6] = 0;
+
+		char newmusic[7];
+#ifdef HAVE_BLUA
+		if(LUAh_MusicRestore(musname, newmusic, &muspos, &musdelay, &musfade, &musflags, &muslooping))
+			return;
+#else
+		strncpy(newmusic, musname, 7);	
+#endif
+		newmusic[6] = 0;
 
 		if (musname[0])
 		{

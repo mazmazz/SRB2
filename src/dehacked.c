@@ -7182,6 +7182,20 @@ struct {
 	{"GT_HIDEANDSEEK",GT_HIDEANDSEEK},
 	{"GT_CTF",GT_CTF},
 
+	// Jingles (jingles_t)
+	{"MJ_CUSTOM",MJ_CUSTOM},
+	{"MJ_XTLIFE",MJ_XTLIFE},
+	{"MJ_SHOES",MJ_SHOES},
+	{"MJ_INVINC",MJ_INVINC},
+	{"MJ_MINVNC",MJ_MINVNC},
+	{"MJ_DROWN",MJ_DROWN},
+	{"MJ_SUPERS",MJ_SUPERS},
+	{"MJ_GMOVER",MJ_GMOVER},
+	{"MJ_NIGHTSTIMEOUT",MJ_NIGHTSTIMEOUT},
+	// {"MJ_LCLEAR",MJ_LCLEAR},
+	// {"MJ_RACENT",MJ_RACENT},
+	// {"MJ_CONTSC",MJ_CONTSC},
+
 	// Player state (playerstate_t)
 	{"PST_LIVE",PST_LIVE}, // Playing or camping.
 	{"PST_DEAD",PST_DEAD}, // Dead on the ground, view follows killer.

@@ -44,6 +44,8 @@ enum hook {
 	hook_HurtMsg,
 	hook_PlayerSpawn,
 	hook_MusicChange,
+	hook_MusicJingle,
+	hook_MusicRestore,
 
 	hook_MAX // last hook
 };
@@ -79,5 +81,7 @@ boolean LUAh_PlayerMsg(int source, int target, int flags, char *msg); // Hook fo
 boolean LUAh_HurtMsg(player_t *player, mobj_t *inflictor, mobj_t *source); // Hook for hurt messages
 #define LUAh_PlayerSpawn(player) LUAh_PlayerHook(player, hook_PlayerSpawn) // Hook for G_SpawnPlayer
 boolean LUAh_MusicChange(const char *oldname, const char *newname, char *newmusic, UINT16 *mflags, boolean *looping); // Hook for music changes
+boolean LUAh_MusicJingle(jingles_t jingletype, const char *newname, char *newmusic, boolean *looping, UINT32 *delay, UINT32 *fadein, boolean *jinglereset); // Hook for music jingle play
+boolean LUAh_MusicRestore(const char *newname, char *newmusic, UINT32 *pos, UINT32 *delay, UINT32 *fadein, UINT16 *flags, boolean *looping); // Hook for music restore post-jingle
 
 #endif

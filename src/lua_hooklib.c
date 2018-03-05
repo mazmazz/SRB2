@@ -55,6 +55,8 @@ const char *const hookNames[hook_MAX+1] = {
 	"HurtMsg",
 	"PlayerSpawn",
 	"MusicChange",
+	"MusicJingle",
+	"MusicRestore",
 	NULL
 };
 
@@ -1116,6 +1118,121 @@ boolean LUAh_MusicChange(const char *oldname, const char *newname, char *newmusi
 				*looping = lua_toboolean(gL, -1);
 
 			lua_pop(gL, 3);
+		}
+
+	lua_settop(gL, 0);
+	newmusic[6] = 0;
+	return hooked;
+}
+
+// Hook for music jingle play
+boolean LUAh_MusicJingle(jingles_t jingletype, const char *newname, char *newmusic, boolean *looping, UINT32 *delay, UINT32 *fadein, boolean *jinglereset)
+{
+	hook_p hookp; 
+	boolean hooked = false;
+
+	strncpy(newmusic, newname, 7);
+
+	if (!gL || !(hooksAvailable[hook_MusicJingle/8] & (1<<(hook_MusicJingle%8))))
+		return false;
+
+	lua_settop(gL, 0);
+
+	for (hookp = roothook; hookp; hookp = hookp->next)
+		if (hookp->type == hook_MusicJingle)
+		{
+			lua_pushfstring(gL, FMT_HOOKID, hookp->id);
+			lua_gettable(gL, LUA_REGISTRYINDEX);
+			lua_pushinteger(gL, jingletype);
+			lua_pushstring(gL, newname);
+			lua_pushboolean(gL, *looping);
+			lua_pushnumber(gL, *delay);
+			lua_pushnumber(gL, *fadein);
+			lua_pushboolean(gL, *jinglereset);
+			if (lua_pcall(gL, 6, 5, 0)) {
+				CONS_Alert(CONS_WARNING,"%s\n",lua_tostring(gL,-1));
+				lua_pop(gL, 1);
+				continue;
+			}
+
+			// output 1: true, false, or string musicname override
+			if (lua_isboolean(gL, -5) && lua_toboolean(gL, -5))
+				hooked = true;
+			else if (lua_isstring(gL, -5))
+				strncpy(newmusic, lua_tostring(gL, -5), 7);
+			// output 2: looping override
+			if (lua_isnumber(gL, -4))
+				*looping = lua_toboolean(gL, -4);
+			// output 3: delay override
+			if (lua_isboolean(gL, -3))
+				*delay = lua_tonumber(gL, -3);
+			// output 4: fadein override
+			if (lua_isboolean(gL, -2))
+				*fadein = lua_tonumber(gL, -2);
+			// output 5: jinglereset override
+			if (lua_isboolean(gL, -1))
+				*jinglereset = lua_toboolean(gL, -1);
+
+			lua_pop(gL, 5);
+		}
+
+	lua_settop(gL, 0);
+	newmusic[6] = 0;
+	return hooked;
+}
+
+// Hook for music restore post-jingle
+boolean LUAh_MusicRestore(const char *newname, char *newmusic, UINT32 *pos, UINT32 *delay, UINT32 *fadein, UINT16 *flags, boolean *looping)
+{
+	hook_p hookp; 
+	boolean hooked = false;
+
+	strncpy(newmusic, newname, 7);
+
+	if (!gL || !(hooksAvailable[hook_MusicRestore/8] & (1<<(hook_MusicRestore%8))))
+		return false;
+
+	lua_settop(gL, 0);
+
+	for (hookp = roothook; hookp; hookp = hookp->next)
+		if (hookp->type == hook_MusicRestore)
+		{
+			lua_pushfstring(gL, FMT_HOOKID, hookp->id);
+			lua_gettable(gL, LUA_REGISTRYINDEX);
+			lua_pushstring(gL, newname);
+			lua_pushboolean(gL, *pos);
+			lua_pushnumber(gL, *delay);
+			lua_pushnumber(gL, *fadein);
+			lua_pushnumber(gL, *flags);
+			lua_pushboolean(gL, *looping);
+			if (lua_pcall(gL, 6, 6, 0)) {
+				CONS_Alert(CONS_WARNING,"%s\n",lua_tostring(gL,-1));
+				lua_pop(gL, 1);
+				continue;
+			}
+
+			// output 1: true, false, or string musicname override
+			if (lua_isboolean(gL, -6) && lua_toboolean(gL, -6))
+				hooked = true;
+			else if (lua_isstring(gL, -6))
+				strncpy(newmusic, lua_tostring(gL, -6), 7);
+			// output 2: post-music position override
+			if (lua_isnumber(gL, -5))
+				*pos = lua_tonumber(gL, -5);
+			// output 3: delay override
+			if (lua_isboolean(gL, -4))
+				*delay = lua_tonumber(gL, -4);
+			// output 4: fadein override
+			if (lua_isboolean(gL, -3))
+				*fadein = lua_tonumber(gL, -3);
+			// output 5: flags override
+			if (lua_isnumber(gL, -2))
+				*flags = lua_tonumber(gL, -2);
+			// output 5: looping override
+			if (lua_isboolean(gL, -1))
+				*looping = lua_toboolean(gL, -1);
+
+			lua_pop(gL, 5);
 		}
 
 	lua_settop(gL, 0);

@@ -14,14 +14,32 @@ SRB2 MusicPlus implements Lua functions for scriptable, gameplay-adaptable music
 * `S_MusicResume()` -- resume music
 * `S_MusicName()` -- get current music name
 * `S_MusicExists(name[, checkMIDI[, checkDigi]])` -- check if musicname exists. Set `checkMIDI` or `checkDigi` flags to enable checking D_ or O_ lumps, respectively. Both flags default to true.
+* `P_PlayJingle(jingletype)` -- play predefined jingles (see `jingles_t` constants in d_player.h)
+* `P_PlayJingleMusic(musname, looping, delay, fadein, resetpremus)` -- play custom jingle that fires the `MusicJingle` hook
+
+All functions take `player_t` as their last parameter (except `S_ChangeMusic`, where it's the third parameter; and `S_MusicExists`, which is not strictly a sound function.)
 
 ## Lua Hooks
 
 * `MusicChange function(oldname, newname, flags, looping)` -- Get notified of music changes. 
+    * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
+    * Output 2: Music flags to override
+    * Output 3: Boolean whether to loop or not
+* `MusicJingle function(jingletype, newname, looping, delay, fadein, jinglereset)` -- Get notified when a predefined jingle plays.
+    * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
+    * Output 2: Boolean whether to loop or not
+    * Output 3: Delay milliseconds to use for post-jingle restore
+    * Output 4: Fade-in milliseconds to use for post-jingle restore
+    * Output 5: Boolean to reset post-jingle music at position 0 and not fade-in.
+* `MusicRestore function(newname, newpos, delay, fadein, flags, looping)` -- Get notified when the music is restored from a jingle.
+    * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
+    * Output 2: Position milliseconds to seek to
+    * Output 3: Delay milliseconds to use for post-jingle restore
+    * Output 4: Fade-in milliseconds to use for post-jingle restore
+    * Output 5: Music flags to override
+    * Output 6: Boolean whether to loop or not
 
-Return true to not change music; false or nil to continue changing music; or return a string to override to another music name. Return an empty string to stop playing music. 
-
-Optionally, this can output up to 3 values -- value #2 is the music flags to override (nil preserves the new flags), and value #3 is a boolean whether to loop or not (nil preserves the new value).
+All outputs are optional.
 
 ## Console Commands
 
@@ -47,11 +65,11 @@ For a timing demo, add `test_musicplus.wad` and `PLAYDEMO test_musicplus-demo.lm
 
 ### Network Safety
 
-All Lua functions take `player_t` as their last variable, except `S_MusicExists()` which should be netsafe because it only checks for music lumps. 
-
 To be net-safe with these functions, iterate through every player and pass each `player_t` object to the desired function. The function, if passed a non-local player, will bypass the internal music calls and return `nil`, in order to remain network safe.
 
-It is unknown if the `MusicChange` hook is network safe. Again, if making any music calls, pass each `player_t` object to the call to attempt network safety.
+`S_MusicExists` does not take a `player_t` parameter because it's not strictly a sound function -- it only checks for lumps.
+
+It is unknown if the Music hooks are network safe. Again, if making any music calls, pass each `player_t` object to the call to attempt network safety.
 
 ### Technical Details
 
