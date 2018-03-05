@@ -1303,6 +1303,7 @@ void S_ChangeMusicFadeIn(const char *mmusic, UINT16 mflags, boolean looping, UIN
 void S_FadeOutMusic(int ms)
 {
     I_FadeOutMusic(ms);
+    music_name[0] = 0; // erase this so we can reset to the same song later
 }
 
 boolean S_SpeedMusic(float speed)
