@@ -1145,10 +1145,10 @@ boolean LUAh_MusicJingle(jingles_t jingletype, const char *newname, char *newmus
 			lua_gettable(gL, LUA_REGISTRYINDEX);
 			lua_pushinteger(gL, jingletype);
 			lua_pushstring(gL, newname);
-			lua_pushboolean(gL, *looping);
 			lua_pushnumber(gL, *delay);
 			lua_pushnumber(gL, *fadein);
 			lua_pushboolean(gL, *jinglereset);
+			lua_pushboolean(gL, *looping);
 			if (lua_pcall(gL, 6, 5, 0)) {
 				CONS_Alert(CONS_WARNING,"%s\n",lua_tostring(gL,-1));
 				lua_pop(gL, 1);
@@ -1160,18 +1160,18 @@ boolean LUAh_MusicJingle(jingles_t jingletype, const char *newname, char *newmus
 				hooked = true;
 			else if (lua_isstring(gL, -5))
 				strncpy(newmusic, lua_tostring(gL, -5), 7);
-			// output 2: looping override
-			if (lua_isnumber(gL, -4))
-				*looping = lua_toboolean(gL, -4);
 			// output 3: delay override
-			if (lua_isboolean(gL, -3))
-				*delay = lua_tonumber(gL, -3);
+			if (lua_isboolean(gL, -4))
+				*delay = lua_tonumber(gL, -4);
 			// output 4: fadein override
-			if (lua_isboolean(gL, -2))
-				*fadein = lua_tonumber(gL, -2);
+			if (lua_isboolean(gL, -3))
+				*fadein = lua_tonumber(gL, -3);
 			// output 5: jinglereset override
-			if (lua_isboolean(gL, -1))
-				*jinglereset = lua_toboolean(gL, -1);
+			if (lua_isboolean(gL, -2))
+				*jinglereset = lua_toboolean(gL, -2);
+			// output 2: looping override
+			if (lua_isnumber(gL, -1))
+				*looping = lua_toboolean(gL, -1);
 
 			lua_pop(gL, 5);
 		}

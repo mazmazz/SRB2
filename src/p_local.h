@@ -186,7 +186,7 @@ void P_PlayLivesJingle(player_t *player);
 
 boolean P_IsJingle(const char *musname);
 void P_PlayJingle(player_t *player, jingles_t jingletype);
-void P_PlayJingleMusic(player_t *player, const char *musname, boolean looping, UINT32 delay, UINT32 fadein, boolean resetpremus);
+void P_PlayJingleMusic(player_t *player, const char *musname, UINT32 delay, UINT32 fadein, boolean resetpremus, boolean looping);
 
 //
 // P_MOBJ

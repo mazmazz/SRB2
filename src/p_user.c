@@ -1208,13 +1208,13 @@ void P_PlayJingle(player_t *player, jingles_t jingletype)
 #endif
 	newmusic[6] = 0;
 
-	P_PlayJingleMusic(player, newmusic, looping, delay, fadein, jinglereset);
+	P_PlayJingleMusic(player, newmusic, delay, fadein, jinglereset, looping);
 }
 
 //
 // P_PlayJingleMusic
 // 
-void P_PlayJingleMusic(player_t *player, const char *musname, boolean looping, UINT32 delay, UINT32 fadein, boolean resetpremus)
+void P_PlayJingleMusic(player_t *player, const char *musname, UINT32 delay, UINT32 fadein, boolean resetpremus, boolean looping)
 {
 	const char *premusname = S_MusicName();
 

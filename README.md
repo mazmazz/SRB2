@@ -15,7 +15,7 @@ SRB2 MusicPlus implements Lua functions for scriptable, gameplay-adaptable music
 * `S_MusicName()` -- get current music name
 * `S_MusicExists(name[, checkMIDI[, checkDigi]])` -- check if musicname exists. Set `checkMIDI` or `checkDigi` flags to enable checking D_ or O_ lumps, respectively. Both flags default to true.
 * `P_PlayJingle(jingletype)` -- play predefined jingles (see `jingles_t` constants in d_player.h)
-* `P_PlayJingleMusic(musname, looping, delay, fadein, resetpremus)` -- play custom jingle that fires the `MusicJingle` hook
+* `P_PlayJingleMusic(musname, delay, fadein, resetpremus, looping)` -- play custom jingle that fires the `MusicJingle` hook
 
 All functions take `player_t` as their last parameter (except `S_ChangeMusic`, where it's the third parameter; and `S_MusicExists`, which is not strictly a sound function.)
 
@@ -25,12 +25,12 @@ All functions take `player_t` as their last parameter (except `S_ChangeMusic`, w
     * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
     * Output 2: Music flags to override
     * Output 3: Boolean whether to loop or not
-* `MusicJingle function(jingletype, newname, looping, delay, fadein, jinglereset)` -- Get notified when a predefined jingle plays.
+* `MusicJingle function(jingletype, newname, delay, fadein, jinglereset, looping)` -- Get notified when a predefined jingle plays.
     * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
-    * Output 2: Boolean whether to loop or not
-    * Output 3: Delay milliseconds to use for post-jingle restore
-    * Output 4: Fade-in milliseconds to use for post-jingle restore
-    * Output 5: Boolean to reset post-jingle music at position 0 and not fade-in.
+    * Output 2: Delay milliseconds to use for post-jingle restore
+    * Output 3: Fade-in milliseconds to use for post-jingle restore
+    * Output 4: Boolean to reset post-jingle music at position 0 and not fade-in.
+    * Output 5: Boolean whether to loop the jingle or not
 * `MusicRestore function(newname, newpos, delay, fadein, flags, looping)` -- Get notified when the music is restored from a jingle.
     * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
     * Output 2: Position milliseconds to seek to

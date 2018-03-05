@@ -735,10 +735,10 @@ static int lib_pPlayJingle(lua_State *L)
 static int lib_pPlayJingleMusic(lua_State *L)
 {
 	const char *musname = luaL_checkstring(L, 1);
-	boolean looping = lua_optboolean(L, 2);
-	UINT32 delay = luaL_optnumber(L, 3, 0);
-	UINT32 fadein = luaL_optnumber(L, 4, 0);
-	boolean resetpremus = lua_optboolean(L, 5);
+	UINT32 delay = luaL_optnumber(L, 2, 0);
+	UINT32 fadein = luaL_optnumber(L, 3, 0);
+	boolean resetpremus = lua_optboolean(L, 4);
+	boolean looping = lua_optboolean(L, 5);
 	player_t *player = NULL;
 	if (!lua_isnone(L, 6) && lua_isuserdata(L, 6))
 		player = *((player_t **)luaL_checkudata(L, 6, META_PLAYER));
@@ -747,7 +747,7 @@ static int lib_pPlayJingleMusic(lua_State *L)
 		return LUA_ErrInvalid(L, "player_t");
 	if (!player || P_IsLocalPlayer(player))
 	{
-		P_PlayJingleMusic(player, musname, looping, delay, fadein, resetpremus);
+		P_PlayJingleMusic(player, musname, delay, fadein, resetpremus, looping);
 		lua_pushboolean(L, true);
 	}
 	else
