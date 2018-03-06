@@ -21,25 +21,25 @@ All functions take `player_t` as their last parameter (except `S_ChangeMusic`, w
 
 ## Lua Hooks
 
-* `MusicChange function(oldname, newname, flags, looping)` -- Get notified of music changes. 
-    * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
-    * Output 2: Music flags to override
-    * Output 3: Boolean whether to loop or not
-* `MusicJingle function(jingletype, newname, delay, fadein, jinglereset, looping)` -- Get notified when a predefined jingle plays.
-    * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
-    * Output 2: Delay milliseconds to use for post-jingle restore
-    * Output 3: Fade-in milliseconds to use for post-jingle restore
-    * Output 4: Boolean to reset post-jingle music at position 0 and not fade-in.
-    * Output 5: Boolean whether to loop the jingle or not
-* `MusicRestore function(newname, newpos, delay, fadein, flags, looping)` -- Get notified when the music is restored from a jingle.
-    * Output 1: true to not change music; false/nil to continue changing magic; string to override to another music name
-    * Output 2: Position milliseconds to seek to
-    * Output 3: Delay milliseconds to use for post-jingle restore
-    * Output 4: Fade-in milliseconds to use for post-jingle restore
-    * Output 5: Music flags to override
-    * Output 6: Boolean whether to loop or not
+* `MusicChange function(oldname, newname, flags, looping)` -- Get notified of music changes. Return values:
+    1. true to not change music; false/nil to continue changing magic; string to override to another music name
+    2. Music flags to override
+    3. Boolean whether to loop or not
+* `MusicJingle function(jingletype, newname, delay, fadein, jinglereset, looping)` -- Get notified when a predefined jingle plays.  Return values:
+    1. true to not change music; false/nil to continue changing magic; string to override to another music name
+    2. Delay milliseconds to use for post-jingle restore
+    3. Fade-in milliseconds to use for post-jingle restore
+    4. Boolean to reset post-jingle music at position 0 and not fade-in.
+    5. Boolean whether to loop the jingle or not
+* `MusicRestore function(newname, newpos, delay, fadein, flags, looping)` -- Get notified when the music is restored from a jingle.  Return values:
+    1. true to not change music; false/nil to continue changing magic; string to override to another music name
+    2. Position milliseconds to seek to
+    3. Delay milliseconds to use for post-jingle restore
+    4. Fade-in milliseconds to use for post-jingle restore
+    5. Music flags to override
+    6. Boolean whether to loop or not
 
-All outputs are optional.
+All outputs are optional. Return values like `return 'musnam', 0, true`.
 
 ## Console Commands
 
