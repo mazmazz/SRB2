@@ -683,6 +683,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					return;
 
 				S_StartSound(toucher, sfx_supert);
+				S_StartSound(toucher, sfx_nightt); // play NiGHTS dualize simultaneously
 			}
 			if (!(netgame || multiplayer) && !(player->pflags & PF_NIGHTSMODE))
 				P_SetTarget(&special->tracer, toucher);

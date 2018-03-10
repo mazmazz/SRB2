@@ -645,10 +645,9 @@ void S_StartSound(const void *origin, sfxenum_t sfx_id)
 			case sfx_jump:
 				sfx_id = sfx_ngjump;
 				break;
-			case sfx_supert:
-				S_StartSound(origin, sfx_nightt); // play NiGHTS dualize simultaneously
-				//sfx_id = sfx_nightt; // replace with NiGHTS dualize
-				break;
+			// case sfx_supert: // \todo play simultaneously, or replace? we currently do the former, see p_inter.c
+			// 	//sfx_id = sfx_nightt; // replace with NiGHTS dualize
+			// 	break;
 			default:
 				break;
 		}
