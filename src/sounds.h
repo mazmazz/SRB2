@@ -282,6 +282,7 @@ typedef enum
 	sfx_ngjump, // Classic
 	sfx_chipup, // Classic
 	sfx_nightt, // Classic
+	sfx_peww,   // Classic
 	sfx_ngcow1, // Classic
 
 	// Mario

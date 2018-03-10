@@ -219,7 +219,8 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"ngjump", false, 140,  0, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic
   {"chipup",  true, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic
   {"nightt",  true, 127,  2, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic
-  {"ngcow1",  true, 127,  2, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic // \todo: if you want a separate chip drop sfx, replace DSNGCOW1
+  {"peww"  , false,  78,  0, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic
+  {"ngcow1", false, 192, 16, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic // \todo: if you want a separate chip drop sfx, replace DSNGCOW1
 
   // Mario
   {"koopfr" , true, 127,  8, -1, NULL, 0,        -1,  -1, LUMPERROR},

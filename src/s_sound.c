@@ -648,6 +648,9 @@ void S_StartSound(const void *origin, sfxenum_t sfx_id)
 			// case sfx_altow4:
 			// 	sfx_id = sfx_ngcow1;
 			// 	break;
+			// case sfx_pop:
+			// 	sfx_id = sfx_peww;
+			// 	break;
 			case sfx_jump:
 				sfx_id = sfx_ngjump;
 				break;
