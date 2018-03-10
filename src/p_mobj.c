@@ -1348,6 +1348,7 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			{
 				case MT_FLINGRING:
 				case MT_FLINGCOIN:
+				case MT_FLINGCHIP:
 				case MT_FLINGEMERALD:
 				case MT_BOUNCERING:
 				case MT_RAILRING:
@@ -2259,6 +2260,7 @@ static boolean P_ZMovement(mobj_t *mo)
 		case MT_BLUETEAMRING:
 		case MT_FLINGRING:
 		case MT_FLINGCOIN:
+		case MT_FLINGCHIP:
 		case MT_FLINGEMERALD:
 			// Remove flinged stuff from death pits.
 			if (P_CheckDeathPitCollide(mo))
@@ -2451,6 +2453,7 @@ static boolean P_ZMovement(mobj_t *mo)
 			// Flingrings bounce
 			if (mo->type == MT_FLINGRING
 				|| mo->type == MT_FLINGCOIN
+				|| mo->type == MT_FLINGCHIP
 				|| P_WeaponOrPanel(mo->type)
 				|| mo->type == MT_FLINGEMERALD
 				|| mo->type == MT_BIGTUMBLEWEED
@@ -7072,6 +7075,7 @@ void P_MobjThinker(mobj_t *mobj)
 		// Flung items
 		case MT_FLINGRING:
 		case MT_FLINGCOIN:
+		case MT_FLINGCHIP:
 			if (mobj->flags2 & MF2_NIGHTSPULL)
 				P_NightsItemChase(mobj);
 			else
@@ -7406,6 +7410,7 @@ for (i = ((mobj->flags2 & MF2_STRONGBOX) ? strongboxamt : weakboxamt); i; --i) s
 #ifdef ESLOPE // Sliding physics for slidey mobjs!
 	if (mobj->type == MT_FLINGRING
 		|| mobj->type == MT_FLINGCOIN
+		|| mobj->type == MT_FLINGCHIP
 		|| P_WeaponOrPanel(mobj->type)
 		|| mobj->type == MT_FLINGEMERALD
 		|| mobj->type == MT_BIGTUMBLEWEED

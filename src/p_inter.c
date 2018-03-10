@@ -428,6 +428,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				P_DoNightsScore(player);
 			break;
 		case MT_CHIP:
+		case MT_FLINGCHIP:
 			if (!(P_CanPickupItem(player, false)))
 				return;
 
@@ -3239,6 +3240,8 @@ void P_PlayerRingBurst(player_t *player, INT32 num_rings)
 		INT32 objType = mobjinfo[MT_RING].reactiontime;
 		if (mariomode)
 			objType = mobjinfo[MT_COIN].reactiontime;
+		else if (maptol & TOL_NIGHTSCLASSIC)
+			objType = mobjinfo[MT_CHIP].reactiontime;
 
 		z = player->mo->z;
 		if (player->mo->eflags & MFE_VERTICALFLIP)

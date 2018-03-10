@@ -6316,6 +6316,7 @@ static const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for s
 	"MT_FLINGRING", // Lost ring
 	"MT_BLUEBALL",  // Blue sphere replacement for special stages
 	"MT_CHIP",      // NiGHTS blue chip replacement for classic NiGHTS
+	"MT_FLINGCHIP", // Lost blue chip
 	"MT_REDTEAMRING",  //Rings collectable by red team.
 	"MT_BLUETEAMRING", //Rings collectable by blue team.
 	"MT_EMMY", // emerald token for special stage
