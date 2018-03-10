@@ -699,7 +699,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 							P_SetTarget(&players[i].mo->tracer->target, NULL);
 							break;
 						}
-						else if (!players[i].mo->tracer->target && players[i].mo->tracer->type == MT_GOTIDEYA)
+						else if (players[i].mo->tracer && players[i].mo->tracer->type == MT_GOTIDEYA)
 						{
 							P_SetTarget(&players[i].mo->tracer->target, special);
 							P_SetTarget(&players[i].mo->tracer, NULL);

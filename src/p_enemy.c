@@ -8008,20 +8008,20 @@ void A_ToggleFlameJet(mobj_t* actor)
 // Description: Used by Chaos Emeralds to orbit around Nights (aka Super Sonic.)
 //
 // var1 = Angle adjustment (aka orbit speed)
-// var2 = Lower four bits: height offset, Upper 4 bits = 0x10000 if object is Nightopian Helper, 0x20000 to keep object after NiGHTS timeout
+// var2 = Lower four bits: height offset, Upper four bits: OR combinable: 0x10000 if object is Nightopian Helper, 0x20000 to keep object after NiGHTS time out
 //
 void A_OrbitNights(mobj_t* actor)
 {
 	INT32 ofs = (var2 & 0xFFFF);
 	boolean ishelper = (var2 & 0x10000);
-	boolean keepactor = (var2 & 0x20000);
+	boolean ignorenightstime = (var2 & 0x20000); // \todo nothing couples this function to NiGHTS anymore, so should func be repurposed as general A_OrbitTarget and this bool be inverted? i.e., removebynightstime
 #ifdef HAVE_BLUA
 	if (LUA_CallAction("A_OrbitNights", actor))
 		return;
 #endif
 
 	if (!actor->target || (actor->target->type == MT_PLAYER && !actor->target->player)
-	    || (!keepactor && !actor->target->player->nightstime)
+	    || (!ignorenightstime && !actor->target->player->nightstime)
 	    // Also remove this object if they no longer have a NiGHTS helper
 		|| (ishelper && !actor->target->player->powers[pw_nights_helper]))
 	{
@@ -8030,13 +8030,6 @@ void A_OrbitNights(mobj_t* actor)
 	}
 	else
 	{
-		mobj_t *targ;
-
-		if (actor->target->type == MT_PLAYER && actor->target->tracer != actor)
-			targ = actor->target->tracer;
-		else
-			targ = actor->target;
-
 		actor->extravalue1 += var1;
 		P_UnsetThingPosition(actor);
 		{
@@ -8047,9 +8040,9 @@ void A_OrbitNights(mobj_t* actor)
 			const fixed_t fh = FixedMul(FINECOSINE(ofa),FixedMul(20*FRACUNIT, actor->scale));
 			const fixed_t fs = FixedMul(FINESINE(fa),FixedMul(32*FRACUNIT, actor->scale));
 
-			actor->x = targ->x + fc;
-			actor->y = targ->y + fs;
-			actor->z = targ->z + fh + FixedMul(16*FRACUNIT, actor->scale);
+			actor->x = actor->target->x + fc;
+			actor->y = actor->target->y + fs;
+			actor->z = actor->target->z + fh + FixedMul(16*FRACUNIT, actor->scale);
 
 			// Semi-lazy hack
 			actor->angle = (angle_t)actor->extravalue1 + ANGLE_90;

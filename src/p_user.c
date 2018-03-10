@@ -606,14 +606,17 @@ static void P_DeNightserizePlayer(player_t *player)
 	// If you screwed up, kiss your score goodbye.
 	player->marescore = 0;
 
+	// if we have an ideya, make that the tracer so we keep a reference
 	if (player->mo->tracer)
 	{
-		// if we have an ideya, make that the tracer so we keep a reference
 		mobj_t *tracer = player->mo->tracer;
 		mobj_t *ideya = player->mo->tracer->target;
-		P_RemoveMobj(tracer);
 		if (ideya && ideya->type == MT_GOTIDEYA)
+		{
+			P_SetTarget(&player->mo->tracer->target, NULL);
 			P_SetTarget(&player->mo->tracer, ideya);
+		}
+		P_RemoveMobj(tracer);
 	}
 
 	P_SetPlayerMobjState(player->mo, S_PLAY_FALL1);
@@ -5485,7 +5488,7 @@ static void P_DoNiGHTSCapsule(player_t *player)
 					{
 						// Only give it to ONE person, and THAT player has to get to the goal!
 						emmo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTEMERALD);
-						P_SetTarget(&emmo->target, player->mo->tracer);
+						P_SetTarget(&emmo->target, player->mo);
 						P_SetMobjState(emmo, mobjinfo[MT_GOTEMERALD].meleestate + em);
 						P_SetTarget(&player->mo->tracer->target, emmo);
 					}
@@ -5506,14 +5509,14 @@ static void P_DoNiGHTSCapsule(player_t *player)
 					mobj_t *ideya;
 					UINT8 ideyacolor = player->mare % 8;
 					
+					// Only give it to ONE person, and THAT player has to get to the goal!
+					ideya = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
+					P_SetTarget(&ideya->target, player->mo);
+					P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate + ideyacolor);
 					if (player->mo->tracer)
-					{
-						// Only give it to ONE person, and THAT player has to get to the goal!
-						ideya = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
-						P_SetTarget(&ideya->target, player->mo->tracer);
-						P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate + ideyacolor);
 						P_SetTarget(&player->mo->tracer->target, ideya);
-					}
+					else
+						P_SetTarget(&player->mo->tracer, ideya);
 				}
 				else
 				{
