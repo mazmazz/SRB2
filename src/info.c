@@ -53,7 +53,8 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BOM3","BOM4","ROIA","ROIB","ROIC","ROID","ROIE","ROIF","ROIG","ROIH",
 	"ROII","ROIJ","ROIK","ROIL","ROIM","ROIN","ROIO","ROIP","BBAL","GWLG",
 	"GWLR","SRBA","SRBB","SRBC","SRBD","SRBE","SRBF","SRBG","SRBH","SRBI",
-	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYC"//,"SPRC" // \todo different chip sparkle?
+	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYC","NPNA",
+	"NPNB"//,"SPRC" // \todo different chip sparkle?
 };
 
 // Doesn't work with g++, needs actionf_p1 (don't modify this comment)
@@ -2376,6 +2377,49 @@ state_t states[NUMSTATES] =
 	{SPR_BIRD, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER7}, // S_NIGHTOPIANHELPER6
 	{SPR_BIRD, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER8}, // S_NIGHTOPIANHELPER7
 	{SPR_BIRD, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER1}, // S_NIGHTOPIANHELPER8
+
+	// Real Nightopian helper for classic NiGHTS
+	{SPR_NPNA, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC2}, // S_NIGHTOPIANHELPER_CLASSIC1 (anim 1 tic 1)
+	{SPR_NPNA, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC3}, // S_NIGHTOPIANHELPER_CLASSIC2 (anim 1 tic 2)
+	{SPR_NPNA, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC4}, // S_NIGHTOPIANHELPER_CLASSIC3 (anim 1 tic 3)
+	{SPR_NPNA, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC5}, // S_NIGHTOPIANHELPER_CLASSIC4 (anim 1 tic 4)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC6}, // S_NIGHTOPIANHELPER_CLASSIC5 (anim 2 tic 1)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC7}, // S_NIGHTOPIANHELPER_CLASSIC6 (anim 2 tic 2)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC8}, // S_NIGHTOPIANHELPER_CLASSIC7 (anim 2 tic 3)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC8Z}, // S_NIGHTOPIANHELPER_CLASSIC8 (anim 2 tic 4)
+	// (branch to 9A or 9B)
+	{SPR_NPNA, 1, 0, {A_RandomState}, S_NIGHTOPIANHELPER_CLASSIC9A, S_NIGHTOPIANHELPER_CLASSIC9B, S_NULL}, // S_NIGHTOPIANHELPER_CLASSIC8Z
+	// A states (normal)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC10A}, // S_NIGHTOPIANHELPER_CLASSIC9A (anim 3 tic 1)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC11A}, // S_NIGHTOPIANHELPER_CLASSIC10A (anim 3 tic 2)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC12A}, // S_NIGHTOPIANHELPER_CLASSIC11A (anim 3 tic 3)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC13A}, // S_NIGHTOPIANHELPER_CLASSIC12A (anim 3 tic 4)
+	{SPR_NPNA, 3, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC14A}, // S_NIGHTOPIANHELPER_CLASSIC13A (anim 4 tic 1)
+	{SPR_NPNA, 3, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC15A}, // S_NIGHTOPIANHELPER_CLASSIC14A (anim 4 tic 2)
+	{SPR_NPNA, 3, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC16A}, // S_NIGHTOPIANHELPER_CLASSIC15A (anim 4 tic 3)
+	{SPR_NPNA, 3, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC17A}, // S_NIGHTOPIANHELPER_CLASSIC16A (anim 4 tic 4)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC18A}, // S_NIGHTOPIANHELPER_CLASSIC17A (anim 3 tic 1)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC19A}, // S_NIGHTOPIANHELPER_CLASSIC18A (anim 3 tic 2)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC20A}, // S_NIGHTOPIANHELPER_CLASSIC19A (anim 3 tic 3)
+	{SPR_NPNA, 2, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC21}, // S_NIGHTOPIANHELPER_CLASSIC20A (anim 3 tic 4)
+	// B states (smiling)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC10B}, // S_NIGHTOPIANHELPER_CLASSIC9B (anim 3 tic 1)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC11B}, // S_NIGHTOPIANHELPER_CLASSIC10B (anim 3 tic 2)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC12B}, // S_NIGHTOPIANHELPER_CLASSIC11B (anim 3 tic 3)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC13B}, // S_NIGHTOPIANHELPER_CLASSIC12B (anim 3 tic 4)
+	{SPR_NPNB, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC14B}, // S_NIGHTOPIANHELPER_CLASSIC13B (anim 4 tic 1)
+	{SPR_NPNB, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC15B}, // S_NIGHTOPIANHELPER_CLASSIC14B (anim 4 tic 2)
+	{SPR_NPNB, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC16B}, // S_NIGHTOPIANHELPER_CLASSIC15B (anim 4 tic 3)
+	{SPR_NPNB, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC17B}, // S_NIGHTOPIANHELPER_CLASSIC16B (anim 4 tic 4)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC18B}, // S_NIGHTOPIANHELPER_CLASSIC17B (anim 3 tic 1)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC19B}, // S_NIGHTOPIANHELPER_CLASSIC18B (anim 3 tic 2)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC20B}, // S_NIGHTOPIANHELPER_CLASSIC19B (anim 3 tic 3)
+	{SPR_NPNB, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC21}, // S_NIGHTOPIANHELPER_CLASSIC20B (anim 3 tic 4)
+	// last animation
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC22}, // S_NIGHTOPIANHELPER_CLASSIC21 (anim 2 tic 1)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC23}, // S_NIGHTOPIANHELPER_CLASSIC22 (anim 2 tic 2)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC24}, // S_NIGHTOPIANHELPER_CLASSIC23 (anim 2 tic 3)
+	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC1}, // S_NIGHTOPIANHELPER_CLASSIC24 (anim 2 tic 4)
 
 	{SPR_NULL, 0, 35, {NULL}, 0, 0, S_CRUMBLE2},  // S_CRUMBLE1
 	{SPR_NULL, 0, 105, {A_Scream}, 0, 0, S_NULL}, // S_CRUMBLE2
@@ -12435,6 +12479,34 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	{           // MT_NIGHTOPIANHELPER
 		-1,             // doomednum
 		S_NIGHTOPIANHELPER1, // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		255,            // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		0,              // speed
+		16*FRACUNIT,    // radius
+		16*FRACUNIT,    // height
+		0,              // display offset
+		16,             // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_NOGRAVITY,   // flags
+		S_NULL          // raisestate
+	},
+
+	// real Nightopian helper for classic NiGHTS
+	{           // MT_NIGHTOPIANHELPER_CLASSIC
+		-1,             // doomednum
+		S_NIGHTOPIANHELPER_CLASSIC1, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound

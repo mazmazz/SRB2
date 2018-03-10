@@ -953,8 +953,12 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				return;
 			if (!G_IsSpecialStage(gamemap))
 			{
+				mobj_t *flickyobj;
 				// A flicky orbits us now
-				mobj_t *flickyobj = P_SpawnMobj(toucher->x, toucher->y, toucher->z + toucher->info->height, MT_NIGHTOPIANHELPER);
+				if (maptol & TOL_NIGHTSCLASSIC)
+					flickyobj = P_SpawnMobj(toucher->x, toucher->y, toucher->z + toucher->info->height, MT_NIGHTOPIANHELPER_CLASSIC);
+				else
+					flickyobj = P_SpawnMobj(toucher->x, toucher->y, toucher->z + toucher->info->height, MT_NIGHTOPIANHELPER);
 				P_SetTarget(&flickyobj->target, toucher);
 
 				player->powers[pw_nights_helper] = (UINT16)special->info->speed;
@@ -965,7 +969,10 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				for (i = 0; i < MAXPLAYERS; i++)
 					if (playeringame[i] && players[i].mo && players[i].pflags & PF_NIGHTSMODE) {
 						players[i].powers[pw_nights_helper] = (UINT16)special->info->speed;
-						flickyobj = P_SpawnMobj(players[i].mo->x, players[i].mo->y, players[i].mo->z + players[i].mo->info->height, MT_NIGHTOPIANHELPER);
+						if (maptol & TOL_NIGHTSCLASSIC)
+							flickyobj = P_SpawnMobj(toucher->x, toucher->y, toucher->z + toucher->info->height, MT_NIGHTOPIANHELPER_CLASSIC);
+						else
+							flickyobj = P_SpawnMobj(players[i].mo->x, players[i].mo->y, players[i].mo->z + players[i].mo->info->height, MT_NIGHTOPIANHELPER);
 						P_SetTarget(&flickyobj->target, players[i].mo);
 					}
 				if (special->info->deathsound != sfx_None)
