@@ -7001,7 +7001,7 @@ void P_MobjThinker(mobj_t *mobj)
 					else if(mobj->target && mobj->target->type == MT_NIGHTSDRONEMAN)
 					{
 						mobj->target->angle += ANG10;
-						if (mobj->target->z <= mobj->target->floorz + mobj->height)
+						if (mobj->target->z <= mobj->target->floorz)
 							mobj->target->momz = 5*FRACUNIT;
 					}
 
@@ -7020,26 +7020,24 @@ void P_MobjThinker(mobj_t *mobj)
 					{
 						if (!mobj->target && !G_IsSpecialStage(gamemap))
 						{
-							mobj_t *droneman = P_SpawnMobj(mobj->x, mobj->y, mobj->z + FRACUNIT, MT_NIGHTSDRONEMAN);
+							mobj_t *droneman = P_SpawnMobj(mobj->x, mobj->y, mobj->z - mobj->height + FRACUNIT, MT_NIGHTSDRONEMAN);
 							P_SetTarget(&mobj->target, droneman);
 						}
 					}
 				}
 				else
 				{
-					mobj->z = mobj->floorz + mobj->height + (mobj->spawnpoint->options >> ZSHIFT) * FRACUNIT;
-					
 					// initialize drone man for first time
 					if (!mobj->target && !G_IsSpecialStage(gamemap))
 					{
-						mobj_t *droneman = P_SpawnMobj(mobj->x, mobj->y, mobj->z + FRACUNIT, MT_NIGHTSDRONEMAN);
+						mobj_t *droneman = P_SpawnMobj(mobj->x, mobj->y, mobj->z - mobj->height + FRACUNIT, MT_NIGHTSDRONEMAN);
 						P_SetTarget(&mobj->target, droneman);
 					}
 
 					if(mobj->target && mobj->target->type == MT_NIGHTSDRONEMAN)
 					{
 						mobj->target->angle += ANG10;
-						if (mobj->target->z <= mobj->target->floorz + mobj->height)
+						if (mobj->target->z <= mobj->target->floorz)
 							mobj->target->momz = 5*FRACUNIT;
 					}
 				}

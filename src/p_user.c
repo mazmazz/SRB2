@@ -5560,7 +5560,7 @@ static void P_MoveNiGHTSToDrone(player_t *player)
 	P_UnsetThingPosition(player->mo);
 	player->mo->x = player->drone->x;
 	player->mo->y = player->drone->y;
-	player->mo->z = player->drone->z;
+	player->mo->z = player->drone->z - player->drone->height;
 	P_SetThingPosition(player->mo);
 	player->mo->momx = 0;
 	player->mo->momy = 0;
