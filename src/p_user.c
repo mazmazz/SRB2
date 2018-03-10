@@ -5804,9 +5804,9 @@ static void P_NiGHTSMovement(player_t *player)
 
 		player->mo->tracer->angle += ANGLE_11hh;
 
-		if (!(player->mo->tracer->state  >= &states[S_NIGHTSDRONE1]
-			&& player->mo->tracer->state <= &states[S_NIGHTSDRONE2]))
-			P_SetMobjState(player->mo->tracer, S_NIGHTSDRONE1);
+		if (!(player->mo->tracer->state  >= &states[S_NIGHTSDRONEMAN1]
+			&& player->mo->tracer->state <= &states[S_NIGHTSDRONEMAN2]))
+			P_SetMobjState(player->mo->tracer, S_NIGHTSDRONEMAN1);
 
 		player->mo->tracer->flags |= MF_NOCLIPHEIGHT;
 		player->mo->flags |= MF_NOCLIPHEIGHT;
@@ -6139,7 +6139,7 @@ static void P_NiGHTSMovement(player_t *player)
 
 	if (still)
 	{
-		P_SetMobjStateNF(player->mo->tracer, S_NIGHTSDRONE1);
+		P_SetMobjStateNF(player->mo->tracer, S_NIGHTSDRONEMAN1);
 		player->mo->tracer->angle = player->mo->angle;
 	}
 
