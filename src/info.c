@@ -2170,8 +2170,11 @@ state_t states[NUMSTATES] =
 	{SPR_TOAD, 0, -1, {NULL}, 0, 0, S_NULL}, // S_TOAD
 
 	// Nights Drone
-	{SPR_NDRN, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONE2}, // S_NIGHTSDRONE1
-	{SPR_NDRN, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONE1}, // S_NIGHTSDRONE2
+	{SPR_NULL, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONE1}, // S_NIGHTSDRONE1
+
+	// Nights Drone Man
+	{SPR_NDRN, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONEMAN2}, // S_NIGHTSDRONEMAN1
+	{SPR_NDRN, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONEMAN1}, // S_NIGHTSDRONEMAN2
 
 	// Sparkling point (RETURN TO THE GOAL, etc)
 	{SPR_IVSP, 0, 1, {A_GhostMe}, 0, 0, S_NIGHTSDRONE_SPARKLING2},   // S_NIGHTSDRONE_SPARKLING1
@@ -2452,7 +2455,7 @@ state_t states[NUMSTATES] =
 	{SPR_SUPT,               5,  3, {NULL}, 0, 0,  S_SUPERTRANS7}, // S_SUPERTRANS6
 	{SPR_SUPT,               6,  3, {NULL}, 0, 0,  S_SUPERTRANS8}, // S_SUPERTRANS7
 	{SPR_SUPT,               7,  3, {NULL}, 0, 0,  S_SUPERTRANS9}, // S_SUPERTRANS8
-	{SPR_SUPT,               8, 16, {NULL}, 0, 0, S_NIGHTSDRONE1}, // S_SUPERTRANS9
+	{SPR_SUPT,               8, 16, {NULL}, 0, 0, S_NIGHTSDRONEMAN1}, // S_SUPERTRANS9
 
 	// Spark
 	{SPR_SPRK, FF_TRANS40  , 1, {NULL}, 0, 0, S_SPRK2},  // S_SPRK1
@@ -12108,12 +12111,39 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // deathsound
 		0,              // speed
 		16*FRACUNIT,    // radius
-		56*FRACUNIT,    // height
+		46*FRACUNIT,    // height
 		1,              // display offset
 		1000,           // mass
 		0,              // damage
 		sfx_ideya,      // activesound
-		MF_SPECIAL,     // flags
+		MF_SPECIAL|MF_NOGRAVITY, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_NIGHTSDRONEMAN
+		-1,           // doomednum
+		S_NIGHTSDRONEMAN1, // spawnstate
+		120,            // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		255,            // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		0,              // speed
+		16*FRACUNIT,    // radius
+		56*FRACUNIT,    // height
+		1,              // display offset
+		1000,           // mass
+		0,              // damage
+		sfx_None,      // activesound
+		MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY,     // flags
 		S_NULL          // raisestate
 	},
 

@@ -6931,9 +6931,7 @@ void P_MobjThinker(mobj_t *mobj)
 		case MT_NIGHTSDRONE:
 			if (mobj->state >= &states[S_NIGHTSDRONE_SPARKLING1] && mobj->state <= &states[S_NIGHTSDRONE_SPARKLING16])
 			{
-				mobj->flags2 &= ~MF2_DONTDRAW;
 				mobj->z = mobj->floorz + mobj->height + (mobj->spawnpoint->options >> ZSHIFT) * FRACUNIT;
-				mobj->angle = 0;
 
 				if (!mobj->target)
 				{
@@ -6954,29 +6952,20 @@ void P_MobjThinker(mobj_t *mobj)
 							break;
 						}
 					if (!bonustime)
-					{
-						mobj->flags &= ~MF_NOGRAVITY;
 						P_SetMobjState(mobj, S_NIGHTSDRONE1);
-						mobj->flags2 |= MF2_DONTDRAW;
-					}
 				}
 				else if (mobj->tracer && mobj->tracer->player)
 				{
 					if (!(mobj->tracer->player->pflags & PF_NIGHTSMODE))
-					{
-						mobj->flags &= ~MF_NOGRAVITY;
-						mobj->flags2 &= ~MF2_DONTDRAW;
 						P_SetMobjState(mobj, S_NIGHTSDRONE1);
-					}
 					else if (!mobj->tracer->player->bonustime)
-					{
-						mobj->flags &= ~MF_NOGRAVITY;
 						P_SetMobjState(mobj, S_NIGHTSDRONE1);
-					}
 				}
 			}
 			else
 			{
+				mobj->z = mobj->floorz + mobj->height + (mobj->spawnpoint->options >> ZSHIFT) * FRACUNIT;
+				
 				if (G_IsSpecialStage(gamemap))
 				{ // Never show the NiGHTS drone in special stages. Check ANYONE for bonustime.
 					INT32 i;
@@ -6990,46 +6979,70 @@ void P_MobjThinker(mobj_t *mobj)
 						}
 
 					if (bonustime)
-					{
 						P_SetMobjState(mobj, S_NIGHTSDRONE_SPARKLING1);
-						mobj->flags |= MF_NOGRAVITY;
-					}
 					else
 					{
-						if (mobj->target)
+						if (mobj->target && mobj->target->type == MT_NIGHTSGOAL)
 						{
 							CONS_Debug(DBG_NIGHTSBASIC, "Removing goal post\n");
 							P_RemoveMobj(mobj->target);
 							P_SetTarget(&mobj->target, NULL);
 						}
-						mobj->flags2 |= MF2_DONTDRAW;
 					}
 				}
 				else if (mobj->tracer && mobj->tracer->player)
 				{
-					if (mobj->target)
+					if (mobj->target && mobj->target->type == MT_NIGHTSGOAL)
 					{
 						CONS_Debug(DBG_NIGHTSBASIC, "Removing goal post\n");
 						P_RemoveMobj(mobj->target);
 						P_SetTarget(&mobj->target, NULL);
 					}
+					else if(mobj->target && mobj->target->type == MT_NIGHTSDRONEMAN)
+					{
+						mobj->target->angle += ANG10;
+						if (mobj->target->z <= mobj->target->floorz + mobj->height)
+							mobj->target->momz = 5*FRACUNIT;
+					}
 
 					if (mobj->tracer->player->pflags & PF_NIGHTSMODE)
 					{
-						if (mobj->tracer->player->bonustime)
+						if (mobj->target && mobj->target->type == MT_NIGHTSDRONEMAN)
 						{
-							P_SetMobjState(mobj, S_NIGHTSDRONE_SPARKLING1);
-							mobj->flags |= MF_NOGRAVITY;
+							P_RemoveMobj(mobj->target);
+							P_SetTarget(&mobj->target, NULL);
 						}
-						else
-							mobj->flags2 |= MF2_DONTDRAW;
+
+						if (mobj->tracer->player->bonustime)
+							P_SetMobjState(mobj, S_NIGHTSDRONE_SPARKLING1);
 					}
 					else // Not NiGHTS
-						mobj->flags2 &= ~MF2_DONTDRAW;
+					{
+						if (!mobj->target && !G_IsSpecialStage(gamemap))
+						{
+							mobj_t *droneman = P_SpawnMobj(mobj->x, mobj->y, mobj->z + FRACUNIT, MT_NIGHTSDRONEMAN);
+							P_SetTarget(&mobj->target, droneman);
+						}
+					}
 				}
-				mobj->angle += ANG10;
-				if (mobj->z <= mobj->floorz)
-					mobj->momz = 5*FRACUNIT;
+				else
+				{
+					mobj->z = mobj->floorz + mobj->height + (mobj->spawnpoint->options >> ZSHIFT) * FRACUNIT;
+					
+					// initialize drone man for first time
+					if (!mobj->target && !G_IsSpecialStage(gamemap))
+					{
+						mobj_t *droneman = P_SpawnMobj(mobj->x, mobj->y, mobj->z + FRACUNIT, MT_NIGHTSDRONEMAN);
+						P_SetTarget(&mobj->target, droneman);
+					}
+
+					if(mobj->target && mobj->target->type == MT_NIGHTSDRONEMAN)
+					{
+						mobj->target->angle += ANG10;
+						if (mobj->target->z <= mobj->target->floorz + mobj->height)
+							mobj->target->momz = 5*FRACUNIT;
+					}
+				}
 			}
 			break;
 		case MT_PLAYER:
