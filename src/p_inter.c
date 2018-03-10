@@ -685,6 +685,27 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				S_StartSound(toucher, sfx_supert);
 				S_StartSound(toucher, sfx_nightt); // play NiGHTS dualize simultaneously
 			}
+
+			// give drone the Ideya if we have it
+			if (!G_IsSpecialStage(gamemap))
+				for (i = 0; i < MAXPLAYERS; i++)
+					if (playeringame[i] && players[i].playerstate == PST_LIVE
+					&& players[i].mo->tracer)
+					{
+						if (players[i].mo->tracer->target && players[i].mo->tracer->target->type == MT_GOTIDEYA)
+						{
+							P_SetTarget(&players[i].mo->tracer->target->target, special);
+							P_SetTarget(&players[i].mo->tracer->target, NULL);
+							break;
+						}
+						else if (!players[i].mo->tracer->target && players[i].mo->tracer->type == MT_GOTIDEYA)
+						{
+							P_SetTarget(&players[i].mo->tracer->target, special);
+							P_SetTarget(&players[i].mo->tracer, NULL);
+							break;
+						}
+					}
+
 			if (!(netgame || multiplayer) && !(player->pflags & PF_NIGHTSMODE))
 				P_SetTarget(&special->tracer, toucher);
 			P_NightserizePlayer(player, special->health); // Transform!

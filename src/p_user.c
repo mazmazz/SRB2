@@ -604,7 +604,15 @@ static void P_DeNightserizePlayer(player_t *player)
 	player->marescore = 0;
 
 	if (player->mo->tracer)
-		P_RemoveMobj(player->mo->tracer);
+	{
+		// if we have an ideya, make that the tracer so we keep a reference
+		mobj_t *tracer = player->mo->tracer;
+		mobj_t *ideya = player->mo->tracer->target;
+		P_RemoveMobj(tracer);
+		if (ideya && ideya->type == MT_GOTIDEYA)
+			P_SetTarget(&player->mo->tracer, ideya);
+	}
+
 	P_SetPlayerMobjState(player->mo, S_PLAY_FALL1);
 	player->pflags |= PF_NIGHTSFALL;
 
@@ -652,11 +660,20 @@ void P_NightserizePlayer(player_t *player, INT32 nighttime)
 
 	if (!(player->pflags & PF_NIGHTSMODE))
 	{
+		mobj_t *ideya = player->mo->tracer;
 		P_SetTarget(&player->mo->tracer, P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_NIGHTSCHAR));
 		player->mo->tracer->destscale = player->mo->scale;
 		P_SetScale(player->mo->tracer, player->mo->scale);
 		player->mo->tracer->eflags = (player->mo->tracer->eflags & ~MFE_VERTICALFLIP)|(player->mo->eflags & MFE_VERTICALFLIP);
 		player->mo->height = player->mo->tracer->height;
+
+		if (ideya)
+		{
+			if (ideya->type == MT_GOTIDEYA)
+				P_SetTarget(&player->mo->tracer->target, ideya); // \todo: give to drone instead
+			else
+				P_RemoveMobj(ideya);
+		}
 	}
 
 	player->pflags &= ~(PF_USEDOWN|PF_JUMPDOWN|PF_ATTACKDOWN|PF_STARTDASH|PF_GLIDING|PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_DRILLING);
@@ -5465,7 +5482,7 @@ static void P_DoNiGHTSCapsule(player_t *player)
 					{
 						// Only give it to ONE person, and THAT player has to get to the goal!
 						emmo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTEMERALD);
-						P_SetTarget(&emmo->target, player->mo);
+						P_SetTarget(&emmo->target, player->mo->tracer);
 						P_SetMobjState(emmo, mobjinfo[MT_GOTEMERALD].meleestate + em);
 						P_SetTarget(&player->mo->tracer->target, emmo);
 					}
@@ -5490,7 +5507,7 @@ static void P_DoNiGHTSCapsule(player_t *player)
 					{
 						// Only give it to ONE person, and THAT player has to get to the goal!
 						ideya = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
-						P_SetTarget(&ideya->target, player->mo);
+						P_SetTarget(&ideya->target, player->mo->tracer);
 						P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate + ideyacolor);
 						P_SetTarget(&player->mo->tracer->target, ideya);
 					}
