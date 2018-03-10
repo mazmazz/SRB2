@@ -580,6 +580,9 @@ static void P_DeNightserizePlayer(player_t *player)
 		//P_RemoveMobj(player->mo->tracer);
 
 	player->powers[pw_underwater] = 0;
+	player->powers[pw_nights_superloop] = 0;
+	player->powers[pw_nights_helper] = 0;
+	player->powers[pw_nights_linkfreeze] = 0;
 	player->pflags &= ~(PF_USEDOWN|PF_JUMPDOWN|PF_ATTACKDOWN|PF_STARTDASH|PF_GLIDING|PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_DRILLING|PF_TRANSFERTOCLOSEST);
 	player->secondjump = 0;
 	player->jumping = 0;
