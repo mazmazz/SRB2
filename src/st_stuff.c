@@ -937,7 +937,7 @@ static void ST_drawNightsRecords(void)
 		V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(60), aflag,
 		                     va(M_GetText("\x80GET\x82 %d\x80 %s%s%s!"), stplyr->capsule->health,
 		                        (stplyr->textvar == 3) ? M_GetText("MORE ") : "",
-		                        (G_IsSpecialStage(gamemap)) ? "SPHERE" : "RING",
+		                        (G_IsSpecialStage(gamemap)) ? "SPHERE" : (maptol & TOL_NIGHTSCLASSIC) ? "CHIP" : "RING",
 		                        (stplyr->capsule->health > 1) ? "S" : ""));
 	}
 
