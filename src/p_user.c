@@ -5480,6 +5480,21 @@ static void P_DoNiGHTSCapsule(player_t *player)
 								lowest_time = players[i].finishedtime;
 					P_AddPlayerScore(player, (lowest_time/TICRATE) * 100);
 				}
+				else if (maptol & TOL_NIGHTSCLASSIC)
+				{
+					// The Ideya begins to orbit us!
+					mobj_t *ideya;
+					UINT8 ideyacolor = player->mare % 8;
+					
+					if (player->mo->tracer)
+					{
+						// Only give it to ONE person, and THAT player has to get to the goal!
+						ideya = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
+						P_SetTarget(&ideya->target, player->mo);
+						P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate + ideyacolor);
+						P_SetTarget(&player->mo->tracer->target, ideya);
+					}
+				}
 				else
 				{
 					fixed_t z;

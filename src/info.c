@@ -53,7 +53,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BOM3","BOM4","ROIA","ROIB","ROIC","ROID","ROIE","ROIF","ROIG","ROIH",
 	"ROII","ROIJ","ROIK","ROIL","ROIM","ROIN","ROIO","ROIP","BBAL","GWLG",
 	"GWLR","SRBA","SRBB","SRBC","SRBD","SRBE","SRBF","SRBG","SRBH","SRBI",
-	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYC","NPNA",
+	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYA","NPNA",
 	"NPNB"//,"SPRC" // \todo different chip sparkle?
 };
 
@@ -1011,6 +1011,16 @@ state_t states[NUMSTATES] =
 	{SPR_CEMG, FF_FULLBRIGHT|4, -1, {NULL}, 0, 0, S_NULL}, // S_CEMG5
 	{SPR_CEMG, FF_FULLBRIGHT|5, -1, {NULL}, 0, 0, S_NULL}, // S_CEMG6
 	{SPR_CEMG, FF_FULLBRIGHT|6, -1, {NULL}, 0, 0, S_NULL}, // S_CEMG7
+
+	// Ideya
+	{SPR_IDYA, FF_FULLBRIGHT,   -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA1
+	{SPR_IDYA, FF_FULLBRIGHT|1, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA2
+	{SPR_IDYA, FF_FULLBRIGHT|2, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA3
+	{SPR_IDYA, FF_FULLBRIGHT|3, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA4
+	{SPR_IDYA, FF_FULLBRIGHT|4, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA5
+	{SPR_IDYA, FF_FULLBRIGHT|5, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA6
+	{SPR_IDYA, FF_FULLBRIGHT|6, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA7
+	{SPR_IDYA, FF_FULLBRIGHT|7, -1, {NULL}, 0, 0, S_NULL}, // S_IDEYA8
 
 	// Emeralds (for hunt)
 	{SPR_EMER, 0, -1, {NULL}, 0, 0, S_NULL}, // S_EMER1
@@ -2367,6 +2377,16 @@ state_t states[NUMSTATES] =
 	{SPR_CEMG, FF_FULLBRIGHT|13, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITEM8}, // S_ORBITEM14
 	{SPR_CEMG, FF_FULLBRIGHT|14, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITEM8}, // S_ORBITEM15
 	{SPR_CEMG, FF_FULLBRIGHT|15, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITEM8}, // S_ORBITEM16
+
+	// Orbiting Chaos Emeralds for NiGHTS
+	{SPR_IDYA, FF_FULLBRIGHT,   1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA1}, // S_ORBITIDEYA1
+	{SPR_IDYA, FF_FULLBRIGHT|1, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA2}, // S_ORBITIDEYA2
+	{SPR_IDYA, FF_FULLBRIGHT|2, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA3}, // S_ORBITIDEYA3
+	{SPR_IDYA, FF_FULLBRIGHT|3, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA4}, // S_ORBITIDEYA4
+	{SPR_IDYA, FF_FULLBRIGHT|4, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA5}, // S_ORBITIDEYA5
+	{SPR_IDYA, FF_FULLBRIGHT|5, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA6}, // S_ORBITIDEYA6
+	{SPR_IDYA, FF_FULLBRIGHT|6, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA7}, // S_ORBITIDEYA7
+	{SPR_IDYA, FF_FULLBRIGHT|7, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITIDEYA8}, // S_ORBITIDEYA8
 
 	// Flicky helper for NiGHTS
 	{SPR_BIRD, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER2}, // S_NIGHTOPIANHELPER1
@@ -10616,6 +10636,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // painchance
 		sfx_None,       // painsound
 		S_ORBITEM1,     // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		8,              // speed
+		8*FRACUNIT,     // radius
+		16*FRACUNIT,    // height
+		0,              // display offset
+		16,             // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_NOCLIP|MF_SCENERY, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_GOTIDEYA
+		-1,             // doomednum
+		S_IDEYA1,        // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		8,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_ORBITIDEYA1,     // meleestate
 		S_NULL,         // missilestate
 		S_NULL,         // deathstate
 		S_NULL,         // xdeathstate

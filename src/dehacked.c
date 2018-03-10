@@ -4721,6 +4721,16 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_CEMG6",
 	"S_CEMG7",
 
+	// Ideya
+	"S_IDEYA1",
+	"S_IDEYA2",
+	"S_IDEYA3",
+	"S_IDEYA4",
+	"S_IDEYA5",
+	"S_IDEYA6",
+	"S_IDEYA7",
+	"S_IDEYA8",
+
 	// Emeralds (for hunt)
 	"S_EMER1",
 
@@ -6010,6 +6020,16 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_ORBITEM15",
 	"S_ORBITEM16",
 
+	// Orbiting Ideya
+	"S_ORBITIDEYA1"
+	"S_ORBITIDEYA2"
+	"S_ORBITIDEYA3"
+	"S_ORBITIDEYA4"
+	"S_ORBITIDEYA5"
+	"S_ORBITIDEYA6"
+	"S_ORBITIDEYA7"
+	"S_ORBITIDEYA8"
+
 	// "Flicky" helper
 	"S_NIGHTOPIANHELPER1",
 	"S_NIGHTOPIANHELPER2",
@@ -6562,6 +6582,7 @@ static const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for s
 	"MT_SCORE", // score logo
 	"MT_DROWNNUMBERS", // Drowning Timer
 	"MT_GOTEMERALD", // Chaos Emerald (intangible)
+	"MT_GOTIDEYA", // Ideya (intangible)
 	"MT_TAG", // Tag Sign
 	"MT_GOTFLAG", // Got Flag sign
 	"MT_GOTFLAG2", // Got Flag sign

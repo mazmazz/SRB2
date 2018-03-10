@@ -573,7 +573,7 @@ typedef enum sprite
 	// NiGHTS Classic
 	SPR_NWNC,
 	SPR_CHIP,
-	SPR_IDYC,
+	SPR_IDYA,
 	SPR_NPNA,
 	SPR_NPNB,
 	//SPR_SPRC, // \todo different chip sparkle?
@@ -1526,6 +1526,16 @@ typedef enum state
 	S_CEMG5,
 	S_CEMG6,
 	S_CEMG7,
+
+	// Ideya
+	S_IDEYA1,
+	S_IDEYA2,
+	S_IDEYA3,
+	S_IDEYA4,
+	S_IDEYA5,
+	S_IDEYA6,
+	S_IDEYA7,
+	S_IDEYA8,
 
 	// Emeralds (for hunt)
 	S_EMER1,
@@ -2816,6 +2826,16 @@ typedef enum state
 	S_ORBITEM15,
 	S_ORBITEM16,
 
+	// Orbiting Ideya
+	S_ORBITIDEYA1,
+	S_ORBITIDEYA2,
+	S_ORBITIDEYA3,
+	S_ORBITIDEYA4,
+	S_ORBITIDEYA5,
+	S_ORBITIDEYA6,
+	S_ORBITIDEYA7,
+	S_ORBITIDEYA8,
+
 	// "Flicky" helper
 	S_NIGHTOPIANHELPER1,
 	S_NIGHTOPIANHELPER2,
@@ -3385,6 +3405,7 @@ typedef enum mobj_type
 	MT_SCORE, // score logo
 	MT_DROWNNUMBERS, // Drowning Timer
 	MT_GOTEMERALD, // Chaos Emerald (intangible)
+	MT_GOTIDEYA, // Ideya (intangible)
 	MT_TAG, // Tag Sign
 	MT_GOTFLAG, // Got Flag sign
 	MT_GOTFLAG2, // Got Flag sign

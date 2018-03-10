@@ -500,7 +500,7 @@ light_t *t_lspr[NUMSPRITES] =
 	// NiGHTS Classic
 	&lspr[NOLIGHT],     // SPR_NWNC
 	&lspr[NOLIGHT],     // SPR_CHIP
-	&lspr[NOLIGHT],     // SPR_IDYC
+	&lspr[NOLIGHT],     // SPR_IDYA
 	&lspr[NOLIGHT],     // SPR_NPNA
 	&lspr[NOLIGHT],     // SPR_NPNB
 	//&lspr[NOLIGHT],     // SPR_SPRC // \todo different chip sparkle?
