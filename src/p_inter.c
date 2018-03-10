@@ -683,7 +683,8 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					return;
 
 				S_StartSound(toucher, sfx_supert);
-				S_StartSound(toucher, sfx_nightt); // play NiGHTS dualize simultaneously
+				if(maptol & TOL_NIGHTSCLASSIC)
+					S_StartSound(toucher, sfx_nightt); // play NiGHTS dualize simultaneously
 			}
 
 			// give drone the Ideya if we have it
