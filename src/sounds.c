@@ -216,6 +216,8 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"hidden", false, 204,  0, -1, NULL, 0,        -1,  -1, LUMPERROR},
   {"prloop", false, 104,  0, -1, NULL, 0,        -1,  -1, LUMPERROR},
   {"timeup",  true, 256,  0, -1, NULL, 0,        -1,  -1, LUMPERROR},
+  {"ngjump", false, 140,  0, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic
+  {"chipup",  true, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Classic
 
   // Mario
   {"koopfr" , true, 127,  8, -1, NULL, 0,        -1,  -1, LUMPERROR},

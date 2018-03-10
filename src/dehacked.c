@@ -995,6 +995,8 @@ static const struct {
 	{"CHRISTMAS",TOL_XMAS},
 	{"WINTER",TOL_XMAS},
 
+	{"CLASSICNIGHTS",TOL_NIGHTSCLASSIC},
+
 	{NULL, 0}
 };
 
@@ -4639,6 +4641,26 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_BLUEBALL",
 	"S_BLUEBALLSPARK",
 
+	// NiGHTS chip for classic NiGHTS
+	"S_CHIP",
+	// \todo different chip sparkle?
+	// "S_CHIPSPARK1",
+	// "S_CHIPSPARK2",
+	// "S_CHIPSPARK3",
+	// "S_CHIPSPARK4",
+	// "S_CHIPSPARK5",
+	// "S_CHIPSPARK6",
+	// "S_CHIPSPARK7",
+	// "S_CHIPSPARK8",
+	// "S_CHIPSPARK9",
+	// "S_CHIPSPARK10",
+	// "S_CHIPSPARK11",
+	// "S_CHIPSPARK12",
+	// "S_CHIPSPARK13",
+	// "S_CHIPSPARK14",
+	// "S_CHIPSPARK15",
+	// "S_CHIPSPARK16",
+
 	// Gravity Wells for special stages
 	"S_GRAVWELLGREEN",
 	"S_GRAVWELLGREEN2",
@@ -5955,6 +5977,7 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 
 	"S_NIGHTSWING",
 	"S_NIGHTSWING_XMAS",
+	"S_NIGHTSWING_CLASSIC",
 
 	// NiGHTS Paraloop Powerups
 	"S_NIGHTSPOWERUP1",
@@ -6233,6 +6256,7 @@ static const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for s
 	"MT_RING",
 	"MT_FLINGRING", // Lost ring
 	"MT_BLUEBALL",  // Blue sphere replacement for special stages
+	"MT_CHIP",      // NiGHTS blue chip replacement for classic NiGHTS
 	"MT_REDTEAMRING",  //Rings collectable by red team.
 	"MT_BLUETEAMRING", //Rings collectable by blue team.
 	"MT_EMMY", // emerald token for special stage
@@ -7046,6 +7070,7 @@ struct {
 	{"TOL_NIGHTS",TOL_NIGHTS},
 	{"TOL_ERZ3",TOL_ERZ3},
 	{"TOL_XMAS",TOL_XMAS},
+	{"TOL_NIGHTSCLASSIC",TOL_NIGHTSCLASSIC},
 
 	// Level flags
 	{"LF_SCRIPTISFILE",LF_SCRIPTISFILE},

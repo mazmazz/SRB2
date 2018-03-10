@@ -638,6 +638,17 @@ void S_StartSound(const void *origin, sfxenum_t sfx_id)
 			break;
 		}
 	}
+	if (maptol & TOL_NIGHTSCLASSIC) // Some sounds change for classic nights
+	{
+		switch (sfx_id)
+		{
+			case sfx_jump:
+				sfx_id = sfx_ngjump;
+				break;
+			default:
+				break;
+		}
+	}
 
 	// the volume is handled 8 bits
 #ifdef HW3SOUND

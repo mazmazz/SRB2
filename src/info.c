@@ -53,7 +53,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BOM3","BOM4","ROIA","ROIB","ROIC","ROID","ROIE","ROIF","ROIG","ROIH",
 	"ROII","ROIJ","ROIK","ROIL","ROIM","ROIN","ROIO","ROIP","BBAL","GWLG",
 	"GWLR","SRBA","SRBB","SRBC","SRBD","SRBE","SRBF","SRBG","SRBH","SRBI",
-	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO",
+	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYC"//,"SPRC" // \todo different chip sparkle?
 };
 
 // Doesn't work with g++, needs actionf_p1 (don't modify this comment)
@@ -930,6 +930,26 @@ state_t states[NUMSTATES] =
 	// Blue Sphere Replacement for special stages
 	{SPR_BBAL, 0, -1, {NULL}, 0, 0, S_NULL}, // S_BLUEBALL
 	{SPR_BBAL, 0, 20, {NULL}, 0, 0, S_NULL}, // S_BLUEBALLSPARK
+
+	// NiGHTS chip replacement for classic NiGHTS
+	{SPR_CHIP, FF_ANIMATE,  -1, {NULL}, 15, 2, S_CHIP}, // S_CHIP
+	// \todo different chip sparkle?
+	// {SPR_SPRC, FF_TRANS40  , 1, {NULL}, 0, 0, S_CHIPSPARK2},  // S_CHIPSPARK1
+	// {SPR_SPRC, FF_TRANS50|1, 1, {NULL}, 0, 0, S_CHIPSPARK3},  // S_CHIPSPARK2
+	// {SPR_SPRC, FF_TRANS50|2, 1, {NULL}, 0, 0, S_CHIPSPARK4},  // S_CHIPSPARK3
+	// {SPR_SPRC, FF_TRANS50|3, 1, {NULL}, 0, 0, S_CHIPSPARK5},  // S_CHIPSPARK4
+	// {SPR_SPRC, FF_TRANS60  , 1, {NULL}, 0, 0, S_CHIPSPARK6},  // S_CHIPSPARK5
+	// {SPR_SPRC, FF_TRANS60|1, 1, {NULL}, 0, 0, S_CHIPSPARK7},  // S_CHIPSPARK6
+	// {SPR_SPRC, FF_TRANS60|2, 1, {NULL}, 0, 0, S_CHIPSPARK8},  // S_CHIPSPARK7
+	// {SPR_SPRC, FF_TRANS70|3, 1, {NULL}, 0, 0, S_CHIPSPARK9},  // S_CHIPSPARK8
+	// {SPR_SPRC, FF_TRANS70  , 1, {NULL}, 0, 0, S_CHIPSPARK10}, // S_CHIPSPARK9
+	// {SPR_SPRC, FF_TRANS70|1, 1, {NULL}, 0, 0, S_CHIPSPARK11}, // S_CHIPSPARK10
+	// {SPR_SPRC, FF_TRANS80|2, 1, {NULL}, 0, 0, S_CHIPSPARK12}, // S_CHIPSPARK11
+	// {SPR_SPRC, FF_TRANS80|3, 1, {NULL}, 0, 0, S_CHIPSPARK13}, // S_CHIPSPARK12
+	// {SPR_SPRC, FF_TRANS80  , 1, {NULL}, 0, 0, S_CHIPSPARK14}, // S_CHIPSPARK13
+	// {SPR_SPRC, FF_TRANS90|1, 1, {NULL}, 0, 0, S_CHIPSPARK15}, // S_CHIPSPARK14
+	// {SPR_SPRC, FF_TRANS90|2, 1, {NULL}, 0, 0, S_CHIPSPARK16}, // S_CHIPSPARK15
+	// {SPR_SPRC, FF_TRANS90|3, 1, {NULL}, 0, 0, S_NULL},   // S_CHIPSPARK16
 
 	// Gravity Well sprites for Egg Rock's Special Stage
 	{SPR_GWLG, 0, 1, {NULL}, 0, 0, S_GRAVWELLGREEN2}, // S_GRAVWELLGREEN
@@ -2312,6 +2332,8 @@ state_t states[NUMSTATES] =
 
 	{SPR_NWNG, 0, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSWING
 	{SPR_NWNG, 1, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSWING_XMAS
+	{SPR_NWNC, FF_ANIMATE, -1, {NULL}, 14, 2, S_NIGHTSWING_CLASSIC}, // S_NIGHTSWING_CLASSIC
+
 
 	// NiGHTS Paraloop Powerups
 	{SPR_NULL, 0, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSPOWERUP1
@@ -4585,6 +4607,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_BLUEBALLSPARK, // deathstate
 		S_NULL,         // xdeathstate
 		sfx_s3k65,      // deathsound
+		38*FRACUNIT,    // speed
+		16*FRACUNIT,    // radius
+		24*FRACUNIT,    // height
+		0,              // display offset
+		100,            // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_SLIDEME|MF_SPECIAL|MF_NOGRAVITY|MF_NOCLIPHEIGHT, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_CHIP
+		-1,             // doomednum
+		S_CHIP,    // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		MT_NULL,        // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_SPRK1,         // deathstate // \todo different chip sparkle? // S_CHIPSPARK1, // deathstate
+		S_NULL,         // xdeathstate
+		sfx_chipup,      // deathsound
 		38*FRACUNIT,    // speed
 		16*FRACUNIT,    // radius
 		24*FRACUNIT,    // height
@@ -12201,7 +12250,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // seesound
 		8,              // reactiontime
 		sfx_None,       // attacksound
-		S_NULL,         // painstate
+		S_NIGHTSWING_CLASSIC, // painstate
 		0,              // painchance
 		sfx_itemup,     // painsound
 		S_RING,         // meleestate

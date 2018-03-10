@@ -110,6 +110,7 @@ static patch_t *redstat;
 static patch_t *yelstat;
 static patch_t *nbracket;
 static patch_t *nhud[12];
+static patch_t *nchud[12];
 static patch_t *nsshud;
 static patch_t *narrow[9];
 static patch_t *nredar[8]; // Red arrow
@@ -120,6 +121,7 @@ static patch_t *capsulefill;
 patch_t *ngradeletters[7];
 static patch_t *minus5sec;
 static patch_t *minicaps;
+static patch_t *minicapc;
 static patch_t *gotrflag;
 static patch_t *gotbflag;
 
@@ -315,9 +317,13 @@ void ST_LoadGraphics(void)
 	yelstat = W_CachePatchName("YELSTAT", PU_HUDGFX);
 	nbracket = W_CachePatchName("NBRACKET", PU_HUDGFX);
 	for (i = 0; i < 12; ++i)
+	{
 		nhud[i] = W_CachePatchName(va("NHUD%d", i+1), PU_HUDGFX);
+		nchud[i] = W_CachePatchName(va("NCHUD%d", i+1), PU_HUDGFX);
+	}
 	nsshud = W_CachePatchName("NSSHUD", PU_HUDGFX);
 	minicaps = W_CachePatchName("MINICAPS", PU_HUDGFX);
+	minicapc = W_CachePatchName("MINICAPC", PU_HUDGFX);
 
 	for (i = 0; i < 8; ++i)
 	{
@@ -1129,6 +1135,8 @@ static void ST_drawNiGHTSHUD(void)
 	ST_DrawOverlayPatch(SCX(16), SCY(8), nbracket);
 	if (G_IsSpecialStage(gamemap))
 		ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nsshud);
+	else if (maptol & TOL_NIGHTS)
+		ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nchud[(leveltime/2)%12]);
 	else
 		ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nhud[(leveltime/2)%12]);
 
@@ -1152,7 +1160,10 @@ static void ST_drawNiGHTSHUD(void)
 		I_Assert(origamount > 0); // should not happen now
 
 		ST_DrawOverlayPatch(SCX(72), SCY(8), nbracket);
-		ST_DrawOverlayPatch(SCX(74), SCY(8) + SCZ(4), minicaps);
+		if (maptol & TOL_NIGHTSCLASSIC)
+			ST_DrawOverlayPatch(SCX(74), SCY(8) + SCZ(4), minicapc);
+		else
+			ST_DrawOverlayPatch(SCX(74), SCY(8) + SCZ(4), minicaps);
 
 		if (stplyr->capsule->reactiontime != 0)
 		{

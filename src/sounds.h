@@ -279,6 +279,8 @@ typedef enum
 	sfx_hidden,
 	sfx_prloop,
 	sfx_timeup, // Was gonna be played when less than ten seconds are on the clock; uncomment uses of this to see it in-context
+	sfx_ngjump, // Classic
+	sfx_chipup, // Classic
 
 	// Mario
 	sfx_koopfr,

@@ -2254,6 +2254,7 @@ static boolean P_ZMovement(mobj_t *mo)
 		case MT_RING: // Ignore still rings
 		case MT_COIN:
 		case MT_BLUEBALL:
+		case MT_CHIP:
 		case MT_REDTEAMRING:
 		case MT_BLUETEAMRING:
 		case MT_FLINGRING:
@@ -7058,6 +7059,7 @@ void P_MobjThinker(mobj_t *mobj)
 		case MT_RING:
 		case MT_COIN:
 		case MT_BLUEBALL:
+		case MT_CHIP:
 		case MT_REDTEAMRING:
 		case MT_BLUETEAMRING:
 			// No need to check water. Who cares?
@@ -7831,6 +7833,7 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 		case MT_RING:
 		case MT_COIN:
 		case MT_BLUEBALL:
+		case MT_CHIP:
 			nummaprings++;
 		default:
 			break;
@@ -7966,6 +7969,7 @@ void P_RemoveMobj(mobj_t *mobj)
 		(mobj->type == MT_RING
 		|| mobj->type == MT_COIN
 		|| mobj->type == MT_BLUEBALL
+		|| mobj->type == MT_CHIP
 		|| mobj->type == MT_REDTEAMRING
 		|| mobj->type == MT_BLUETEAMRING
 		|| P_WeaponOrPanel(mobj->type))
@@ -9765,6 +9769,8 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 			P_SetMobjState(mobj, mobj->info->meleestate);
 		else if (maptol & TOL_XMAS)
 			P_SetMobjState(mobj, mobj->info->seestate);
+		else if (maptol & TOL_NIGHTSCLASSIC)
+			P_SetMobjState(mobj, mobj->info->painstate);
 
 		mobj->angle = FixedAngle(mthing->angle*FRACUNIT);
 		mobj->flags |= MF_AMBUSH;
@@ -9796,6 +9802,9 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 				// Spawn rings as blue spheres in special stages, ala S3+K.
 				if (G_IsSpecialStage(gamemap) && useNightsSS)
 					ringthing = MT_BLUEBALL;
+				// Spawn rings as blue chips in classic NiGHTS
+				else if (maptol & TOL_NIGHTSCLASSIC)
+					ringthing = MT_CHIP;
 				break;
 		}
 
@@ -9863,6 +9872,9 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		// Spawn rings as blue spheres in special stages, ala S3+K.
 		if (G_IsSpecialStage(gamemap) && useNightsSS)
 			ringthing = MT_BLUEBALL;
+		// Spawn rings as blue chips in classic NiGHTS
+		else if (maptol & TOL_NIGHTSCLASSIC)
+			ringthing = MT_CHIP;
 
 		for (r = 1; r <= 5; r++)
 		{
@@ -9916,6 +9928,9 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		// Spawn rings as blue spheres in special stages, ala S3+K.
 		if (G_IsSpecialStage(gamemap) && useNightsSS)
 			ringthing = MT_BLUEBALL;
+		// Spawn rings as blue chips in classic NiGHTS
+		else if (maptol & TOL_NIGHTSCLASSIC)
+			ringthing = MT_CHIP;
 
 		angle >>= ANGLETOFINESHIFT;
 
@@ -10011,6 +10026,8 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 				// Spawn rings as blue spheres in special stages, ala S3+K.
 				if (G_IsSpecialStage(gamemap) && useNightsSS)
 					itemToSpawn = MT_BLUEBALL;
+				else if (maptol & TOL_NIGHTSCLASSIC)
+					itemToSpawn = MT_CHIP;
 			}
 
 			fa = i*FINEANGLES/numitems;
@@ -10035,6 +10052,8 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 					P_SetMobjState(mobj, mobj->info->meleestate);
 				else if ((maptol & TOL_XMAS))
 					P_SetMobjState(mobj, mobj->info->seestate);
+				else if ((maptol & TOL_NIGHTSCLASSIC))
+					P_SetMobjState(mobj, mobj->info->painstate);
 			}
 		}
 		return;

@@ -287,7 +287,8 @@ enum TypeOfLevel
 	TOL_MARIO  = 0x0200, ///< Mario
 	TOL_NIGHTS = 0x0400, ///< NiGHTS
 	TOL_ERZ3   = 0x0800, ///< ERZ3
-	TOL_XMAS   = 0x1000  ///< Christmas NiGHTS
+	TOL_XMAS   = 0x1000, ///< Christmas NiGHTS
+	TOL_NIGHTSCLASSIC = 0x2000 ///< Classic NiGHTS
 };
 
 // Gametypes

@@ -427,6 +427,16 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			if (maptol & TOL_NIGHTS)
 				P_DoNightsScore(player);
 			break;
+		case MT_CHIP:
+			if (!(P_CanPickupItem(player, false)))
+				return;
+
+			special->momx = special->momy = special->momz = 0;
+			P_GivePlayerRings(player, 1);
+
+			if ((maptol & TOL_NIGHTS))
+				P_DoNightsScore(player);
+			break;
 		case MT_AUTOPICKUP:
 		case MT_BOUNCEPICKUP:
 		case MT_SCATTERPICKUP:
@@ -784,7 +794,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					}
 
 					if (!(mo2->type == MT_NIGHTSWING || mo2->type == MT_RING || mo2->type == MT_COIN
-					   || mo2->type == MT_BLUEBALL))
+					   || mo2->type == MT_BLUEBALL || mo2->type == MT_CHIP))
 						continue;
 
 					// Yay! The thing's in reach! Pull it in!
