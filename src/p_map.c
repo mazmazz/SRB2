@@ -782,7 +782,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		))
 		{
 			// Reload all the fancy ring stuff!
-			P_ReloadRings();
+			P_ReloadRings(pl);
 		}
 		droneobj->extravalue1 = pl->anotherflyangle;
 		droneobj->extravalue2 = (INT32)leveltime + TICRATE;

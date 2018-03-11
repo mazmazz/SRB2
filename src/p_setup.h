@@ -69,7 +69,7 @@ size_t P_PrecacheLevelFlats(void);
 void P_AllocMapHeader(INT16 i);
 
 // Needed for NiGHTS
-void P_ReloadRings(void);
+void P_ReloadRings(player_t *player);
 void P_DeleteGrades(INT16 i);
 void P_AddGradesForMare(INT16 i, UINT8 mare, char *gtext);
 UINT8 P_GetGrade(UINT32 pscore, INT16 map, UINT8 mare);

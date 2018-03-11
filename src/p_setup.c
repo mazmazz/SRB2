@@ -788,7 +788,7 @@ static void P_LoadNodes(lumpnum_t lumpnum)
 // P_ReloadRings
 // Used by NiGHTS, clears all ring/wing/etc items and respawns them
 //
-void P_ReloadRings(void)
+void P_ReloadRings(player_t *player)
 {
 	mobj_t *mo;
 	thinker_t *th;
@@ -841,8 +841,31 @@ void P_ReloadRings(void)
 				->sector->floorheight>>FRACBITS);
 
 			P_SpawnHoopsAndRings (mt);
+
+			// \todo: optimization: in P_SpawnHoopsAndRings, if mt->type is a ring arrangement (circle, rows)
+			// then set mt->mobj to the FIRST ring in the arrangement. does this break anything?
+			// then does it work if we do a loop (th = mt->mobj->thinker; th != &thinkercap; th = th->next)
+			// that starts at the first ring of the arrangement
+			// then ends at the first item that's not MT_CHIP or MT_NIGHTSWING(_CLASSIC)?
+			// if (mt->mobj && mt->mobj->type == MT_CHIP && player && player->bonustime)
+			// 	P_SetMobjState(mt->mobj, mobjinfo[mt->mobj->type].meleestate);
 		}
 	}
+
+	// scan the thinkers to find chips to change state
+	// \todo see above for optimization note
+	if (maptol & TOL_NIGHTSCLASSIC)
+		for (th = thinkercap.next; th != &thinkercap; th = th->next)
+		{
+			if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+				continue;
+
+			mo = (mobj_t *)th;
+
+			if ((mo->type == MT_CHIP || mo->type == MT_FLINGCHIP) && player && player->bonustime)
+				P_SetMobjState(mo, mobjinfo[mo->type].meleestate);
+		}
+
 	for (i = 0; i < numHoops; i++)
 	{
 		P_SpawnHoopsAndRings(hoopsToRespawn[i]);

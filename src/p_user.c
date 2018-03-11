@@ -5507,6 +5507,8 @@ static void P_DoNiGHTSCapsule(player_t *player)
 				{
 					// The Ideya begins to orbit us!
 					mobj_t *ideya;
+					mobj_t *mo2;
+					thinker_t *th;
 					UINT8 ideyacolor = player->mare % 8;
 					
 					// Only give it to ONE person, and THAT player has to get to the goal!
@@ -5529,7 +5531,7 @@ static void P_DoNiGHTSCapsule(player_t *player)
 						mo2 = (mobj_t *)th;
 
 						if (mo2->type == MT_CHIP || mo2->type == MT_FLINGCHIP)
-							P_SetMobjState(mo2, S_CHIG);
+							P_SetMobjState(mo2, mobjinfo[mo2->type].meleestate);
 					}
 				}
 				else

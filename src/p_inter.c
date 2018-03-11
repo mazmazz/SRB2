@@ -688,55 +688,63 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					S_StartSound(toucher, sfx_nightt); // play NiGHTS dualize simultaneously
 			}
 
-			// give drone the Ideya if we have it
-			if (!G_IsSpecialStage(gamemap))
-				for (i = 0; i < MAXPLAYERS; i++)
-					if (playeringame[i] && players[i].playerstate == PST_LIVE
-					&& players[i].mo->tracer)
-					{
-						mobj_t *ideya;
-						mobj_t *mo2;
-						thinker_t *th;
-						boolean orbit = true;
+			{
+				mobj_t *ideya = NULL;
+				mobj_t *mo2;
+				thinker_t *th;
+				UINT8 lowestmare = P_FindLowestMare();
 
-						if (players[i].mo->tracer->target && players[i].mo->tracer->target->type == MT_GOTIDEYA)
+				// give drone the Ideya if we have it
+				if (!G_IsSpecialStage(gamemap))
+					for (i = 0; i < MAXPLAYERS; i++)
+						if (playeringame[i] && players[i].playerstate == PST_LIVE
+						&& players[i].mo->tracer)
 						{
-							ideya = players[i].mo->tracer->target;
-							P_SetTarget(&players[i].mo->tracer->target, NULL);
+							if (players[i].mo->tracer->target && players[i].mo->tracer->target->type == MT_GOTIDEYA)
+							{
+								ideya = players[i].mo->tracer->target;
+								P_SetTarget(&players[i].mo->tracer->target, NULL);
+							}
+							else if (players[i].mo->tracer && players[i].mo->tracer->type == MT_GOTIDEYA)
+							{
+								ideya = players[i].mo->tracer;
+								P_SetTarget(&players[i].mo->tracer, NULL);
+							}
+							else
+								continue;						
+
+							P_SetTarget(&ideya->target, special);
+							break;
 						}
-						else if (players[i].mo->tracer && players[i].mo->tracer->type == MT_GOTIDEYA)
-						{
-							ideya = players[i].mo->tracer;
-							P_SetTarget(&players[i].mo->tracer, NULL);
-						}
-						else
+				
+				// scan the thinkers
+				// to find the correct spawn anchor and change all chips
+
+				if (ideya || ((maptol & TOL_NIGHTSCLASSIC) && lowestmare != UINT8_MAX))
+					for (th = thinkercap.next; th != &thinkercap; th = th->next)
+					{
+						if (th->function.acp1 != (actionf_p1)P_MobjThinker)
 							continue;
 
-						// scan the thinkers
-						// to find the correct spawn anchor
-						for (th = thinkercap.next; th != &thinkercap; th = th->next)
+						mo2 = (mobj_t *)th;
+
+						if (ideya && mo2->type == MT_IDEYASPAWN && mo2->health == ideya->health)
 						{
-							if (th->function.acp1 != (actionf_p1)P_MobjThinker)
-								continue;
-
-							mo2 = (mobj_t *)th;
-
-							if (mo2->type == MT_IDEYASPAWN && mo2->health == ideya->health)
-							{
-								P_SetTarget(&mo2->target, ideya);
-								P_SetMobjState(ideya, S_IDEYA1 + ideya->health - 1); // ideya->health is one-based
-								ideya->x = mo2->x;
-								ideya->y = mo2->y;
-								ideya->z = mo2->z;
-								P_SetThingPosition(ideya);
-								orbit = false;
+							P_SetTarget(&mo2->target, ideya);
+							P_SetMobjState(ideya, S_IDEYA1 + ideya->health - 1); // ideya->health is one-based
+							ideya->x = mo2->x;
+							ideya->y = mo2->y;
+							ideya->z = mo2->z;
+							P_SetThingPosition(ideya);
+							P_SetTarget(&ideya->target, NULL);
+							ideya = NULL;
+							if(!(maptol & TOL_NIGHTSCLASSIC) || lowestmare == UINT8_MAX)
 								break;
-							}
 						}
-
-						if (orbit) // no spawn found, orbit around drone
-							P_SetTarget(&ideya->target, special);
+						else if ((maptol & TOL_NIGHTSCLASSIC) && lowestmare != UINT8_MAX && (mo2->type == MT_CHIP || mo2->type == MT_FLINGCHIP))
+							P_SetMobjState(mo2, mobjinfo[MT_CHIP].spawnstate);
 					}
+			}
 
 			if (!(netgame || multiplayer) && !(player->pflags & PF_NIGHTSMODE))
 				P_SetTarget(&special->tracer, toucher);
@@ -3417,6 +3425,8 @@ void P_PlayerRingBurst(player_t *player, INT32 num_rings)
 		}
 		if (player->mo->eflags & MFE_VERTICALFLIP)
 			mo->momz *= -1;
+		if (mo->type == mobjinfo[MT_CHIP].reactiontime && player->bonustime)
+			P_SetMobjState(mo, mobjinfo[mo->type].meleestate);
 	}
 
 	player->losstime += 10*TICRATE;
