@@ -9233,6 +9233,9 @@ ML_NOCLIMB : Direction not controllable
 		mobj->threshold = mthing->angle >> 8;
 		break;
 	case MT_IDEYASPAWN:
+		if (mthing->angle >= 0)
+			mobj->health = mthing->angle;
+		break;
 	case MT_NIGHTSDRONE:
 		if (mthing->angle > 0)
 			mobj->health = mthing->angle;

@@ -731,7 +731,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 						if (ideya && mo2->type == MT_IDEYASPAWN && mo2->health == ideya->health)
 						{
 							P_SetTarget(&mo2->target, ideya);
-							P_SetMobjState(ideya, S_IDEYA1 + ideya->health - 1); // ideya->health is one-based
+							P_SetMobjState(ideya, S_IDEYA1 + ideya->health);
 							ideya->x = mo2->x;
 							ideya->y = mo2->y;
 							ideya->z = mo2->z;

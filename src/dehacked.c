@@ -4731,6 +4731,7 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_IDEYA6",
 	"S_IDEYA7",
 	"S_IDEYA8",
+	"S_IDEYA9",
 
 	// Emeralds (for hunt)
 	"S_EMER1",
@@ -6023,14 +6024,15 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_ORBITEM16",
 
 	// Orbiting Ideya
-	"S_ORBITIDEYA1"
-	"S_ORBITIDEYA2"
-	"S_ORBITIDEYA3"
-	"S_ORBITIDEYA4"
-	"S_ORBITIDEYA5"
-	"S_ORBITIDEYA6"
-	"S_ORBITIDEYA7"
-	"S_ORBITIDEYA8"
+	"S_ORBITIDEYA1",
+	"S_ORBITIDEYA2",
+	"S_ORBITIDEYA3",
+	"S_ORBITIDEYA4",
+	"S_ORBITIDEYA5",
+	"S_ORBITIDEYA6",
+	"S_ORBITIDEYA7",
+	"S_ORBITIDEYA8",
+	"S_ORBITIDEYA9",
 
 	// "Flicky" helper
 	"S_NIGHTOPIANHELPER1",

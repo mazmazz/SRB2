@@ -1539,6 +1539,7 @@ typedef enum state
 	S_IDEYA6,
 	S_IDEYA7,
 	S_IDEYA8,
+	S_IDEYA9,
 
 	// Emeralds (for hunt)
 	S_EMER1,
@@ -2839,6 +2840,7 @@ typedef enum state
 	S_ORBITIDEYA6,
 	S_ORBITIDEYA7,
 	S_ORBITIDEYA8,
+	S_ORBITIDEYA9,
 
 	// "Flicky" helper
 	S_NIGHTOPIANHELPER1,
