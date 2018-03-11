@@ -1396,6 +1396,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 
 		case MT_BIGTUMBLEWEED:
 		case MT_LITTLETUMBLEWEED:
+		case MT_MARENBALL:
 			if (toucher->momx || toucher->momy)
 			{
 				special->momx = toucher->momx;
@@ -2556,18 +2557,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 		{
 			marenball = P_SpawnMobj(target->x, target->y, target->z, MT_MARENBALL);
 			marenball->color = color;
-
-			if (source)
-				// && (inflictor && inflictor->type != MT_NIGHTSLOOPHELPER)) // \todo would be real nice to distinguish paraloop, but see P_TouchSpecialThing MT_NIGHTSLOOPHELPER
-			{
-				// \todo these physics need work, IDK how to do :(
-				P_InstaThrust(marenball, source->angle, source->momx);
-				P_SetObjectMomZ(marenball, source->momz, false);
-			}
-			else
-			    P_SetObjectMomZ(marenball, 9, false); // per S_MARENBALL2
-
-			S_StartSound(marenball, sfx_peww); // \todo MT_MARENBALL has its own deathsound and A_Scream, why doesn't it fire?
+			S_StartSound(marenball, mobjinfo[MT_MARENBALL].deathsound);
 			P_SetMobjState(target, S_NULL);
 		}
 		else

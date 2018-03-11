@@ -7478,7 +7478,8 @@ void T_Pusher(pusher_t *p)
 			|| thing->type == MT_MEDIUMBUBBLE
 			|| thing->type == MT_EXTRALARGEBUBBLE
 			|| thing->type == MT_LITTLETUMBLEWEED
-			|| thing->type == MT_BIGTUMBLEWEED))
+			|| thing->type == MT_BIGTUMBLEWEED
+			|| thing->type == MT_MARENBALL))
 			continue;
 
 		if (thing->flags2 & MF2_PUSHED)
@@ -7609,7 +7610,7 @@ void T_Pusher(pusher_t *p)
 			}
 
 			// Tumbleweeds bounce a bit...
-			if (thing->type == MT_LITTLETUMBLEWEED || thing->type == MT_BIGTUMBLEWEED)
+			if (thing->type == MT_LITTLETUMBLEWEED || thing->type == MT_BIGTUMBLEWEED || thing->type == MT_MARENBALL)
 				thing->momz += P_AproxDistance(xspeed<<(FRACBITS-PUSH_FACTOR), yspeed<<(FRACBITS-PUSH_FACTOR)) >> 2;
 		}
 

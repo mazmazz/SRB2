@@ -1908,7 +1908,7 @@ void P_XYMovement(mobj_t *mo)
 		return; // no friction for NiGHTS players
 
 #ifdef ESLOPE
-	if ((mo->type == MT_BIGTUMBLEWEED || mo->type == MT_LITTLETUMBLEWEED)
+	if ((mo->type == MT_BIGTUMBLEWEED || mo->type == MT_LITTLETUMBLEWEED || mo->type == MT_MARENBALL)
 			&& (mo->standingslope && abs(mo->standingslope->zdelta) > FRACUNIT>>8)) // Special exception for tumbleweeds on slopes
 		return;
 #endif
@@ -2234,6 +2234,7 @@ static boolean P_ZMovement(mobj_t *mo)
 		case MT_FALLINGROCK:
 		case MT_BIGTUMBLEWEED:
 		case MT_LITTLETUMBLEWEED:
+		case MT_MARENBALL:
 		case MT_SHELL:
 			// Remove stuff from death pits.
 			if (P_CheckDeathPitCollide(mo))
@@ -2458,6 +2459,7 @@ static boolean P_ZMovement(mobj_t *mo)
 				|| mo->type == MT_FLINGEMERALD
 				|| mo->type == MT_BIGTUMBLEWEED
 				|| mo->type == MT_LITTLETUMBLEWEED
+				|| mo->type == MT_MARENBALL
 				|| mo->type == MT_CANNONBALLDECOR
 				|| mo->type == MT_FALLINGROCK)
 			{
@@ -2466,7 +2468,7 @@ static boolean P_ZMovement(mobj_t *mo)
 				else
 					mom.z = -FixedMul(mom.z, FixedDiv(17*FRACUNIT,20*FRACUNIT));
 
-				if (mo->type == MT_BIGTUMBLEWEED || mo->type == MT_LITTLETUMBLEWEED)
+				if (mo->type == MT_BIGTUMBLEWEED || mo->type == MT_LITTLETUMBLEWEED || mo->type == MT_MARENBALL)
 				{
 					if (abs(mom.x) < FixedMul(STOPSPEED, mo->scale)
 						&& abs(mom.y) < FixedMul(STOPSPEED, mo->scale)
@@ -6302,12 +6304,6 @@ void P_MobjThinker(mobj_t *mobj)
 
 				// Don't touch my fuse!
 				return;
-			case MT_MARENBALL:
-				if (mobj->z <= mobj->floorz)
-					// \todo these physics need work, make it gradually lose bounce momentum
-					// probably needs a tic timer (mobj->fuse?)
-					mobj->momz = 5*FRACUNIT; // make it bounce!
-				break;
 			case MT_OVERLAY:
 				if (!mobj->target)
 				{
@@ -7432,6 +7428,7 @@ for (i = ((mobj->flags2 & MF2_STRONGBOX) ? strongboxamt : weakboxamt); i; --i) s
 		|| mobj->type == MT_FLINGEMERALD
 		|| mobj->type == MT_BIGTUMBLEWEED
 		|| mobj->type == MT_LITTLETUMBLEWEED
+		|| mobj->type == MT_MARENBALL
 		|| mobj->type == MT_CANNONBALLDECOR
 		|| mobj->type == MT_FALLINGROCK) {
 		P_TryMove(mobj, mobj->x, mobj->y, true); // Sets mo->standingslope correctly
@@ -9362,7 +9359,7 @@ ML_NOCLIMB : Direction not controllable
 	if (i == MT_SUPERRINGBOX)
 		nummaprings += 10;
 
-	if (i == MT_BIGTUMBLEWEED || i == MT_LITTLETUMBLEWEED)
+	if (i == MT_BIGTUMBLEWEED || i == MT_LITTLETUMBLEWEED || i == MT_MARENBALL)
 	{
 		if (mthing->options & MTF_AMBUSH)
 		{
