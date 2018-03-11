@@ -5510,56 +5510,12 @@ static void P_DoNiGHTSCapsule(player_t *player)
 					mobj_t *mo2;
 					thinker_t *th;
 					UINT8 ideyacolor = (player->mare % 8) + 1;
-
-					// If we already have an ideya, send that to the Drone
-					if (player->mo->tracer && player->mo->tracer->target && player->mo->tracer->target->type == MT_GOTIDEYA)
-					{
-						ideya = player->mo->tracer->target;
-						P_SetTarget(&player->mo->tracer->target, NULL);
-						P_SetTarget(&ideya->target, player->drone);
-					}
-					else if (player->mo->tracer && player->mo->tracer->type == MT_GOTIDEYA)
-					{
-						ideya = player->mo->tracer;
-						P_SetTarget(&player->mo->tracer, NULL);
-						P_SetTarget(&ideya->target, player->drone);
-					}
-					
-					// scan the thinkers
-					// to find the correct spawn anchor and change all chips
-
-					if (ideya)
-						for (th = thinkercap.next; th != &thinkercap; th = th->next)
-						{
-							if (th->function.acp1 != (actionf_p1)P_MobjThinker)
-								continue;
-
-							mo2 = (mobj_t *)th;
-
-							if (ideya && mo2->type == MT_IDEYASPAWN && mo2->health == ideya->health)
-							{
-								P_SetTarget(&mo2->target, ideya);
-								P_SetMobjState(ideya, S_IDEYA1 + ideya->health);
-								ideya->x = mo2->x;
-								ideya->y = mo2->y;
-								ideya->z = mo2->z;
-								P_SetThingPosition(ideya);
-								P_SetTarget(&ideya->target, NULL);
-								ideya = NULL;
-								break;
-							}
-						}
-					// end ideya->drone section, copy from 
 					
 					// Only give it to ONE person, and THAT player has to get to the goal!
 					ideya = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
 					P_SetTarget(&ideya->target, player->mo);
 					P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate + ideyacolor);
 					ideya->health = ideyacolor;
-					if (player->mo->tracer)
-						P_SetTarget(&player->mo->tracer->target, ideya);
-					else
-						P_SetTarget(&player->mo->tracer, ideya);
 
 					// scan the thinkers
 					// to change all chips to gold

@@ -689,60 +689,54 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			}
 
 			{
-				mobj_t *ideya = NULL;
 				mobj_t *mo2;
 				thinker_t *th;
+				UINT8 i;
+				UINT8 maxideya = 9;
 				UINT8 lowestmare = P_FindLowestMare();
+				mobj_t *ideyaspawns[9] = {0};
+				mobj_t *ideyas[9] = {0};
 
-				// give drone the Ideya if we have it
-				if (!G_IsSpecialStage(gamemap))
-					for (i = 0; i < MAXPLAYERS; i++)
-						if (playeringame[i] && players[i].playerstate == PST_LIVE
-						&& players[i].mo->tracer)
-						{
-							if (players[i].mo->tracer->target && players[i].mo->tracer->target->type == MT_GOTIDEYA)
-							{
-								ideya = players[i].mo->tracer->target;
-								P_SetTarget(&players[i].mo->tracer->target, NULL);
-							}
-							else if (players[i].mo->tracer && players[i].mo->tracer->type == MT_GOTIDEYA)
-							{
-								ideya = players[i].mo->tracer;
-								P_SetTarget(&players[i].mo->tracer, NULL);
-							}
-							else
-								continue;						
-
-							P_SetTarget(&ideya->target, special);
-							break;
-						}
-				
 				// scan the thinkers
 				// to find the correct spawn anchor and change all chips
+				for (th = thinkercap.next; th != &thinkercap; th = th->next)
+				{
+					if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+						continue;
 
-				if (ideya || ((maptol & TOL_NIGHTSCLASSIC) && lowestmare != UINT8_MAX))
-					for (th = thinkercap.next; th != &thinkercap; th = th->next)
+					mo2 = (mobj_t *)th;
+
+					if (mo2->type == MT_GOTIDEYA)
 					{
-						if (th->function.acp1 != (actionf_p1)P_MobjThinker)
-							continue;
+						if(mo2->health < maxideya)
+							ideyas[mo2->health] = mo2;
+					}
+					else if (mo2->type == MT_IDEYASPAWN)
+					{
+						if(mo2->health < maxideya)
+							ideyaspawns[mo2->health] = mo2;
+					}
+					else if ((maptol & TOL_NIGHTSCLASSIC) && lowestmare != UINT8_MAX && (mo2->type == MT_CHIP || mo2->type == MT_FLINGCHIP))
+						P_SetMobjState(mo2, mobjinfo[MT_CHIP].spawnstate);
+				}
 
-						mo2 = (mobj_t *)th;
-
-						if (ideya && mo2->type == MT_IDEYASPAWN && mo2->health == ideya->health)
+				// round 2: loop ideyas and attach to spawns (or drone)
+				for (i = 0; i < maxideya; i++)
+					if (ideyas[i])
+					{
+						if (ideyaspawns[i])
 						{
-							P_SetTarget(&mo2->target, ideya);
-							P_SetMobjState(ideya, S_IDEYA1 + ideya->health);
-							ideya->x = mo2->x;
-							ideya->y = mo2->y;
-							ideya->z = mo2->z;
-							P_SetThingPosition(ideya);
-							P_SetTarget(&ideya->target, NULL);
-							ideya = NULL;
-							if(!(maptol & TOL_NIGHTSCLASSIC) || lowestmare == UINT8_MAX)
-								break;
+							P_SetTarget(&ideyaspawns[i]->target, ideyas[i]);
+							P_SetMobjState(ideyas[i], S_IDEYA1 + ideyas[i]->health);
+							P_UnsetThingPosition(ideyas[i]);
+							ideyas[i]->x = ideyaspawns[i]->x;
+							ideyas[i]->y = ideyaspawns[i]->y;
+							ideyas[i]->z = ideyaspawns[i]->z;
+							P_SetThingPosition(ideyas[i]);
+							P_SetTarget(&ideyas[i]->target, NULL);
 						}
-						else if ((maptol & TOL_NIGHTSCLASSIC) && lowestmare != UINT8_MAX && (mo2->type == MT_CHIP || mo2->type == MT_FLINGCHIP))
-							P_SetMobjState(mo2, mobjinfo[MT_CHIP].spawnstate);
+						else
+							P_SetTarget(&ideyas[i]->target, special);
 					}
 			}
 
