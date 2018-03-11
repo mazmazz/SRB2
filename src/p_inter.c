@@ -2486,10 +2486,10 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 		mobj_t *marenball;
 		skincolors_t color = SKINCOLOR_NONE;
 		boolean dooverride = true;
-		// For known enemies, override death state and spawn enemy ball
-		// If you're SOC'ing customs, better to do this yourself.
-		// Set deathstate to S_MARENBALL1 and deathsound to sfx_peww
-		// and A_ChangeColorAbsolute to your choice
+		
+		// Override death state and spawn enemy ball
+		// To use this for custom enemies, set death state to S_XPLD1
+		// and A_ChangeColorAbsolute to your color choice
 		switch(target->type)
 		{
 			case MT_BLUECRAWLA: 
@@ -2541,7 +2541,15 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 				color = SKINCOLOR_BLACK;
 				break;
 			default:
-				dooverride = false; break;
+				if (mobjinfo[target->type].deathstate == S_XPLD1)
+				{
+					color = target->color; // \todo is color initialized as a blank field? if not, how do we impose a default?
+					if (!color) 
+						color = SKINCOLOR_SILVER;
+				}
+				else
+					dooverride = false; 
+				break;
 		}
 
 		if (dooverride)
