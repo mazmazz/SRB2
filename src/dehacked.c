@@ -4643,6 +4643,7 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 
 	// NiGHTS chip for classic NiGHTS
 	"S_CHIP",
+	"S_CHIG",
 	// \todo different chip sparkle?
 	// "S_CHIPSPARK1",
 	// "S_CHIPSPARK2",

@@ -5518,6 +5518,19 @@ static void P_DoNiGHTSCapsule(player_t *player)
 						P_SetTarget(&player->mo->tracer->target, ideya);
 					else
 						P_SetTarget(&player->mo->tracer, ideya);
+
+					// scan the thinkers
+					// to change all chips to gold
+					for (th = thinkercap.next; th != &thinkercap; th = th->next)
+					{
+						if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+							continue;
+
+						mo2 = (mobj_t *)th;
+
+						if (mo2->type == MT_CHIP || mo2->type == MT_FLINGCHIP)
+							P_SetMobjState(mo2, S_CHIG);
+					}
 				}
 				else
 				{

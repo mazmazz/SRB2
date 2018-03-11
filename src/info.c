@@ -53,8 +53,8 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BOM3","BOM4","ROIA","ROIB","ROIC","ROID","ROIE","ROIF","ROIG","ROIH",
 	"ROII","ROIJ","ROIK","ROIL","ROIM","ROIN","ROIO","ROIP","BBAL","GWLG",
 	"GWLR","SRBA","SRBB","SRBC","SRBD","SRBE","SRBF","SRBG","SRBH","SRBI",
-	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYA","NPNA",
-	"NPNB","MRBL"//,"SPRC" // \todo different chip sparkle?
+	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","CHIG","IDYA",
+	"NPNA","NPNB","MRBL"//,"SPRC" // \todo different chip sparkle?
 };
 
 // Doesn't work with g++, needs actionf_p1 (don't modify this comment)
@@ -934,6 +934,7 @@ state_t states[NUMSTATES] =
 
 	// NiGHTS chip replacement for classic NiGHTS
 	{SPR_CHIP, FF_ANIMATE,  -1, {NULL}, 15, 2, S_CHIP}, // S_CHIP
+	{SPR_CHIG, FF_ANIMATE,  -1, {NULL}, 15, 2, S_CHIG}, // S_CHIG
 	// \todo different chip sparkle?
 	// {SPR_SPRC, FF_TRANS40  , 1, {NULL}, 0, 0, S_CHIPSPARK2},  // S_CHIPSPARK1
 	// {SPR_SPRC, FF_TRANS50|1, 1, {NULL}, 0, 0, S_CHIPSPARK3},  // S_CHIPSPARK2
@@ -4701,7 +4702,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // painstate
 		0,              // painchance
 		sfx_None,       // painsound
-		S_NULL,         // meleestate
+		S_CHIG,         // meleestate
 		S_NULL,         // missilestate
 		S_SPRK1,         // deathstate // \todo different chip sparkle? // S_CHIPSPARK1, // deathstate
 		S_NULL,         // xdeathstate
@@ -4728,7 +4729,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // painstate
 		MT_CHIP,        // painchance
 		sfx_None,       // painsound
-		S_NULL,         // meleestate
+		S_CHIG,         // meleestate
 		S_NULL,         // missilestate
 		S_SPRK1,        // deathstate
 		S_NULL,         // xdeathstate

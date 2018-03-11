@@ -573,6 +573,7 @@ typedef enum sprite
 	// NiGHTS Classic
 	SPR_NWNC,
 	SPR_CHIP,
+	SPR_CHIG,
 	SPR_IDYA,
 	SPR_NPNA,
 	SPR_NPNB,
@@ -1450,6 +1451,7 @@ typedef enum state
 
 	// NiGHTS chip for classic NiGHTS
 	S_CHIP,
+	S_CHIG,
 	// \todo different chip spark?
 	// S_CHIPSPARK1,
 	// S_CHIPSPARK2,
