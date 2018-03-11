@@ -111,6 +111,7 @@ static patch_t *yelstat;
 static patch_t *nbracket;
 static patch_t *nhud[12];
 static patch_t *nchud[12];
+static patch_t *ncghud[12];
 static patch_t *nsshud;
 static patch_t *narrow[9];
 static patch_t *nredar[8]; // Red arrow
@@ -320,6 +321,7 @@ void ST_LoadGraphics(void)
 	{
 		nhud[i] = W_CachePatchName(va("NHUD%d", i+1), PU_HUDGFX);
 		nchud[i] = W_CachePatchName(va("NCHUD%d", i+1), PU_HUDGFX);
+		ncghud[i] = W_CachePatchName(va("NCGHUD%d", i+1), PU_HUDGFX);
 	}
 	nsshud = W_CachePatchName("NSSHUD", PU_HUDGFX);
 	minicaps = W_CachePatchName("MINICAPS", PU_HUDGFX);
@@ -1135,8 +1137,12 @@ static void ST_drawNiGHTSHUD(void)
 	ST_DrawOverlayPatch(SCX(16), SCY(8), nbracket);
 	if (G_IsSpecialStage(gamemap))
 		ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nsshud);
-	else if (maptol & TOL_NIGHTS)
-		ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nchud[(leveltime/2)%12]);
+	else if (maptol & TOL_NIGHTSCLASSIC)
+		if (stplyr->bonustime || stplyr->exiting) 
+			// not keen on checking P_FindLowestMare() == UINT8_MAX here. Exiting isn't perfect (e.g., custom exits) but does the job
+			ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), ncghud[(leveltime/2)%12]);
+		else
+			ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nchud[(leveltime/2)%12]);
 	else
 		ST_DrawOverlayPatch(SCX(24), SCY(8) + SCZ(8), nhud[(leveltime/2)%12]);
 
