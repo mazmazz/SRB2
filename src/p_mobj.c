@@ -6302,6 +6302,12 @@ void P_MobjThinker(mobj_t *mobj)
 
 				// Don't touch my fuse!
 				return;
+			case MT_MARENBALL:
+				if (mobj->z <= mobj->floorz)
+					// \todo these physics need work, make it gradually lose bounce momentum
+					// probably needs a tic timer (mobj->fuse?)
+					mobj->momz = 5*FRACUNIT; // make it bounce!
+				break;
 			case MT_OVERLAY:
 				if (!mobj->target)
 				{

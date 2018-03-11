@@ -54,7 +54,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"ROII","ROIJ","ROIK","ROIL","ROIM","ROIN","ROIO","ROIP","BBAL","GWLG",
 	"GWLR","SRBA","SRBB","SRBC","SRBD","SRBE","SRBF","SRBG","SRBH","SRBI",
 	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","NWNC","CHIP","IDYA","NPNA",
-	"NPNB"//,"SPRC" // \todo different chip sparkle?
+	"NPNB","MRBL"//,"SPRC" // \todo different chip sparkle?
 };
 
 // Doesn't work with g++, needs actionf_p1 (don't modify this comment)
@@ -2443,6 +2443,11 @@ state_t states[NUMSTATES] =
 	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC23}, // S_NIGHTOPIANHELPER_CLASSIC22 (anim 2 tic 2)
 	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC24}, // S_NIGHTOPIANHELPER_CLASSIC23 (anim 2 tic 3)
 	{SPR_NPNA, 1, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER_CLASSIC1}, // S_NIGHTOPIANHELPER_CLASSIC24 (anim 2 tic 4)
+
+	{SPR_MRBL, 0, 2, {A_Scream}, 0, 0, S_MARENBALL2}, // S_MARENBALL1
+	{SPR_MRBL, 0, 2, {NULL}/*{A_ZThrust}*/, 9, 0, S_MARENBALL3}, // S_MARENBALL2
+	{SPR_MRBL, 0, 1, {A_SetObjectFlags}, MF_NOGRAVITY, 1, S_MARENBALL4}, // S_MARENBALL3
+	{SPR_MRBL, 0, 400, {A_SetObjectFlags}, MF_BOUNCE, 2, S_NULL}, // S_MARENBALL4
 
 	{SPR_NULL, 0, 35, {NULL}, 0, 0, S_CRUMBLE2},  // S_CRUMBLE1
 	{SPR_NULL, 0, 105, {A_Scream}, 0, 0, S_NULL}, // S_CRUMBLE2
@@ -12632,6 +12637,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_NOGRAVITY,   // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_MARENBALL
+		-1,             // doomednum
+		S_MARENBALL1,   // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		255,            // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_peww,       // deathsound
+		0,              // speed
+		16*FRACUNIT,    // radius
+		16*FRACUNIT,    // height
+		0,              // display offset
+		16,             // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOGRAVITY|MF_SCENERY, // flags
 		S_NULL          // raisestate
 	},
 

@@ -503,6 +503,7 @@ light_t *t_lspr[NUMSPRITES] =
 	&lspr[NOLIGHT],     // SPR_IDYA
 	&lspr[NOLIGHT],     // SPR_NPNA
 	&lspr[NOLIGHT],     // SPR_NPNB
+	&lspr[NOLIGHT],     // SPR_MRBL
 	//&lspr[NOLIGHT],     // SPR_SPRC // \todo different chip sparkle?
 
 	// Free slots

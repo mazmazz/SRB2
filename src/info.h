@@ -576,6 +576,7 @@ typedef enum sprite
 	SPR_IDYA,
 	SPR_NPNA,
 	SPR_NPNB,
+	SPR_MRBL,
 	//SPR_SPRC, // \todo different chip sparkle?
 
 	SPR_FIRSTFREESLOT,
@@ -2886,6 +2887,11 @@ typedef enum state
 	S_NIGHTOPIANHELPER_CLASSIC23,
 	S_NIGHTOPIANHELPER_CLASSIC24,
 
+	S_MARENBALL1,
+	S_MARENBALL2,
+	S_MARENBALL3,
+	S_MARENBALL4,
+
 	S_CRUMBLE1,
 	S_CRUMBLE2,
 
@@ -3489,6 +3495,7 @@ typedef enum mobj_type
 	MT_EGGCAPSULE,
 	MT_NIGHTOPIANHELPER, // the actual helper object that orbits you
 	MT_NIGHTOPIANHELPER_CLASSIC, // real nightopian for classic
+	MT_MARENBALL,
 
 	// Utility Objects
 	MT_TELEPORTMAN,

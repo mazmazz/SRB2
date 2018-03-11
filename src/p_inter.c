@@ -795,6 +795,8 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 
 					if (mo2->flags & MF_SHOOTABLE)
 					{
+						// \todo would be real nice to distinguish paraloop, but don't know what this all affects. See P_DamageMobj towards end.
+						//P_DamageMobj(mo2, special, toucher, 1);
 						P_DamageMobj(mo2, toucher, toucher, 1);
 						continue;
 					}
@@ -2198,6 +2200,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 	// This determines the kind of object spawned
 	// during the death frame of a thing.
 	if (!mariomode // Don't show birds, etc. in Mario Mode Tails 12-23-2001
+	&& !(maptol & TOL_NIGHTSCLASSIC) // nor Classic NiGHTS, we throw enemies instead
 	&& target->flags & MF_ENEMY)
 	{
 		if (cv_soniccd.value)
@@ -2440,6 +2443,90 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 	}
 	else if (target->player)
 		P_SetPlayerMobjState(target, target->info->deathstate);
+	else if ((maptol & TOL_NIGHTSCLASSIC) && (target->flags & MF_ENEMY))
+	{
+		mobj_t *marenball;
+		skincolors_t color = SKINCOLOR_NONE;
+		boolean dooverride = true;
+		// For known enemies, override death state and spawn enemy ball
+		// If you're SOC'ing customs, better to do this yourself.
+		// Set deathstate to S_MARENBALL1 and deathsound to sfx_peww
+		// and A_ChangeColorAbsolute to your choice
+		switch(target->type)
+		{
+			case MT_BLUECRAWLA: 
+			case MT_CRAWLACOMMANDER:
+				color = SKINCOLOR_CYAN; 
+				break;
+			case MT_SHARP:
+			case MT_AQUABUZZ:
+			case MT_BLUEGOOMBA:
+				color = SKINCOLOR_BLUE;
+				break;
+			case MT_REDCRAWLA: 
+			case MT_REDBUZZ:
+			case MT_DETON:
+			case MT_VULTURE:
+				color = SKINCOLOR_RED; 
+				break;
+			case MT_GFZFISH: 
+			case MT_SNAILER:
+				color = SKINCOLOR_YELLOW; 
+				break;
+			case MT_GOLDBUZZ: 
+				color = SKINCOLOR_GOLD; 
+				break;
+			case MT_JETTBOMBER: 
+			case MT_POINTY:
+			case MT_ROBOHOOD:
+				color = SKINCOLOR_GREEN; 
+				break;
+			case MT_JETTGUNNER: 
+			case MT_GOOMBA:
+				color = SKINCOLOR_TAN; 
+				break;
+			case MT_SKIM:
+			case MT_POPUPTURRET:
+			case MT_FACESTABBER:
+			case MT_SPRINGSHELL:
+			case MT_YELLOWSHELL:
+				color = SKINCOLOR_SILVER;
+				break;
+			case MT_MINUS:
+			case MT_GSNAPPER:
+				color = SKINCOLOR_ZIM;
+				break;
+			case MT_JETJAW:
+				color = SKINCOLOR_PINK;
+				break;
+			case MT_UNIDUS:
+				color = SKINCOLOR_BLACK;
+				break;
+			default:
+				dooverride = false; break;
+		}
+
+		if (dooverride)
+		{
+			marenball = P_SpawnMobj(target->x, target->y, target->z, MT_MARENBALL);
+			marenball->color = color;
+
+			if (source)
+				// && (inflictor && inflictor->type != MT_NIGHTSLOOPHELPER)) // \todo would be real nice to distinguish paraloop, but see P_TouchSpecialThing MT_NIGHTSLOOPHELPER
+			{
+				// \todo these physics need work, IDK how to do :(
+				P_InstaThrust(marenball, source->angle, source->momx);
+				P_SetObjectMomZ(marenball, source->momz, false);
+			}
+			else
+			    P_SetObjectMomZ(marenball, 9, false); // per S_MARENBALL2
+
+			S_StartSound(marenball, sfx_peww); // \todo MT_MARENBALL has its own deathsound and A_Scream, why doesn't it fire?
+			P_SetMobjState(target, S_NULL);
+		}
+		else
+			P_SetMobjState(target, target->info->deathstate);
+	}
 	else
 #ifdef DEBUG_NULL_DEATHSTATE
 		P_SetMobjState(target, S_NULL);
