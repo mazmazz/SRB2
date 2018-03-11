@@ -2989,13 +2989,6 @@ static void P_RelinkPointers(void)
 				if (!P_SetTarget(&mobj->player->capsule, P_FindNewPosition(temp)))
 					CONS_Debug(DBG_GAMELOGIC, "capsule not found on %d\n", mobj->type);
 			}
-			if (mobj->player && mobj->player->drone)
-			{
-				temp = (UINT32)(size_t)mobj->player->drone;
-				mobj->player->drone = NULL;
-				if (!P_SetTarget(&mobj->player->drone, P_FindNewPosition(temp)))
-					CONS_Debug(DBG_GAMELOGIC, "drone not found on %d\n", mobj->type);
-			}
 			if (mobj->player && mobj->player->axis1)
 			{
 				temp = (UINT32)(size_t)mobj->player->axis1;
