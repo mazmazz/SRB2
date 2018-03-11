@@ -2538,7 +2538,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 			default:
 				if (mobjinfo[target->type].deathstate == S_XPLD1)
 				{
-					color = target->color; // \todo is color initialized as a blank field? if not, how do we impose a default?
+					color = target->color;
 					if (!color) 
 						color = SKINCOLOR_SILVER;
 				}
