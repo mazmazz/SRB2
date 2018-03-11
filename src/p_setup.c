@@ -2784,7 +2784,7 @@ boolean P_SetupLevel(boolean skipprecip)
 			}
 
 			// \todo where do I put this??? giving ideya to player 1 on load
-			if (!gaveideya && !G_IsSpecialStage(gamemap) && players[i].mo)
+			if (!gaveideya && (maptol & TOL_NIGHTSCLASSIC) && !G_IsSpecialStage(gamemap) && players[i].mo)
 			{
 				// The Ideya begins to orbit us!
 				// Only give it to ONE person, and THAT player has to get to the goal!
