@@ -4724,7 +4724,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		1000,           // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound
-		MT_FLINGRING,   // reactiontime
+		MT_FLINGCHIP,   // reactiontime
 		sfx_None,       // attacksound
 		S_NULL,         // painstate
 		MT_CHIP,        // painchance
