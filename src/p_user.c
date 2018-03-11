@@ -5513,6 +5513,7 @@ static void P_DoNiGHTSCapsule(player_t *player)
 					ideya = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
 					P_SetTarget(&ideya->target, player->mo);
 					P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate + ideyacolor);
+					ideya->health = ideyacolor + 1;
 					if (player->mo->tracer)
 						P_SetTarget(&player->mo->tracer->target, ideya);
 					else

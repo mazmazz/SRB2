@@ -694,18 +694,48 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					if (playeringame[i] && players[i].playerstate == PST_LIVE
 					&& players[i].mo->tracer)
 					{
+						mobj_t *ideya;
+						mobj_t *mo2;
+						thinker_t *th;
+						boolean orbit = true;
+
 						if (players[i].mo->tracer->target && players[i].mo->tracer->target->type == MT_GOTIDEYA)
 						{
-							P_SetTarget(&players[i].mo->tracer->target->target, special);
+							ideya = players[i].mo->tracer->target;
 							P_SetTarget(&players[i].mo->tracer->target, NULL);
-							break;
 						}
 						else if (players[i].mo->tracer && players[i].mo->tracer->type == MT_GOTIDEYA)
 						{
-							P_SetTarget(&players[i].mo->tracer->target, special);
+							ideya = players[i].mo->tracer;
 							P_SetTarget(&players[i].mo->tracer, NULL);
-							break;
 						}
+						else
+							continue;
+
+						// scan the thinkers
+						// to find the correct spawn anchor
+						for (th = thinkercap.next; th != &thinkercap; th = th->next)
+						{
+							if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+								continue;
+
+							mo2 = (mobj_t *)th;
+
+							if (mo2->type == MT_IDEYASPAWN && mo2->health == ideya->health)
+							{
+								P_SetTarget(&mo2->target, ideya);
+								P_SetMobjState(ideya, S_IDEYA1 + ideya->health - 1); // ideya->health is one-based
+								ideya->x = mo2->x;
+								ideya->y = mo2->y;
+								ideya->z = mo2->z;
+								P_SetThingPosition(ideya);
+								orbit = false;
+								break;
+							}
+						}
+
+						if (orbit) // no spawn found, orbit around drone
+							P_SetTarget(&ideya->target, special);
 					}
 
 			if (!(netgame || multiplayer) && !(player->pflags & PF_NIGHTSMODE))

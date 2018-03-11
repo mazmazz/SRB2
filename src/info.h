@@ -3496,6 +3496,7 @@ typedef enum mobj_type
 	MT_NIGHTOPIANHELPER, // the actual helper object that orbits you
 	MT_NIGHTOPIANHELPER_CLASSIC, // real nightopian for classic
 	MT_MARENBALL,
+	MT_IDEYASPAWN,
 
 	// Utility Objects
 	MT_TELEPORTMAN,
