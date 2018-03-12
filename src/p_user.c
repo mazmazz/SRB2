@@ -5518,8 +5518,6 @@ static void P_MoveNiGHTSToDrone(player_t *player)
 	// player X/Y doesn't correct properly
 	// so do this here
 
-	INT32 finishedcoords = 0;
-
 	P_UnsetThingPosition(player->mo);
 	player->mo->x = player->drone->x;
 	player->mo->y = player->drone->y;
