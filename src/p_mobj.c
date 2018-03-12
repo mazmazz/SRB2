@@ -7062,7 +7062,7 @@ void P_MobjThinker(mobj_t *mobj)
 								P_SetMobjState(droneman, mobjinfo[droneman->type].meleestate);
 							
 							droneman->angle += ANG10;
-							if (droneman->z <= droneman->floorz)
+							if (droneman->z <= mobj->z)
 								droneman->momz = 5*FRACUNIT;
 						}
 					}
