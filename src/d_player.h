@@ -403,6 +403,7 @@ typedef struct player_s
 	boolean bonustime; // Capsule destroyed, now it's bonus time!
 	mobj_t *capsule; // Go inside the capsule
 	UINT8 mare; // Current mare
+	mobj_t *drone;
 
 	// Statistical purposes.
 	tic_t marebegunat; // Leveltime when mare begun
