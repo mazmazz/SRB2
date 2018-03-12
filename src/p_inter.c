@@ -736,7 +736,12 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 							P_SetTarget(&ideyas[i]->target, NULL);
 						}
 						else
-							P_SetTarget(&ideyas[i]->target, special);
+						{
+							if (special->target && special->target->type == MT_NIGHTSGOAL)
+								P_SetTarget(&ideyas[i]->target, special->target);
+							else
+								P_SetTarget(&ideyas[i]->target, special);
+						}
 					}
 			}
 
