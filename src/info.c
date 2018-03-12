@@ -2380,16 +2380,28 @@ state_t states[NUMSTATES] =
 	{SPR_CEMG, FF_FULLBRIGHT|14, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITEM8}, // S_ORBITEM15
 	{SPR_CEMG, FF_FULLBRIGHT|15, 1, {A_OrbitNights}, ANG2*2, 0, S_ORBITEM8}, // S_ORBITEM16
 
-	// Orbiting Chaos Emeralds for NiGHTS
-	{SPR_IDYA, FF_FULLBRIGHT,   1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA1}, // S_ORBITIDEYA1
-	{SPR_IDYA, FF_FULLBRIGHT|1, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA2}, // S_ORBITIDEYA2
-	{SPR_IDYA, FF_FULLBRIGHT|2, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA3}, // S_ORBITIDEYA3
-	{SPR_IDYA, FF_FULLBRIGHT|3, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA4}, // S_ORBITIDEYA4
-	{SPR_IDYA, FF_FULLBRIGHT|4, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA5}, // S_ORBITIDEYA5
-	{SPR_IDYA, FF_FULLBRIGHT|5, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA6}, // S_ORBITIDEYA6
-	{SPR_IDYA, FF_FULLBRIGHT|6, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA7}, // S_ORBITIDEYA7
-	{SPR_IDYA, FF_FULLBRIGHT|7, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA8}, // S_ORBITIDEYA8
-	{SPR_IDYA, FF_FULLBRIGHT|8, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA9}, // S_ORBITIDEYA9
+	// Orbiting Ideya for NiGHTS
+	// Ideya 0 orbit speed is different on purpose
+	{SPR_IDYA, FF_FULLBRIGHT,   1, {A_OrbitNights}, ANG2*1, 0 | 0x20000, S_ORBITIDEYA1A}, // S_ORBITIDEYA1A
+	{SPR_IDYA, FF_FULLBRIGHT|1, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA2A}, // S_ORBITIDEYA2A
+	{SPR_IDYA, FF_FULLBRIGHT|2, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA3A}, // S_ORBITIDEYA3A
+	{SPR_IDYA, FF_FULLBRIGHT|3, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA4A}, // S_ORBITIDEYA4A
+	{SPR_IDYA, FF_FULLBRIGHT|4, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA5A}, // S_ORBITIDEYA5A
+	{SPR_IDYA, FF_FULLBRIGHT|5, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA6A}, // S_ORBITIDEYA6A
+	{SPR_IDYA, FF_FULLBRIGHT|6, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA7A}, // S_ORBITIDEYA7A
+	{SPR_IDYA, FF_FULLBRIGHT|7, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA8A}, // S_ORBITIDEYA8A
+	{SPR_IDYA, FF_FULLBRIGHT|8, 1, {A_OrbitNights}, ANG2*2, 0 | 0x20000, S_ORBITIDEYA9A}, // S_ORBITIDEYA9A
+
+	// Variable speed orbiting Ideya for NiGHTS
+	{SPR_IDYA, FF_FULLBRIGHT,   1, {A_OrbitNights}, ANG1*2, 0 | 0x20000, S_ORBITIDEYA1B}, // S_ORBITIDEYA1B
+	{SPR_IDYA, FF_FULLBRIGHT|1, 1, {A_OrbitNights}, ANG1*3, 0 | 0x20000, S_ORBITIDEYA2B}, // S_ORBITIDEYA2B
+	{SPR_IDYA, FF_FULLBRIGHT|2, 1, {A_OrbitNights}, ANG1*4, 0 | 0x20000, S_ORBITIDEYA3B}, // S_ORBITIDEYA3B
+	{SPR_IDYA, FF_FULLBRIGHT|3, 1, {A_OrbitNights}, ANG1*5, 0 | 0x20000, S_ORBITIDEYA4B}, // S_ORBITIDEYA4B
+	{SPR_IDYA, FF_FULLBRIGHT|4, 1, {A_OrbitNights}, ANG1*6, 0 | 0x20000, S_ORBITIDEYA5B}, // S_ORBITIDEYA5B
+	{SPR_IDYA, FF_FULLBRIGHT|5, 1, {A_OrbitNights}, ANG1*7, 0 | 0x20000, S_ORBITIDEYA6B}, // S_ORBITIDEYA6B
+	{SPR_IDYA, FF_FULLBRIGHT|6, 1, {A_OrbitNights}, ANG1*8, 0 | 0x20000, S_ORBITIDEYA7B}, // S_ORBITIDEYA7B
+	{SPR_IDYA, FF_FULLBRIGHT|7, 1, {A_OrbitNights}, ANG1*9, 0 | 0x20000, S_ORBITIDEYA8B}, // S_ORBITIDEYA8B
+	{SPR_IDYA, FF_FULLBRIGHT|8, 1, {A_OrbitNights}, ANG1*10, 0 | 0x20000, S_ORBITIDEYA9B}, // S_ORBITIDEYA9B
 
 	// Flicky helper for NiGHTS
 	{SPR_BIRD, 0, 1, {A_OrbitNights}, ANG2*2, 180 | 0x10000, S_NIGHTOPIANHELPER2}, // S_NIGHTOPIANHELPER1
@@ -10686,17 +10698,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 
 	{           // MT_GOTIDEYA
 		-1,             // doomednum
-		S_IDEYA1,        // spawnstate
+		S_IDEYA1,       // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound
 		8,              // reactiontime
 		sfx_None,       // attacksound
-		S_NULL,         // painstate
+		S_IDEYA1,       // painstate
 		0,              // painchance
 		sfx_None,       // painsound
-		S_ORBITIDEYA1,     // meleestate
-		S_NULL,         // missilestate
+		S_ORBITIDEYA1A, // meleestate
+		S_ORBITIDEYA1B, // missilestate
 		S_NULL,         // deathstate
 		S_NULL,         // xdeathstate
 		sfx_None,       // deathsound

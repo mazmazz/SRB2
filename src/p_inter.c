@@ -727,7 +727,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 						if (ideyaspawns[i])
 						{
 							P_SetTarget(&ideyaspawns[i]->target, ideyas[i]);
-							P_SetMobjState(ideyas[i], S_IDEYA1 + ideyas[i]->health);
+							P_SetMobjState(ideyas[i], mobjinfo[ideyas[i]->type].painstate + ideyas[i]->health);
 							P_UnsetThingPosition(ideyas[i]);
 							ideyas[i]->x = ideyaspawns[i]->x;
 							ideyas[i]->y = ideyaspawns[i]->y;
@@ -737,6 +737,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 						}
 						else
 						{
+							P_SetMobjState(ideyas[i], mobjinfo[ideyas[i]->type].missilestate + ideyas[i]->health);
 							if (special->target && special->target->type == MT_NIGHTSGOAL)
 								P_SetTarget(&ideyas[i]->target, special->target);
 							else
