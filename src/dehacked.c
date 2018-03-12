@@ -5828,7 +5828,6 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_TOAD",
 
 	// Nights-specific stuff
-	"S_NIGHTSDRONE1",
 	"S_NIGHTSDRONEMAN1",
 	"S_NIGHTSDRONEMAN2",
 	"S_NIGHTSDRONE_SPARKLING1",
@@ -6654,6 +6653,7 @@ static const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for s
 	"MT_AXISTRANSFERLINE",
 	"MT_NIGHTSDRONE",
 	"MT_NIGHTSDRONEMAN",
+	"MT_NIGHTSDRONESPARKLE",
 	"MT_NIGHTSGOAL",
 	"MT_NIGHTSCHAR",
 	"MT_NIGHTSPARKLE",

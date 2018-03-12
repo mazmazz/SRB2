@@ -2171,9 +2171,6 @@ state_t states[NUMSTATES] =
 	{SPR_MUS2, 0, -1, {NULL}, 0, 0, S_NULL}, // S_MARIOBUSH2
 	{SPR_TOAD, 0, -1, {NULL}, 0, 0, S_NULL}, // S_TOAD
 
-	// Nights Drone
-	{SPR_NULL, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONE1}, // S_NIGHTSDRONE1
-
 	// Nights Drone Man
 	{SPR_NDRN, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONEMAN2}, // S_NIGHTSDRONEMAN1
 	{SPR_NDRN, 0, -1, {NULL}, 0, 0, S_NIGHTSDRONEMAN1}, // S_NIGHTSDRONEMAN2
@@ -12101,34 +12098,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 
 	{           // MT_NIGHTSDRONE
 		1703,           // doomednum
-		S_NIGHTSDRONE1, // spawnstate
-		120,            // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		255,            // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		16*FRACUNIT,    // radius
-		46*FRACUNIT,    // height
-		1,              // display offset
-		1000,           // mass
-		0,              // damage
-		sfx_ideya,      // activesound
-		MF_SPECIAL|MF_NOGRAVITY, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_NIGHTSDRONEMAN
-		-1,           // doomednum
-		S_NIGHTSDRONEMAN1, // spawnstate
+		S_INVISIBLE,    // spawnstate
 		120,            // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound
@@ -12148,14 +12118,41 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		1,              // display offset
 		1000,           // mass
 		0,              // damage
+		sfx_ideya,      // activesound
+		MF_SPECIAL|MF_NOGRAVITY, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_NIGHTSDRONEMAN
+		-1,           // doomednum
+		S_INVISIBLE,  // spawnstate
+		120,            // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		255,            // painchance
+		sfx_None,       // painsound
+		S_NIGHTSDRONEMAN1,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		0,              // speed
+		16*FRACUNIT,    // radius
+		56*FRACUNIT,    // height
+		1,              // display offset
+		1000,           // mass
+		0,              // damage
 		sfx_None,      // activesound
 		MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY,     // flags
 		S_NULL          // raisestate
 	},
 
-	{           // MT_NIGHTSGOAL
+	{           // MT_NIGHTSDRONESPARKLE
 		-1,             // doomednum
-		S_NIGHTSGOAL1,  // spawnstate
+		S_INVISIBLE,    // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound
@@ -12164,7 +12161,34 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // painstate
 		255,            // painchance
 		sfx_None,       // painsound
-		S_NULL,         // meleestate
+		S_NIGHTSDRONE_SPARKLING1, // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		0,              // speed
+		16*FRACUNIT,    // radius
+		56*FRACUNIT,    // height
+		1,              // display offset
+		1000,           // mass
+		0,              // damage
+		sfx_None,      // activesound
+		MF_NOGRAVITY|MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_NIGHTSGOAL
+		-1,             // doomednum
+		S_INVISIBLE,  // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		255,            // painchance
+		sfx_None,       // painsound
+		S_NIGHTSGOAL1,         // meleestate
 		S_NULL,         // missilestate
 		S_NULL,         // deathstate
 		S_NULL,         // xdeathstate
