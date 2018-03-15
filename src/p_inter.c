@@ -710,7 +710,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					if (mo2->type == MT_GOTIDEYA)
 					{
 						if(mo2->health < maxideya)
-							if(mo2->target == player.mo || lowestmare == UINT8_MAX)
+							if(mo2->target == player->mo || lowestmare == UINT8_MAX)
 								ideyas[mo2->health] = mo2;
 							if(mo2->health == 0)
 								ideya0 = mo2;
@@ -729,10 +729,10 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					// Immediately spawn Ideya 0 (red); next code block will give it to Drone
 					// \todo give player Ideya 0 BEFORE touching Drone, maybe give Drone an A_Look action
 					// and check for any player proximity. Saturn NiGHTS gives Ideya 0 when player is very close to Drone.
-					ideya0 = P_SpawnMobj(player.mo->x, player.mo->y, player.mo->z + player.mo->info->height, MT_GOTIDEYA);
-					P_SetTarget(&ideya->target, player.mo);
-					P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate); // assign ideya 0 (red)
-					ideya->health = 0;
+					ideya0 = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->info->height, MT_GOTIDEYA);
+					P_SetTarget(&ideya0->target, player->mo);
+					P_SetMobjState(ideya0, mobjinfo[MT_GOTIDEYA].meleestate); // assign ideya 0 (red)
+					ideya0->health = 0;
 					ideyas[0] = ideya0;
 				}
 
