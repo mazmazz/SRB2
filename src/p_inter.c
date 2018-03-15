@@ -1039,7 +1039,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					flickyobj = P_SpawnMobj(toucher->x, toucher->y, toucher->z + toucher->info->height, MT_NIGHTOPIANHELPER_CLASSIC);
 				else
 					flickyobj = P_SpawnMobj(toucher->x, toucher->y, toucher->z + toucher->info->height, MT_NIGHTOPIANHELPER);
-				P_SetTarget(&flickyobj->target, player.mo);
+				P_SetTarget(&flickyobj->target, player->mo);
 
 				player->powers[pw_nights_helper] = (UINT16)special->info->speed;
 			}
