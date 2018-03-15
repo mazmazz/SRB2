@@ -258,6 +258,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->linkcount);
 	else if (fastcmp(field,"linktimer"))
 		lua_pushinteger(L, plr->linktimer);
+	else if (fastcmp(field,"hoopstring"))
+		lua_pushinteger(L, plr->hoopstring);
+	else if (fastcmp(field,"hooplinkcount"))
+		lua_pushinteger(L, plr->hooplinkcount);
 	else if (fastcmp(field,"anotherflyangle"))
 		lua_pushinteger(L, plr->anotherflyangle);
 	else if (fastcmp(field,"nightstime"))
@@ -515,6 +519,10 @@ static int player_set(lua_State *L)
 		plr->linkcount = (INT32)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"linktimer"))
 		plr->linktimer = (tic_t)luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"hoopstring"))
+		plr->hoopstring = (tic_t)luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"hooplinkcount"))
+		plr->hooplinkcount = (INT32)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"anotherflyangle"))
 		plr->anotherflyangle = (INT32)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"nightstime"))

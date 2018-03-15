@@ -396,6 +396,8 @@ typedef struct player_s
 	tic_t drilltimer;
 	INT32 linkcount;
 	tic_t linktimer;
+	INT32 hoopstring;
+	INT32 hooplinkcount;
 	INT32 anotherflyangle;
 	tic_t nightstime; // How long you can fly as NiGHTS.
 	INT32 drillmeter;

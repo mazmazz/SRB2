@@ -203,6 +203,8 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT32(save_p, players[i].drilltimer);
 		WRITEINT32(save_p, players[i].linkcount);
 		WRITEUINT32(save_p, players[i].linktimer);
+		WRITEINT32(save_p, players[i].hoopstring);
+		WRITEINT32(save_p, players[i].hooplinkcount);
 		WRITEINT32(save_p, players[i].anotherflyangle);
 		WRITEUINT32(save_p, players[i].nightstime);
 		WRITEUINT32(save_p, players[i].bumpertime);
@@ -378,6 +380,8 @@ static void P_NetUnArchivePlayers(void)
 		players[i].drilltimer = READUINT32(save_p);
 		players[i].linkcount = READINT32(save_p);
 		players[i].linktimer = READUINT32(save_p);
+		players[i].hoopstring = READINT32(save_p);
+		players[i].hooplinkcount = READINT32(save_p);
 		players[i].anotherflyangle = READINT32(save_p);
 		players[i].nightstime = READUINT32(save_p);
 		players[i].bumpertime = READUINT32(save_p);

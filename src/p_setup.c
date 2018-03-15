@@ -2231,6 +2231,7 @@ static void P_LevelInitStuff(void)
 		players[i].textvar = players[i].texttimer = 0;
 
 		players[i].linkcount = players[i].linktimer = 0;
+		players[i].hoopstring = players[i].hooplinkcount = 0;
 		players[i].flyangle = players[i].anotherflyangle = 0;
 		players[i].nightstime = players[i].mare = 0;
 		P_SetTarget(&players[i].capsule, NULL);

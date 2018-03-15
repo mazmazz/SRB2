@@ -1174,13 +1174,53 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			else
 				player->drillmeter += TICRATE/2;
 
-			// Play hoop sound -- pick one depending on the current link.
-			if (player->linkcount <= 5)
-				S_StartSound(toucher, sfx_hoop1);
-			else if (player->linkcount <= 10)
-				S_StartSound(toucher, sfx_hoop2);
-			else
-				S_StartSound(toucher, sfx_hoop3);
+			// Play hoop sound -- pick one depending on the current string and link.
+			{
+				INT32 hoopstring = special->health;
+
+				if (hoopstring == 0)
+				{
+					if (player->linkcount <= 5)
+						S_StartSound(toucher, sfx_hoop1);
+					else if (player->linkcount <= 10)
+						S_StartSound(toucher, sfx_hoop2);
+					else
+						S_StartSound(toucher, sfx_hoop3);
+
+					player->hoopstring = 0;
+					player->hooplinkcount = 0;
+				}
+				else
+				{
+					if (player->hoopstring != hoopstring || player->linkcount < player->hooplinkcount)
+					{
+						player->hoopstring = hoopstring;
+						player->hooplinkcount = player->linkcount;
+					}
+
+					// Hoop SFX are named HP[sfx#][note][octave][flat/sharp]
+					// e.g., HP1C5 (no flat/sharp)
+					// Only HP1 (HOOP1, NiGHTS sound test 22) is supported
+					// HP2 (NiGHTS sound test 26) and HP3 (NiGHTS sound test 23) are not implemented
+					// HP1D5 is the same pitch as HOOP1
+
+					INT32 pitch = player->linkcount - player->hooplinkcount;
+
+					switch (pitch)
+					{
+						case 0: S_StartSound(toucher, sfx_hp1c5); break;
+						case 1: S_StartSound(toucher, sfx_hp1e5); break;
+						case 2: S_StartSound(toucher, sfx_hp1d5); break;
+						case 3: S_StartSound(toucher, sfx_hp1g5); break;
+						case 4: S_StartSound(toucher, sfx_hp1f5); break;
+						case 5: S_StartSound(toucher, sfx_hp1b5); break;
+						case 6: S_StartSound(toucher, sfx_hp1a5); break;
+						case 7: S_StartSound(toucher, sfx_hp1d6); break;
+						case 8: S_StartSound(toucher, sfx_hp1c6); break;
+						default: S_StartSound(toucher, sfx_hp1f6); break;
+					}
+				}
+			}
 			return;
 
 // ***** //

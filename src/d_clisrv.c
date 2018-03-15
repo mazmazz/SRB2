@@ -581,6 +581,8 @@ static inline void resynch_write_player(resynch_pak *rsp, const size_t i)
 	rsp->drilltimer = (tic_t)LONG(players[i].drilltimer);
 	rsp->linkcount = LONG(players[i].linkcount);
 	rsp->linktimer = (tic_t)LONG(players[i].linktimer);
+	rsp->hoopstring = LONG(players[i].hoopstring);
+	rsp->hooplinkcount = LONG(players[i].hooplinkcount);
 	rsp->anotherflyangle = LONG(players[i].anotherflyangle);
 	rsp->nightstime = (tic_t)LONG(players[i].nightstime);
 	rsp->drillmeter = LONG(players[i].drillmeter);
@@ -707,6 +709,8 @@ static void resynch_read_player(resynch_pak *rsp)
 	players[i].drilltimer = (tic_t)LONG(rsp->drilltimer);
 	players[i].linkcount = LONG(rsp->linkcount);
 	players[i].linktimer = (tic_t)LONG(rsp->linktimer);
+	players[i].hoopstring = LONG(rsp->hoopstring);
+	players[i].hooplinkcount = LONG(rsp->hooplinkcount);
 	players[i].anotherflyangle = LONG(rsp->anotherflyangle);
 	players[i].nightstime = (tic_t)LONG(rsp->nightstime);
 	players[i].drillmeter = LONG(rsp->drillmeter);
