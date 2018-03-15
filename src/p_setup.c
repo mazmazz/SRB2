@@ -2758,8 +2758,6 @@ boolean P_SetupLevel(boolean skipprecip)
 		goto netgameskip;
 	// ==========
 
-	boolean gaveideya = false; // \todo where do I put this??? giving ideya to player 1 on load
-
 	for (i = 0; i < MAXPLAYERS; i++)
 		if (playeringame[i])
 		{
