@@ -1933,7 +1933,8 @@ static void LoadMobjThinker(actionf_p1 thinker)
 	{
 		UINT16 spawnpointnum = READUINT16(save_p);
 
-		if (mapthings[spawnpointnum].type == 1705 || mapthings[spawnpointnum].type == 1713) // NiGHTS Hoop special case
+		if (mapthings[spawnpointnum].type == 1705 
+		    || (mapthings[spawnpointnum].type >= 1713 && mapthings[spawnpointnum].type >= 1715)) // NiGHTS Hoop special case
 		{
 			P_SpawnHoopsAndRings(&mapthings[spawnpointnum]);
 			return;

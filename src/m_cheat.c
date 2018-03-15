@@ -1073,7 +1073,7 @@ void OP_NightsObjectplace(player_t *player)
 		|| mt->type == 308 || mt->type == 309 // Team Rings
 		|| mt->type == 1706 // Nights Wing
 		|| (mt->type >= 600 && mt->type <= 609) // Placement patterns
-		|| mt->type == 1705 || mt->type == 1713 // NiGHTS Hoops
+		|| mt->type == 1705 || (mt->type >= 1713 && mt->type <= 1715) // NiGHTS Hoops
 		|| mt->type == 1800) // Mario Coin
 		{
 			P_SpawnHoopsAndRings(mt);
@@ -1217,7 +1217,7 @@ void OP_ObjectplaceMovement(player_t *player)
 		|| mt->type == 308 || mt->type == 309 // Team Rings
 		|| mt->type == 1706 // Nights Wing
 		|| (mt->type >= 600 && mt->type <= 609) // Placement patterns
-		|| mt->type == 1705 || mt->type == 1713 // NiGHTS Hoops
+		|| mt->type == 1705 || (mt->type >= 1713 && mt->type <= 1715) // NiGHTS Hoops
 		|| mt->type == 1800) // Mario Coin
 		{
 			P_SpawnHoopsAndRings(mt);
