@@ -532,6 +532,13 @@ static int player_set(lua_State *L)
 			mo = *((mobj_t **)luaL_checkudata(L, 3, META_MOBJ));
 		P_SetTarget(&plr->capsule, mo);
 	}
+	else if (fastcmp(field,"drone"))
+	{
+		mobj_t *mo = NULL;
+		if (!lua_isnil(L, 3))
+			mo = *((mobj_t **)luaL_checkudata(L, 3, META_MOBJ));
+		P_SetTarget(&plr->drone, mo);
+	}
 	else if (fastcmp(field,"mare"))
 		plr->mare = (UINT8)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"marebegunat"))

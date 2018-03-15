@@ -56,6 +56,7 @@ typedef enum
 	AWAYVIEW   = 0x08,
 	FIRSTAXIS  = 0x10,
 	SECONDAXIS = 0x20,
+	DRONE      = 0x40,
 } player_saveflags;
 
 //
@@ -225,6 +226,9 @@ static void P_NetArchivePlayers(void)
 		if (players[i].capsule)
 			flags |= CAPSULE;
 
+		if (players[i].drone)
+			flags |= DRONE;
+
 		if (players[i].awayviewmobj)
 			flags |= AWAYVIEW;
 
@@ -249,6 +253,9 @@ static void P_NetArchivePlayers(void)
 
 		if (flags & CAPSULE)
 			WRITEUINT32(save_p, players[i].capsule->mobjnum);
+
+		if (flags & DRONE)
+			WRITEUINT32(save_p, players[i].drone->mobjnum);
 
 		if (flags & FIRSTAXIS)
 			WRITEUINT32(save_p, players[i].axis1->mobjnum);
@@ -412,6 +419,9 @@ static void P_NetUnArchivePlayers(void)
 
 		if (flags & CAPSULE)
 			players[i].capsule = (mobj_t *)(size_t)READUINT32(save_p);
+
+		if (flags & DRONE)
+			players[i].drone = (mobj_t *)(size_t)READUINT32(save_p);
 
 		if (flags & FIRSTAXIS)
 			players[i].axis1 = (mobj_t *)(size_t)READUINT32(save_p);
