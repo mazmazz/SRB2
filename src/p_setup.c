@@ -2235,6 +2235,7 @@ static void P_LevelInitStuff(void)
 		players[i].flyangle = players[i].anotherflyangle = 0;
 		players[i].nightstime = players[i].mare = 0;
 		P_SetTarget(&players[i].capsule, NULL);
+		P_SetTarget(&players[i].drone, NULL);
 		players[i].drillmeter = 40*20;
 
 		players[i].exiting = 0;
