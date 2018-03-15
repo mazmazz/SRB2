@@ -606,19 +606,8 @@ static void P_DeNightserizePlayer(player_t *player)
 	// If you screwed up, kiss your score goodbye.
 	player->marescore = 0;
 
-	// if we have an ideya, make that the tracer so we keep a reference
 	if (player->mo->tracer)
-	{
-		mobj_t *tracer = player->mo->tracer;
-		mobj_t *ideya = player->mo->tracer->target;
-		if (ideya && ideya->type == MT_GOTIDEYA)
-		{
-			P_SetTarget(&player->mo->tracer->target, NULL);
-			P_SetTarget(&player->mo->tracer, ideya);
-		}
-		P_RemoveMobj(tracer);
-	}
-
+		P_RemoveMobj(player->mo->tracer);
 	P_SetPlayerMobjState(player->mo, S_PLAY_FALL1);
 	player->pflags |= PF_NIGHTSFALL;
 
@@ -666,20 +655,11 @@ void P_NightserizePlayer(player_t *player, INT32 nighttime)
 
 	if (!(player->pflags & PF_NIGHTSMODE))
 	{
-		mobj_t *ideya = player->mo->tracer;
 		P_SetTarget(&player->mo->tracer, P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_NIGHTSCHAR));
 		player->mo->tracer->destscale = player->mo->scale;
 		P_SetScale(player->mo->tracer, player->mo->scale);
 		player->mo->tracer->eflags = (player->mo->tracer->eflags & ~MFE_VERTICALFLIP)|(player->mo->eflags & MFE_VERTICALFLIP);
 		player->mo->height = player->mo->tracer->height;
-
-		if (ideya)
-		{
-			if (ideya->type == MT_GOTIDEYA)
-				P_SetTarget(&player->mo->tracer->target, ideya); // \todo: give to drone instead
-			else
-				P_RemoveMobj(ideya);
-		}
 	}
 
 	player->pflags &= ~(PF_USEDOWN|PF_JUMPDOWN|PF_ATTACKDOWN|PF_STARTDASH|PF_GLIDING|PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_DRILLING);

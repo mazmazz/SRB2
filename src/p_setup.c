@@ -2782,22 +2782,6 @@ boolean P_SetupLevel(boolean skipprecip)
 				else
 					G_SpawnPlayer(i, false);
 			}
-
-			// \todo where do I put this??? giving ideya to player 1 on load
-			if (!gaveideya && (maptol & TOL_NIGHTSCLASSIC) && !G_IsSpecialStage(gamemap) && players[i].mo)
-			{
-				// The Ideya begins to orbit us!
-				// Only give it to ONE person, and THAT player has to get to the goal!
-				mobj_t *ideya = P_SpawnMobj(players[i].mo->x, players[i].mo->y, players[i].mo->z + players[i].mo->info->height, MT_GOTIDEYA);
-				P_SetTarget(&ideya->target, players[i].mo);
-				P_SetMobjState(ideya, mobjinfo[MT_GOTIDEYA].meleestate); // assign ideya 0 (red)
-				ideya->health = 0;
-				if (players[i].mo->tracer)
-					P_SetTarget(&players[i].mo->tracer->target, ideya);
-				else
-					P_SetTarget(&players[i].mo->tracer, ideya);
-				gaveideya = true;
-			}
 		}
 
 	if (modeattacking == ATTACKING_RECORD && !demoplayback)
