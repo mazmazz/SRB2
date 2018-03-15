@@ -9696,14 +9696,6 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		hoopcenter = P_SpawnMobj(x, y, z, MT_HOOPCENTER);
 		hoopcenter->spawnpoint = mthing;
 
-		// establish hoop string A vs B for SFX
-		if (mthing->type == 1714)
-			hoopcenter->health = 1;
-		else if (mthing->type == 1715)
-			hoopcenter->health = 2;
-		else
-			hoopcenter->health = 0;
-
 		z +=
 #ifdef ESLOPE
 			sec->f_slope ? P_GetZAt(sec->f_slope, x, y) :
@@ -9806,6 +9798,14 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 				mobj = P_SpawnMobj(finalx, finaly, finalz, MT_HOOPCOLLIDE);
 				mobj->z -= mobj->height/2;
 
+				// establish hoop string A vs B for SFX
+				if (mthing->type == 1714)
+					mobj->threshold = 1;
+				else if (mthing->type == 1715)
+					mobj->threshold = 2;
+				else
+					mobj->threshold = 0;
+
 				// Link all the collision sprites together.
 				mobj->hnext = NULL;
 				mobj->hprev = nextmobj;
@@ -9814,7 +9814,7 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 				nextmobj = mobj;
 			}
 		} while (hoopsize >= 8);
-
+		
 		return;
 	}
 	// Wing logo item.

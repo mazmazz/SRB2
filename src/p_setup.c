@@ -1060,7 +1060,7 @@ static void P_LoadThings(void)
 	{
 		if (mt->type == 300 || mt->type == 308 || mt->type == 309
 		 || mt->type == 1706 || (mt->type >= 600 && mt->type <= 609)
-		 || mt->type == 1705 || (mt->type >= 1713 && mt->type >= 1715)
+		 || mt->type == 1705 || (mt->type >= 1713 && mt->type <= 1715)
 		 || mt->type == 1800)
 		{
 			mt->mobj = NULL;
