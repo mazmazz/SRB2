@@ -12705,7 +12705,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_IDEYASPAWN
-		1716,            // doomednum
+		1717,            // doomednum
 		S_INVISIBLE,    // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate

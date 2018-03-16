@@ -8787,7 +8787,7 @@ void P_SpawnMapThing(mapthing_t *mthing)
 		|| mthing->type == 308 || mthing->type == 309 // Team Rings
 		|| mthing->type == 1706 // Nights Wing
 		|| (mthing->type >= 600 && mthing->type <= 609) // Placement patterns
-		|| mthing->type == 1705 || (mthing->type >= 1713 && mthing->type <= 1715) // NiGHTS Hoops
+		|| mthing->type == 1705 || (mthing->type >= 1713 && mthing->type <= 1716) // NiGHTS Hoops
 		|| mthing->type == 1800) // Mario Coin
 	{
 		// Don't spawn hoops, wings, or rings yet!
@@ -9682,7 +9682,7 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 		return;
 	}
 	// CUSTOMIZABLE NiGHTS hoop!
-	else if (mthing->type >= 1713 && mthing->type <= 1715)
+	else if (mthing->type >= 1713 && mthing->type <= 1716)
 	{
 		mobj_t *nextmobj = NULL;
 		mobj_t *hoopcenter;
@@ -9803,6 +9803,8 @@ void P_SpawnHoopsAndRings(mapthing_t *mthing)
 					mobj->threshold = 1;
 				else if (mthing->type == 1715)
 					mobj->threshold = 2;
+				else if (mthing->type == 1716)
+					mobj->threshold = 3;
 				else
 					mobj->threshold = 0;
 
