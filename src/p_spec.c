@@ -3148,19 +3148,18 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 
 		case 452: // Fade FOF
 		{
-			//CONS_Printf("Hello! Found a Fade special!\n");
 			INT32 s, j;
 			for (s = -1; (s = P_FindSectorFromLineTag(line, s)) >= 0 ;)
 				for (j = 0; (unsigned)j < sectors[s].linecount; j++)
 					if (sectors[s].lines[j]->special >= 100 && sectors[s].lines[j]->special < 300)
-						P_AddMasterFader(sides[line->sidenum[0]].textureoffset>>FRACBITS, 
-						                 sides[line->sidenum[0]].rowoffset>>FRACBITS, 
+						P_AddMasterFader(sides[line->sidenum[0]].textureoffset>>FRACBITS,
+						                 sides[line->sidenum[0]].rowoffset>>FRACBITS,
 										 (line->flags & ML_BLOCKMONSTERS),	// handle FF_EXISTS
 										 (line->flags & ML_NOCLIMB), 		// handle FF_SOLID
 										 (INT32)(sectors[s].lines[j]-lines));
 			break;
 		}
-		
+
 		case 453: // Stop fading FOF
 			break;
 
@@ -7088,8 +7087,6 @@ static void P_AddMasterFader(INT32 destvalue, INT32 speed, BOOL handleexist, BOO
 {
 	fade_t *d = Z_Malloc(sizeof *d, PU_LEVSPEC, NULL);
 
-	//CONS_Printf("Adding fader | Dest %i | Speed %i | Ignore %i\n", destvalue, speed, handleflags);
-
 	d->thinker.function.acp1 = (actionf_p1)T_Fade;
 	d->affectee = line;
 	d->destvalue = max(1, min(256, destvalue)); // ffloor->alpha is 1-256
@@ -7105,8 +7102,6 @@ static void P_AddMasterFader(INT32 destvalue, INT32 speed, BOOL handleexist, BOO
 		d->handleflags |= FF_SOLID;
 
 	P_AddThinker(&d->thinker);
-
-	//CONS_Printf("Added  fader | Dest %i | Speed %i | Ignore %i\n", d->destvalue, d->speed, d->handleflags);
 }
 
 /** Makes a FOF fade
@@ -7128,34 +7123,19 @@ void T_Fade(fade_t *d)
 				continue;
 
 			// fade out
-			//CONS_Printf("Fading from %i to %i\n", rover->alpha, d->destvalue);
 			if (rover->alpha > d->destvalue)
 			{
 				// we'll reach our destvalue
 				if (rover->alpha - d->speed <= d->destvalue + d->speed)
 				{
-					if (rover->alpha != d->destvalue)
-					{
-						//CONS_Printf("Finished fading out\n");
-						rover->alpha = d->destvalue;
-
-						if (d->handleflags & FF_EXISTS)
-						{
-							if (rover->alpha <= 1)
-								rover->flags &= ~FF_EXISTS;
-							else
-								rover->flags |= FF_EXISTS;
-						}
-
-						if ((d->handleflags & FF_SOLID)
-							&& !(rover->flags & FF_SWIMMABLE)
-							&& !(rover->flags & FF_QUICKSAND))
-							rover->flags &= ~FF_SOLID; // make intangible at end of fade-out
-					}
+					rover->alpha = d->destvalue;
+					if (!d->ignoreflags && rover->alpha <= 1)
+						rover->flags &= ~FF_EXISTS;
+					else
+						rover->flags |= FF_EXISTS;
 				}
-				else
+				else // continue fading out
 				{
-					//CONS_Printf("Fading out...\n");
 					rover->alpha -= d->speed;
 
 					if (d->handleflags & FF_EXISTS)
@@ -7174,30 +7154,14 @@ void T_Fade(fade_t *d)
 				// we'll reach our destvalue
 				if (rover->alpha + d->speed >= d->destvalue - d->speed)
 				{
-					if (rover->alpha != d->destvalue)
-					{
-						//CONS_Printf("Finished fading in\n");
-						rover->alpha = d->destvalue;
-						
-						if (d->handleflags & FF_EXISTS)
-						{
-							if (rover->alpha <= 1)
-								rover->flags &= ~FF_EXISTS;
-							else
-								rover->flags |= FF_EXISTS;
-						}
-
-						if ((d->handleflags & FF_SOLID)
-							&& !(rover->flags & FF_SWIMMABLE)
-							&& !(rover->flags & FF_QUICKSAND))
-							rover->flags |= FF_SOLID; // make solid at end of fade-in
-					}
+					rover->alpha = d->destvalue;
+					if (!d->ignoreflags)
+						rover->flags |= FF_EXISTS;
 				}
-				else
+				else // continue fading in
 				{
-					//CONS_Printf("Fading in...\n");
 					rover->alpha += d->speed;
-					
+
 					if (d->handleflags & FF_EXISTS)
 						rover->flags |= FF_EXISTS;
 
@@ -7215,7 +7179,6 @@ void T_Fade(fade_t *d)
 	// no more ffloors to fade? remove myself
 	if (affectedffloors == 0)
 	{
-		//CONS_Printf("No more FOFs to fade!\n");
 		// \todo how to erase the fade_t struct?
 		P_RemoveThinker(&d->thinker);
 	}
