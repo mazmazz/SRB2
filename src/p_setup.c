@@ -690,6 +690,7 @@ static void P_LoadSectors(lumpnum_t lumpnum)
 		ss->floordata = NULL;
 		ss->ceilingdata = NULL;
 		ss->lightingdata = NULL;
+		ss->fadingdata = NULL;
 
 		ss->linecount = 0;
 		ss->lines = NULL;
