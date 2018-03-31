@@ -7128,11 +7128,23 @@ void T_Fade(fade_t *d)
 				// we'll reach our destvalue
 				if (rover->alpha - d->speed <= d->destvalue + d->speed)
 				{
-					rover->alpha = d->destvalue;
-					if (!d->ignoreflags && rover->alpha <= 1)
-						rover->flags &= ~FF_EXISTS;
-					else
-						rover->flags |= FF_EXISTS;
+					if (rover->alpha != d->destvalue)
+					{
+						rover->alpha = d->destvalue;
+
+						if (d->handleflags & FF_EXISTS)
+						{
+							if (rover->alpha <= 1)
+								rover->flags &= ~FF_EXISTS;
+							else
+								rover->flags |= FF_EXISTS;
+						}
+
+						if ((d->handleflags & FF_SOLID)
+							&& !(rover->flags & FF_SWIMMABLE)
+							&& !(rover->flags & FF_QUICKSAND))
+							rover->flags &= ~FF_SOLID; // make intangible at end of fade-out
+					}
 				}
 				else // continue fading out
 				{
@@ -7154,9 +7166,23 @@ void T_Fade(fade_t *d)
 				// we'll reach our destvalue
 				if (rover->alpha + d->speed >= d->destvalue - d->speed)
 				{
-					rover->alpha = d->destvalue;
-					if (!d->ignoreflags)
-						rover->flags |= FF_EXISTS;
+					if (rover->alpha != d->destvalue)
+					{
+						rover->alpha = d->destvalue;
+
+						if (d->handleflags & FF_EXISTS)
+						{
+							if (rover->alpha <= 1)
+								rover->flags &= ~FF_EXISTS;
+							else
+								rover->flags |= FF_EXISTS;
+						}
+
+						if ((d->handleflags & FF_SOLID)
+							&& !(rover->flags & FF_SWIMMABLE)
+							&& !(rover->flags & FF_QUICKSAND))
+							rover->flags |= FF_SOLID; // make solid at end of fade-in
+					}
 				}
 				else // continue fading in
 				{
