@@ -106,7 +106,7 @@ void I_StartupSound(void)
 	music_volume = midi_volume = sfx_volume = 0;
 
 #if SDL_MIXER_VERSION_ATLEAST(1,2,11)
-	Mix_Init(MIX_INIT_FLAC|MIX_INIT_MP3|MIX_INIT_OGG);
+	Mix_Init(MIX_INIT_FLAC|MIX_INIT_MP3|MIX_INIT_OGG|MIX_INIT_MOD);
 #endif
 
 	if (Mix_OpenAudio(SAMPLERATE, AUDIO_S16SYS, 2, BUFFERSIZE) < 0)
@@ -693,6 +693,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 #ifdef HAVE_OPENMPT
 	switch(Mix_GetMusicType(music))
 	{
+		case MUS_MODPLUG_UNUSED:
 		case MUS_MOD:
 			mod = openmpt_module_create_from_memory2(data, len, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 			if (!mod)
