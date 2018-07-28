@@ -3930,7 +3930,7 @@ static void Command_Tunes_f(void)
 		CONS_Alert(CONS_NOTICE, M_GetText("Music name too long - truncated to six characters.\n"));
 
 	if (argc > 2)
-		track = (UINT16)atoi(COM_Argv(2))-1;
+		track = (UINT16)atoi(COM_Argv(2));
 
 	if (tunenum)
 		snprintf(mapmusname, 7, "%sM", G_BuildMapName(tunenum));
