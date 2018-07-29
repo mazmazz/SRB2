@@ -787,9 +787,9 @@ void I_StopDigSong(void)
 	if (mod)
 	{
 		Mix_HookMusic(NULL, NULL);
-		mod = NULL;
-		current_subsong = -1;
 		openmpt_module_destroy(mod);
+		mod = 0;
+		current_subsong = -1;
 	}
 #endif 	
 	if (!music)
