@@ -1542,7 +1542,7 @@ static void SaveFadeThinker(const thinker_t *th, const UINT8 type)
 	WRITEUINT8(save_p, ht->dotranslucent);
 	WRITEUINT8(save_p, ht->dosolid);
 	WRITEUINT8(save_p, ht->dospawnflags);
-	WRITEUINT8(save_p, ht->dofadeinonly);
+	WRITEUINT8(save_p, ht->doghostfade);
 }
 
 #ifdef POLYOBJECTS
@@ -2520,7 +2520,7 @@ static inline void LoadFadeThinker(actionf_p1 thinker)
 	ht->dotranslucent = READUINT8(save_p);
 	ht->dosolid = READUINT8(save_p);
 	ht->dospawnflags = READUINT8(save_p);
-	ht->dofadeinonly = READUINT8(save_p);
+	ht->doghostfade = READUINT8(save_p);
 
 	line_t *ffloorline = LoadLine(ht->affectee);
 	if (ffloorline && ffloorline->frontsector)
