@@ -1249,8 +1249,6 @@ static void P_LoadLineDefs(lumpnum_t lumpnum)
 #ifdef POLYOBJECTS
 		ld->polyobj = NULL;
 #endif
-
-		ld->fadingdata = NULL;
 	}
 
 	Z_Free(data);
