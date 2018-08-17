@@ -3194,15 +3194,16 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 						(INT32)(rover->master-lines));
 				else
 				{
-					P_RemoveFading(&lines[(INT32)(sectors[s].lines[j]-lines)]);
+					P_RemoveFading(&lines[(INT32)(rover->master-lines)]);
 					P_FindFakeFloorsDoAlpha(destvalue, 0,   // set alpha immediately
 						(line->flags & ML_BLOCKMONSTERS),	// handle FF_EXISTS
 						!(line->flags & ML_NOCLIMB),		// do not handle FF_TRANSLUCENT
 						(line->flags & ML_BOUNCY), 			// handle FF_SOLID
 						(line->flags & ML_EFFECT1), 		// handle spawnflags
 						(line->flags & ML_EFFECT2), 		// enable flags on fade-in finish only
-						(INT32)(sectors[s].lines[j]-lines));
+						(INT32)(rover->master-lines));
 				}
+				break;
 			}
 			break;
 		}
@@ -3236,7 +3237,8 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 					return;
 				}
 
-				P_RemoveFading(&lines[(INT32)(sectors[s].lines[j]-lines)]);
+				P_RemoveFading(&lines[(INT32)(rover->master-lines)]);
+				break;
 			}
 			break;
 		}
@@ -7160,25 +7162,13 @@ void T_Disappear(disappear_t *d)
  */
 static void P_ResetFading(line_t *line, fade_t *data)
 {
-	ffloor_t *rover;
-	register INT32 s;
-
 	// find any existing thinkers and remove them, then replace with new data
-	for (s = -1; (s = P_FindSectorFromLineTag(line, s)) >= 0 ;)
+	if(((fade_t *)line->fadingdata) != data)
 	{
-		for (rover = sectors[s].ffloors; rover; rover = rover->next)
-		{
-			if (rover->master != line)
-				continue;
+		if(&((fade_t *)line->fadingdata)->thinker)
+			P_RemoveThinker(&((fade_t *)line->fadingdata)->thinker);
 
-			if(((fade_t *)rover->master->frontsector->fadingdata) != data)
-			{
-				if(&((fade_t *)rover->master->frontsector->fadingdata)->thinker)
-					P_RemoveThinker(&((fade_t *)rover->master->frontsector->fadingdata)->thinker);
-
-				rover->master->frontsector->fadingdata = data;
-			}
-		}
+		line->fadingdata = data;
 	}
 }
 

@@ -2698,7 +2698,13 @@ static void P_NetUnArchiveThinkers(void)
 	// clear sector thinker pointers so they don't point to non-existant thinkers for all of eternity
 	for (i = 0; i < numsectors; i++)
 	{
-		sectors[i].floordata = sectors[i].ceilingdata = sectors[i].lightingdata = sectors[i].fadingdata = NULL;
+		sectors[i].floordata = sectors[i].ceilingdata = sectors[i].lightingdata = NULL;
+	}
+
+	// same for line thinker pointers
+	for (i = 0; i < numlines; i++)
+	{
+		lines[i].fadingdata = NULL;
 	}
 
 	// read in saved thinkers
