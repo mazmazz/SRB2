@@ -7245,19 +7245,14 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 		{
 			if (rover->alpha >= 256)
 			{
-				//rover->flags |= FF_CUTLEVEL;
+				//rover->flags |= (FF_CUTLEVEL | FF_CUTEXTRA);
 				rover->flags &= ~FF_TRANSLUCENT;
 			}
 			else
 			{
 				rover->flags |= FF_TRANSLUCENT;
-				//rover->flags &= ~FF_CUTLEVEL;
+				//rover->flags &= ~(FF_CUTLEVEL | FF_CUTEXTRA);
 			}
-
-			// if (rover->flags & FF_SOLID)
-			// 	rover->flags &= ~FF_CUTSPRITES;
-			// else
-			// 	rover->flags |= FF_CUTSPRITES;
 		}
 	}
 	else
@@ -7268,17 +7263,12 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 		if (dotranslucent)
 		{
 			rover->flags |= FF_TRANSLUCENT;
-			//rover->flags &= ~FF_CUTLEVEL;
-
-			// if (rover->flags & FF_SOLID)
-			// 	rover->flags &= ~FF_CUTSPRITES;
-			// else
-			// 	rover->flags |= FF_CUTSPRITES;
+			//rover->flags &= ~(FF_CUTLEVEL | FF_CUTEXTRA);
 		}
 
 		if (docollision)
 		{
-			if (doghostfade) // remove interaction flags during fade
+			if (doghostfade) // remove collision flags during fade
 			{
 				if (rover->spawnflags & FF_SOLID)
 					rover->flags &= ~FF_SOLID;
@@ -7289,7 +7279,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 				if (rover->spawnflags & FF_BUSTUP)
 					rover->flags &= ~FF_BUSTUP;
 			}
-			else // keep interaction during fade
+			else // keep collision during fade
 			{
 				if (rover->spawnflags & FF_SOLID)
 					rover->flags |= FF_SOLID;
