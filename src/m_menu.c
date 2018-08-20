@@ -287,6 +287,9 @@ menu_t OP_VideoOptionsDef, OP_VideoModeDef;
 menu_t OP_OpenGLOptionsDef, OP_OpenGLFogDef, OP_OpenGLColorDef;
 #endif
 menu_t OP_SoundOptionsDef;
+#ifdef HAVE_OPENMPT
+menu_t OP_ModuleOptionsDef;
+#endif
 static void M_ToggleSFX(void);
 static void M_ToggleDigital(void);
 static void M_ToggleMIDI(void);
@@ -1230,7 +1233,17 @@ static menuitem_t OP_SoundOptionsMenu[] =
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle SFX"   , M_ToggleSFX,        50},
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle Digital Music", M_ToggleDigital,     60},
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle MIDI Music", M_ToggleMIDI,        70},
+	#ifdef HAVE_OPENMPT
+	{IT_STRING 	  | IT_SUBMENU, NULL, "Module options...", &OP_ModuleOptionsDef, 80},
+	#endif
 };
+
+#ifdef HAVE_OPENMPT
+static menuitem_t OP_ModuleOptionMenu[] =
+{
+	{IT_STRING | IT_CVAR, NULL, "Filter" , &cv_modfilter,    10},
+};
+#endif
 
 static menuitem_t OP_DataOptionsMenu[] =
 {
@@ -1692,6 +1705,9 @@ menu_t OP_VideoModeDef =
 	NULL
 };
 menu_t OP_SoundOptionsDef = DEFAULTMENUSTYLE("M_SOUND", OP_SoundOptionsMenu, &OP_MainDef, 60, 30);
+#ifdef HAVE_OPENMPT
+menu_t OP_ModuleOptionsDef = DEFAULTMENUSTYLE("M_SOUND", OP_ModuleOptionMenu, &OP_SoundOptionsDef, 30, 30);
+#endif
 menu_t OP_GameOptionsDef = DEFAULTMENUSTYLE("M_GAME", OP_GameOptionsMenu, &OP_MainDef, 30, 30);
 menu_t OP_ServerOptionsDef = DEFAULTMENUSTYLE("M_SERVER", OP_ServerOptionsMenu, &OP_MainDef, 30, 30);
 

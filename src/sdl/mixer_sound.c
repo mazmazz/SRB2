@@ -65,6 +65,8 @@ static UINT16 SAMPLERATE = 44100;
 
 #ifdef HAVE_OPENMPT
 #include "libopenmpt/libopenmpt.h"
+static CV_PossibleValue_t interpolationfilter_cons_t[] = {{0, "Default"}, {1, "None"}, {2, "Linear"}, {4, "Cubic"}, {8, "Windowed sinc"}, {0, NULL}};
+consvar_t cv_modfilter = {"module_filter", "0", CV_SAVE, interpolationfilter_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 #endif	
 
 UINT8 sound_started = false;
@@ -121,7 +123,7 @@ void I_StartupSound(void)
 	Mix_AllocateChannels(256);
 
 #ifdef HAVE_OPENMPT
-
+	CV_RegisterVar(&cv_modfilter);
 	CONS_Printf("libopenmpt version: %s\n", openmpt_get_string("library_version"));
 	CONS_Printf("libopenmpt build date: %s\n", openmpt_get_string("build"));
 #endif	
@@ -495,6 +497,8 @@ static void mix_openmpt(void *udata, Uint8 *stream, int len)
 		return;
 
 	(void)udata;
+
+	openmpt_module_set_render_param(mod, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, cv_modfilter.value);
 	openmpt_module_set_repeat_count(mod, -1); // Always repeat
 	openmpt_module_read_interleaved_stereo(mod, SAMPLERATE, BUFFERSIZE, (short *)stream);
 
