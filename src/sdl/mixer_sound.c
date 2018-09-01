@@ -121,13 +121,6 @@ void I_StartupSound(void)
 	sound_started = true;
 	songpaused = false;
 	Mix_AllocateChannels(256);
-
-#ifdef HAVE_OPENMPT
-	CV_RegisterVar(&cv_modfilter);
-	CONS_Printf("libopenmpt version: %s\n", openmpt_get_string("library_version"));
-	CONS_Printf("libopenmpt build date: %s\n", openmpt_get_string("build"));
-#endif	
-
 }
 
 void I_ShutdownSound(void)
@@ -560,6 +553,15 @@ void I_ShutdownDigMusic(void)
 		gme = NULL;
 	}
 #endif
+
+#ifdef HAVE_OPENMPT
+	if (mod)
+	{
+		Mix_HookMusic(NULL, NULL);
+		openmpt_module_destroy(mod);
+		mod = NULL;
+	}
+#endif
 	if (!music)
 		return;
 	Mix_HookMusicFinished(NULL);
@@ -792,7 +794,7 @@ void I_StopDigSong(void)
 	{
 		Mix_HookMusic(NULL, NULL);
 		openmpt_module_destroy(mod);
-		mod = 0;
+		mod = NULL;
 		current_subsong = -1;
 	}
 #endif 	
@@ -834,7 +836,6 @@ boolean I_SetSongSpeed(float speed)
 	{
 		sprintf(modspd, "%g", speed);
 		openmpt_module_ctl_set(mod, "play.tempo_factor", modspd);
-		openmpt_module_ctl_set(mod, "play.pitch_factor", modspd);
 		return true;
 	}
 #else
