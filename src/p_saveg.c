@@ -972,6 +972,7 @@ typedef enum
 	tc_polyswingdoor,
 	tc_polyflag,
 	tc_polydisplace,
+	tc_polyfade,
 #endif
 	tc_end
 } specials_e;
@@ -1845,6 +1846,11 @@ static void P_NetArchiveThinkers(void)
 			SavePolydisplaceThinker(th, tc_polydisplace);
 			continue;
 		}
+		else if (th->function.acp1 == (actionf_p1)T_PolyObjFade)
+		{
+			SavePolyfadeThinker(th, tc_polyfade);
+			continue;
+		}
 #endif
 #ifdef PARANOIA
 		else if (th->function.acv != P_RemoveThinkerDelayed) // wait garbage collection
@@ -2593,6 +2599,20 @@ static inline void LoadPolydisplaceThinker(actionf_p1 thinker)
 	ht->oldHeights = READFIXED(save_p);
 	P_AddThinker(&ht->thinker);
 }
+
+//
+// LoadPolyfadeThinker
+//
+// Loads a polyfadet_t thinker
+//
+static void LoadPolyfadeThinker(actionf_p1 thinker)
+{
+	polyfade_t *ht = Z_Malloc(sizeof (*ht), PU_LEVSPEC, NULL);
+	ht->thinker.function.acp1 = thinker;
+	ht->polyObjNum = READINT32(save_p);
+	// \todo polyfade thinker fields
+	P_AddThinker(&ht->thinker);
+}
 #endif
 
 /*
@@ -2785,6 +2805,10 @@ static void P_NetUnArchiveThinkers(void)
 
 			case tc_polydisplace:
 				LoadPolydisplaceThinker((actionf_p1)T_PolyObjDisplace);
+				break;
+
+			case tc_polyfade:
+				LoadPolyfadeThinker((actionf_p1)T_PolyObjFade);
 				break;
 #endif
 			case tc_scroll:

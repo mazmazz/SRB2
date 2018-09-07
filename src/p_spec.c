@@ -1376,6 +1376,35 @@ static void PolyTranslucency(line_t *line)
 }
 
 //
+// PolyFade
+//
+// Makes a polyobject translucency fade and applies tangibility
+//
+static void PolyFade(line_t *line)
+{
+	INT32 polyObjNum = line->tag;
+	polyobj_t *po;
+
+	if (!(po = Polyobj_GetForNum(polyObjNum)))
+	{
+		CONS_Debug(DBG_POLYOBJ, "EV_DoPolyObjWaypoint: bad polyobj %d\n", polyObjNum);
+		return;
+	}
+
+	// don't allow line actions to affect bad polyobjects
+	if (po->isBad)
+		return;
+
+	polyfadedata_t pfd;
+
+	pfd.polyObjNum = line->tag;
+
+	// \todo polyfadedata fields
+
+	return EV_DoPolyObjFade(&pfd);
+}
+
+//
 // PolyWaypoint
 //
 // Parses arguments for parameterized polyobject waypoint movement
@@ -3162,6 +3191,9 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			break;
 		case 491:
 			PolyTranslucency(line);
+			break;
+		case 492:
+			PolyFade(line);
 			break;
 #endif
 
