@@ -52,7 +52,7 @@ fixed_t tmfloorz, tmceilingz;
 static fixed_t tmdropoffz, tmdrpoffceilz; // drop-off floor/ceiling heights
 mobj_t *tmfloorthing; // the thing corresponding to tmfloorz or NULL if tmfloorz is from a sector
 mobj_t *tmhitthing; // the solid thing you bumped into (for collisions)
-ffloor_t *tmfloorrover, *tmceilingrover;
+//ffloor_t *tmfloorrover, *tmceilingrover; // unused for now
 size_t tmfloor_sectornum, tmfloor_rovernum, tmceiling_sectornum, tmceiling_rovernum;
 #ifdef ESLOPE
 pslope_t *tmfloorslope, *tmceilingslope;
@@ -982,7 +982,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 				if (thing->z + thing->height > tmfloorz)
 				{
 					tmfloorz = thing->z + thing->height;
-					tmfloorrover = NULL;
+					// tmfloorrover = NULL;
 					tmfloor_sectornum = tmfloor_rovernum = 0;
 #ifdef ESLOPE
 					tmfloorslope = NULL;
@@ -1003,7 +1003,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 				&& tmthing->z + tmthing->height < tmthing->ceilingz)
 			{
 				tmfloorz = tmceilingz = topz; // block while in air
-				tmceilingrover = NULL;
+				// tmceilingrover = NULL;
 				tmceiling_sectornum = tmceiling_rovernum = 0;
 #ifdef ESLOPE
 				tmceilingslope = NULL;
@@ -1013,7 +1013,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 			else if (topz < tmceilingz && tmthing->z <= thing->z+thing->height)
 			{
 				tmceilingz = topz;
-				tmceilingrover = NULL;
+				// tmceilingrover = NULL;
 				tmceiling_sectornum = tmceiling_rovernum = 0;
 #ifdef ESLOPE
 				tmceilingslope = NULL;
@@ -1031,7 +1031,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 				if (thing->z < tmceilingz)
 				{
 					tmceilingz = thing->z;
-					tmceilingrover = NULL;
+					// tmceilingrover = NULL;
 					tmceiling_sectornum = tmceiling_rovernum = 0;
 #ifdef ESLOPE
 					tmceilingslope = NULL;
@@ -1052,7 +1052,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 				&& tmthing->z > tmthing->floorz)
 			{
 				tmfloorz = tmceilingz = topz; // block while in air
-				tmfloorrover = NULL;
+				// tmfloorrover = NULL;
 				tmfloor_sectornum = tmfloor_rovernum = 0;
 #ifdef ESLOPE
 				tmfloorslope = NULL;
@@ -1062,7 +1062,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 			else if (topz > tmfloorz && tmthing->z+tmthing->height >= thing->z)
 			{
 				tmfloorz = topz;
-				tmfloorrover = NULL;
+				// tmfloorrover = NULL;
 				tmfloor_sectornum = tmfloor_rovernum = 0;
 #ifdef ESLOPE
 				tmfloorslope = NULL;
@@ -1189,7 +1189,7 @@ static boolean PIT_CheckLine(line_t *ld)
 	{
 		tmceilingz = opentop;
 		ceilingline = ld;
-		tmceilingrover = NULL;
+		// tmceilingrover = NULL;
 		tmceiling_sectornum = tmceiling_rovernum = 0;
 #ifdef ESLOPE
 		tmceilingslope = opentopslope;
@@ -1199,7 +1199,7 @@ static boolean PIT_CheckLine(line_t *ld)
 	if (openbottom > tmfloorz)
 	{
 		tmfloorz = openbottom;
-		tmfloorrover = NULL;
+		// tmfloorrover = NULL;
 		tmfloor_sectornum = tmfloor_rovernum = 0;
 #ifdef ESLOPE
 		tmfloorslope = openbottomslope;
@@ -1282,9 +1282,9 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 	// will adjust them.
 	tmfloorz = tmdropoffz = P_GetFloorZ(thing, newsubsec->sector, x, y, NULL); //newsubsec->sector->floorheight;
 	tmceilingz = P_GetCeilingZ(thing, newsubsec->sector, x, y, NULL); //newsubsec->sector->ceilingheight;
-	tmfloorrover = NULL;
+	// tmfloorrover = NULL;
 	tmfloor_sectornum = tmfloor_rovernum = 0;
-	tmceilingrover = NULL;
+	// tmceilingrover = NULL;
 	tmceiling_sectornum = tmceiling_rovernum = 0;
 #ifdef ESLOPE
 	tmfloorslope = newsubsec->sector->f_slope;
@@ -1333,7 +1333,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 					{
 						if (tmfloorz < topheight - sinklevel) {
 							tmfloorz = topheight - sinklevel;
-							tmfloorrover = rover;
+							// tmfloorrover = rover;
 							tmfloor_sectornum = newsubsec->sector - sectors;
 							tmfloor_rovernum = rovernum;
 #ifdef ESLOPE
@@ -1345,7 +1345,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 					{
 						if (tmceilingz > bottomheight + sinklevel) {
 							tmceilingz = bottomheight + sinklevel;
-							tmceilingrover = rover;
+							// tmceilingrover = rover;
 							tmceiling_sectornum = newsubsec->sector - sectors;
 							tmceiling_rovernum = rovernum;
 #ifdef ESLOPE
@@ -1376,7 +1376,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 				{
 					if (tmfloorz < thing->z) {
 						tmfloorz = thing->z;
-						tmfloorrover = rover;
+						// tmfloorrover = rover;
 						tmfloor_sectornum = newsubsec->sector - sectors;
 						tmfloor_rovernum = rovernum;
 #ifdef ESLOPE
@@ -1398,7 +1398,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 				&& !(rover->flags & FF_REVERSEPLATFORM))
 			{
 				tmfloorz = tmdropoffz = topheight;
-				tmfloorrover = rover;
+				// tmfloorrover = rover;
 				tmfloor_sectornum = newsubsec->sector - sectors;
 				tmfloor_rovernum = rovernum;
 #ifdef ESLOPE
@@ -1410,7 +1410,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 				&& !(thing->type == MT_SKIM && (rover->flags & FF_SWIMMABLE)))
 			{
 				tmceilingz = tmdrpoffceilz = bottomheight;
-				tmceilingrover = rover;
+				// tmceilingrover = rover;
 				tmceiling_sectornum = newsubsec->sector - sectors;
 				tmceiling_rovernum = rovernum;
 #ifdef ESLOPE
@@ -1910,8 +1910,8 @@ boolean PIT_PushableMoved(mobj_t *thing)
 		mobj_t *oldthing = tmthing;
 		line_t *oldceilline = ceilingline;
 		line_t *oldblockline = blockingline;
-		ffloor_t *oldflrrover = tmfloorrover;
-		ffloor_t *oldceilrover = tmceilingrover;
+		// ffloor_t *oldflrrover = tmfloorrover;
+		// ffloor_t *oldceilrover = tmceilingrover;
 		size_t oldflrrover_sectornum = tmfloor_sectornum;
 		size_t oldflrrover_ffloornum = tmfloor_rovernum;
 		size_t oldceilrover_sectornum = tmceiling_sectornum;
@@ -1932,8 +1932,8 @@ boolean PIT_PushableMoved(mobj_t *thing)
 		P_SetTarget(&tmthing, oldthing);
 		ceilingline = oldceilline;
 		blockingline = oldblockline;
-		tmfloorrover = oldflrrover;
-		tmceilingrover = oldceilrover;
+		// tmfloorrover = oldflrrover;
+		// tmceilingrover = oldceilrover;
 		tmfloor_sectornum = oldflrrover_sectornum;
 		tmfloor_rovernum = oldflrrover_ffloornum;
 		tmceiling_sectornum = oldceilrover_sectornum;
