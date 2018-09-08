@@ -7261,7 +7261,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 	// routines common to both fade in and fade out
 	if (!stillfading)
 	{
-		if (doexists)
+		if (doexists && !(rover->spawnflags & FF_BUSTUP))
 		{
 			if (alpha <= 1)
 				rover->flags &= ~FF_EXISTS;
@@ -7285,7 +7285,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 	}
 	else
 	{
-		if (doexists)
+		if (doexists && !(rover->spawnflags & FF_BUSTUP))
 			rover->flags |= FF_EXISTS;
 
 		if (dotranslucent)
