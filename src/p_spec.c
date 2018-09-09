@@ -7282,6 +7282,10 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 				rover->flags &= ~FF_EXISTS;
 			else
 				rover->flags |= FF_EXISTS;
+
+			// Re-render lighting at end of fade
+			if (dolighting && !(rover->spawnflags & FF_NOSHADE) && !(rover->flags & FF_EXISTS))
+				rover->target->moved = true;
 		}
 
 		if (dotranslucent)
@@ -7323,7 +7327,13 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 	else
 	{
 		if (doexists && !(rover->spawnflags & FF_BUSTUP))
+		{
+			// Re-render lighting if we haven't yet set FF_EXISTS (beginning of fade)
+			if (dolighting && !(rover->spawnflags & FF_NOSHADE) && !(rover->flags & FF_EXISTS))
+				rover->target->moved = true;
+
 			rover->flags |= FF_EXISTS;
+		}
 
 		if (dotranslucent)
 		{
