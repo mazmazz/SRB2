@@ -103,10 +103,10 @@ static void Add_Pusher(pushertype_e type, fixed_t x_mag, fixed_t y_mag, mobj_t *
 static void Add_MasterDisappearer(tic_t appeartime, tic_t disappeartime, tic_t offset, INT32 line, INT32 sourceline);
 static void P_ResetFakeFloorFader(ffloor_t *rover, fade_t *data, boolean finalize);
 #define P_RemoveFakeFloorFader(l) P_ResetFakeFloorFader(l, NULL, false);
-static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
+static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed, INT32 duration, UINT32 interval, tic_t firsttic,
 	boolean doexists, boolean dotranslucent, boolean dolighting, boolean docollision, boolean doghostfade, boolean exactalpha);
 static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloornum,
-	INT16 destvalue, INT16 speed,
+	INT16 destvalue, INT16 speed, boolean ticbased,
 	boolean doexists, boolean dotranslucent, boolean dolighting, boolean docollision, boolean doghostfade, boolean exactalpha);
 static void P_AddBlockThinker(sector_t *sec, line_t *sourceline);
 static void P_AddFloatThinker(sector_t *sec, INT32 tag, line_t *sourceline);
@@ -3188,6 +3188,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 				if (speed > 0)
 					P_AddFakeFloorFader(rover, secnum, j,
 						destvalue, speed,
+						(line->flags & ML_EFFECT5),         // tic-based logic
 						!(line->flags & ML_BLOCKMONSTERS),  // do not handle FF_EXISTS
 						!(line->flags & ML_NOCLIMB),        // do not handle FF_TRANSLUCENT
 						!(line->flags & ML_EFFECT2),        // do not handle lighting
@@ -3199,6 +3200,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 					P_RemoveFakeFloorFader(rover);
 					P_FadeFakeFloor(rover,
 						destvalue, 0, // set alpha immediately
+						-1, 0, 0,                           // tic-based logic
 						!(line->flags & ML_BLOCKMONSTERS),  // do not handle FF_EXISTS
 						!(line->flags & ML_NOCLIMB),        // do not handle FF_TRANSLUCENT
 						!(line->flags & ML_EFFECT2),        // do not handle lighting
@@ -7176,6 +7178,9 @@ static void P_ResetFakeFloorFader(ffloor_t *rover, fade_t *data, boolean finaliz
 						fadingdata->alpha - 1 : // trigger fade-out finish
 						fadingdata->alpha + 1, // trigger fade-in finish
 					0,
+					fadingdata->duration,
+					fadingdata->interval,
+					fadingdata->firsttic,
 					fadingdata->doexists,
 					fadingdata->dotranslucent,
 					fadingdata->docollision,
@@ -7194,9 +7199,10 @@ static void P_ResetFakeFloorFader(ffloor_t *rover, fade_t *data, boolean finaliz
 	}
 }
 
-static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
+static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed, INT32 duration, UINT32 interval, tic_t firsttic,
 	boolean doexists, boolean dotranslucent, boolean dolighting, boolean docollision, boolean doghostfade, boolean exactalpha)
 {
+	boolean ticbased = (duration > -1);
 	boolean stillfading = false;
 	INT32 alpha;
 	fade_t *fadingdata = (fade_t *)rover->fadingdata;
@@ -7224,7 +7230,8 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 	else if (alpha > destvalue) // fade out
 	{
 		// finish fading out
-		if (speed < 1 || alpha - speed <= destvalue + speed)
+		if (speed < 1 || (!ticbased && alpha - speed <= destvalue + speed) ||
+			(ticbased && (gametic - firsttic >= duration || alpha <= destvalue)))
 		{
 			alpha = destvalue;
 
@@ -7244,14 +7251,18 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 		}
 		else // continue fading out
 		{
-			alpha -= speed;
+			if (!ticbased)
+				alpha -= speed;
+			else if (ticbased && !((gametic - firsttic) % interval))
+				alpha = max(alpha - speed, destvalue);
 			stillfading = true;
 		}
 	}
 	else // fade in
 	{
 		// finish fading in
-		if (speed < 1 || alpha + speed >= destvalue - speed)
+		if (speed < 1 || (!ticbased && alpha + speed >= destvalue - speed) ||
+			(ticbased && (gametic - firsttic >= duration || alpha >= destvalue)))
 		{
 			alpha = destvalue;
 
@@ -7271,7 +7282,10 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 		}
 		else // continue fading in
 		{
-			alpha += speed;
+			if (!ticbased)
+				alpha += speed;
+			else if (ticbased && !((gametic - firsttic) % interval))
+				alpha = min(alpha + speed, destvalue);
 			stillfading = true;
 		}
 	}
@@ -7424,6 +7438,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
   *
   * \param destvalue    transparency value to fade to
   * \param speed        speed to fade by
+  * \param ticbased     tic-based logic, speed = duration
   * \param doexists	    handle FF_EXISTS
   * \param dotranslucent handle FF_TRANSLUCENT
   * \param dolighting  fade FOF light
@@ -7432,7 +7447,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
   * \param exactalpha   use exact alpha values (opengl)
   */
 static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloornum,
-	INT16 destvalue, INT16 speed,
+	INT16 destvalue, INT16 speed, boolean ticbased,
 	boolean doexists, boolean dotranslucent, boolean dolighting, boolean docollision, boolean doghostfade, boolean exactalpha)
 {
 	// already equal, nothing to do
@@ -7457,7 +7472,21 @@ static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloor
 
 	d->alpha = rover->alpha;
 	d->destvalue = max(1, min(256, destvalue)); // ffloor->alpha is 1-256
-	d->speed = max(1, speed); // minimum speed 1/tic // if speed < 1, alpha is set immediately in thinker
+
+	if (ticbased)
+	{
+		d->duration = abs(speed);
+		d->speed = max(abs(FixedFloor(FixedDiv(d->destvalue - d->alpha, d->duration))/FRACUNIT), 1);
+		d->interval = max(FixedFloor(FixedDiv(d->duration, abs(d->destvalue - d->alpha)))/FRACUNIT, 1);
+		d->firsttic = gametic;
+	}
+	else
+	{
+		d->speed = max(1, speed); // minimum speed 1/tic // if speed < 1, alpha is set immediately in thinker
+		d->duration = -1;
+		d->interval = d->firsttic = 0;
+	}
+
 	d->doexists = doexists;
 	d->dotranslucent = dotranslucent;
 	d->dolighting = dolighting;
@@ -7482,7 +7511,8 @@ static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloor
 
 		P_FadeLightBySector(&sectors[rover->secnum],
 			d->destlightlevel,
-			FixedFloor(FixedDiv(abs(d->destvalue - d->alpha), d->speed))/FRACUNIT,
+			ticbased ? d->duration :
+				FixedFloor(FixedDiv(abs(d->destvalue - d->alpha), d->speed))/FRACUNIT,
 			true);
 	}
 	else
@@ -7498,7 +7528,8 @@ static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloor
   */
 void T_Fade(fade_t *d)
 {
-	if (d->rover && !P_FadeFakeFloor(d->rover, d->destvalue, d->speed, d->doexists, d->dotranslucent, d->dolighting, d->docollision, d->doghostfade, d->exactalpha))
+	if (d->rover && !P_FadeFakeFloor(d->rover, d->destvalue, d->speed, d->duration, d->interval, d->firsttic,
+		d->doexists, d->dotranslucent, d->dolighting, d->docollision, d->doghostfade, d->exactalpha))
 	{
 		// Finalize lighting, copypasta from P_AddFakeFloorFader
 		if (d->dolighting && !(d->rover->flags & FF_NOSHADE) && d->destlightlevel > -1)
