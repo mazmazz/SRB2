@@ -709,6 +709,7 @@ static void P_LoadSectors(lumpnum_t lumpnum)
 		ss->moved = true;
 
 		ss->extra_colormap = NULL;
+		ss->spawn_extra_colormap = NULL;
 
 		ss->floor_xoffs = ss->ceiling_xoffs = ss->floor_yoffs = ss->ceiling_yoffs = 0;
 		ss->spawn_flr_xoffs = ss->spawn_ceil_xoffs = ss->spawn_flr_yoffs = ss->spawn_ceil_yoffs = 0;
@@ -1410,7 +1411,7 @@ static void P_LoadSideDefs2(lumpnum_t lumpnum)
 #endif
 				)
 				{
-					sec->extra_colormap = R_CreateColormap(msd->toptexture, msd->midtexture,
+					sec->extra_colormap = sec->spawn_extra_colormap = R_CreateColormap(msd->toptexture, msd->midtexture,
 						msd->bottomtexture);
 					sd->toptexture = sd->bottomtexture = 0;
 				}
