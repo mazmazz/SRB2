@@ -674,6 +674,7 @@ static void P_LoadSectors(lumpnum_t lumpnum)
 		ss->ceilingpic = P_AddLevelFlat(ms->ceilingpic, foundflats);
 
 		ss->lightlevel = SHORT(ms->lightlevel);
+		ss->spawn_lightlevel = SHORT(ms->lightlevel);
 		ss->special = SHORT(ms->special);
 		ss->tag = SHORT(ms->tag);
 		ss->nexttag = ss->firsttag = -1;
