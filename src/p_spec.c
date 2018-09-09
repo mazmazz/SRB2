@@ -7201,6 +7201,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 	// If fading an invisible FOF whose render flags we did not yet set,
 	// initialize its alpha to 1
 	if (dotranslucent &&
+		(rover->spawnflags & FF_NOSHADE) && // do not include light blocks, which don't set FF_NOSHADE
 		!(rover->spawnflags & FF_RENDERSIDES) &&
 		!(rover->spawnflags & FF_RENDERPLANES) &&
 		!(rover->flags & FF_RENDERALL))
@@ -7305,7 +7306,8 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 				}
 			}
 
-			if (!(rover->spawnflags & FF_RENDERSIDES) &&
+			if ((rover->spawnflags & FF_NOSHADE) && // do not include light blocks, which don't set FF_NOSHADE
+				!(rover->spawnflags & FF_RENDERSIDES) &&
 				!(rover->spawnflags & FF_RENDERPLANES))
 			{
 				if (rover->alpha > 1)
@@ -7331,7 +7333,8 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 destvalue, INT16 speed,
 				rover->target->moved = true;
 			}
 
-			if (!(rover->spawnflags & FF_RENDERSIDES) &&
+			if ((rover->spawnflags & FF_NOSHADE) && // do not include light blocks, which don't set FF_NOSHADE
+				!(rover->spawnflags & FF_RENDERSIDES) &&
 				!(rover->spawnflags & FF_RENDERPLANES))
 				rover->flags |= FF_RENDERALL;
 		}
@@ -7425,6 +7428,7 @@ static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloor
 	// If fading an invisible FOF whose render flags we did not yet set,
 	// initialize its alpha to 1
 	if (dotranslucent &&
+		(rover->spawnflags & FF_NOSHADE) && // do not include light blocks, which don't set FF_NOSHADE
 		!(rover->spawnflags & FF_RENDERSIDES) &&
 		!(rover->spawnflags & FF_RENDERPLANES) &&
 		!(rover->flags & FF_RENDERALL))
