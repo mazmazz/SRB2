@@ -7096,6 +7096,8 @@ void P_MobjThinker(mobj_t *mobj)
 				return;
 			mobj->floorz = tmfloorz;
 			mobj->ceilingz = tmceilingz;
+			mobj->floorrover = tmfloorrover;
+			mobj->ceilingrover = tmceilingrover;
 
 			if ((mobj->eflags & MFE_UNDERWATER) && mobj->health > 0)
 			{
@@ -7609,6 +7611,8 @@ void P_SceneryThinker(mobj_t *mobj)
 			return;
 		mobj->floorz = tmfloorz;
 		mobj->ceilingz = tmceilingz;
+		mobj->floorrover = tmfloorrover;
+		mobj->ceilingrover = tmceilingrover;
 	}
 	else
 	{
