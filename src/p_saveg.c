@@ -1150,11 +1150,11 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 	WRITEFIXED(save_p, mobj->floorz);
 	WRITEFIXED(save_p, mobj->ceilingz);
 
-	if (diff & MD2_FLOORROVER)
+	if (diff2 & MD2_FLOORROVER)
 	{
 		ffloor_t *rover;
 		size_t i = 0;
-		INT32 roverindex = -1;
+		UINT32 roverindex = 0;
 
 		for (rover = mobj->floorrover->target->ffloors; rover; rover = rover->next)
 		{
@@ -1167,14 +1167,14 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 		}
 
 		WRITEUINT32(save_p, (UINT32)(mobj->floorrover->target - sectors));
-		WRITEUINT32(save_p, (UINT32)roverindex);
+		WRITEUINT32(save_p, rover ? roverindex : i); // store max index to denote invalid ffloor ref
 	}
 
-	if (diff & MD2_CEILINGROVER)
+	if (diff2 & MD2_CEILINGROVER)
 	{
 		ffloor_t *rover;
 		size_t i = 0;
-		INT32 roverindex = -1;
+		UINT32 roverindex = 0;
 
 		for (rover = mobj->ceilingrover->target->ffloors; rover; rover = rover->next)
 		{
@@ -1186,8 +1186,8 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 			i++;
 		}
 
-		WRITEUINT32(save_p, mobj->ceilingrover->target - sectors);
-		WRITEUINT32(save_p, roverindex);
+		WRITEUINT32(save_p, (UINT32)(mobj->ceilingrover->target - sectors));
+		WRITEUINT32(save_p, rover ? roverindex : i); // store max index to denote invalid ffloor ref
 	}
 
 	if (diff & MD_SPAWNPOINT)
