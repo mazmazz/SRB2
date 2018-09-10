@@ -1284,7 +1284,6 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 	if (newsubsec->sector->ffloors)
 	{
 		ffloor_t *rover;
-		size_t rovernum = 0;
 		fixed_t delta1, delta2;
 		INT32 thingtop = thing->z + thing->height;
 
@@ -1293,10 +1292,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 			fixed_t topheight, bottomheight;
 
 			if (!(rover->flags & FF_EXISTS))
-			{
-				rovernum++;
 				continue;
-			}
 
 			topheight = P_GetFOFTopZ(thing, newsubsec->sector, rover, x, y, NULL);
 			bottomheight = P_GetFOFBottomZ(thing, newsubsec->sector, rover, x, y, NULL);
@@ -1339,7 +1335,6 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 						}
 					}
 				}
-				rovernum++;
 				continue;
 			}
 
@@ -1350,10 +1345,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 			else if (!((rover->flags & FF_BLOCKPLAYER && thing->player)
 				|| (rover->flags & FF_BLOCKOTHERS && !thing->player)
 				|| rover->flags & FF_QUICKSAND))
-			{
-				rovernum++;
 				continue;
-			}
 
 			if (rover->flags & FF_QUICKSAND)
 			{
@@ -1368,7 +1360,6 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 					}
 				}
 				// Quicksand blocks never change heights otherwise.
-				rovernum++;
 				continue;
 			}
 
@@ -1396,7 +1387,6 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 				tmceilingslope = *rover->b_slope;
 #endif
 			}
-			rovernum++;
 		}
 	}
 
