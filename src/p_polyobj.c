@@ -2868,9 +2868,9 @@ void T_PolyObjFade(polyfade_t *th)
 	if (po->thinker == NULL)
 		po->thinker = &th->thinker;
 
-	stillfading = !(gametic - th->firsttic >= th->duration);
+	stillfading = !(--(th->timer) <= 0);
 
-	if (gametic - th->firsttic >= th->duration)
+	if (th->timer <= 0)
 	{
 		po->translucency = th->destvalue; // set to dest translucency
 
@@ -2879,7 +2879,7 @@ void T_PolyObjFade(polyfade_t *th)
 			po->thinker = NULL;
 		P_RemoveThinker(&th->thinker);
 	}
-	else if (!((gametic - th->firsttic) % th->interval))
+	else if (!(th->timer % th->interval))
 	{
 		if (th->speed <= 0)
 			po->translucency = max(po->translucency + th->speed, th->destvalue);
@@ -2963,10 +2963,9 @@ INT32 EV_DoPolyObjFade(polyfadedata_t *pfdata)
 	th->destvalue = pfdata->destvalue;
 	th->docollision = pfdata->docollision;
 	th->doghostfade = pfdata->doghostfade;
-	th->duration = pfdata->duration;
+	th->timer = pfdata->timer;
 	th->speed = pfdata->speed;
 	th->interval = pfdata->interval;
-	th->firsttic = pfdata->firsttic;
 
 	oldpo = po;
 
