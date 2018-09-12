@@ -1626,6 +1626,7 @@ extracolormap_t *R_CreateColormap(char *p1, char *p2, char *p3)
 extracolormap_t *R_AddColormaps(extracolormap_t *exc_augend, extracolormap_t *exc_addend,
 	boolean subR, boolean subG, boolean subB, boolean subA,
 	boolean subFadeR, boolean subFadeG, boolean subFadeB, boolean subFadeA,
+	boolean subFadeStart, boolean subFadeEnd, boolean ignoreFog,
 	boolean useAltAlpha, INT16 altAlpha, INT16 altFadeAlpha,
 	boolean lighttable)
 {
@@ -1642,7 +1643,10 @@ extracolormap_t *R_AddColormaps(extracolormap_t *exc_augend, extracolormap_t *ex
 
 	INT16 red, green, blue, alpha;
 
+	///////////////////
 	// base rgba
+	///////////////////
+
 	red = max(min(
 		R_GetRgbaR(exc_augend->rgba)
 			+ (subR ? -1 : 1) // subtract R
@@ -1666,7 +1670,10 @@ extracolormap_t *R_AddColormaps(extracolormap_t *exc_augend, extracolormap_t *ex
 
 	exc_augend->rgba = R_PutRgbaRGBA(red, green, blue, alpha);
 
-	// fade rgba
+	///////////////////
+	// fade/dark rgba
+	///////////////////
+
 	red = max(min(
 		R_GetRgbaR(exc_augend->fadergba)
 			+ (subFadeR ? -1 : 1) // subtract R
@@ -1691,6 +1698,29 @@ extracolormap_t *R_AddColormaps(extracolormap_t *exc_augend, extracolormap_t *ex
 	alpha = max(min(R_GetRgbaA(exc_augend->fadergba) + (subFadeA ? -1 : 1) * alpha, 25), 0);
 
 	exc_augend->fadergba = R_PutRgbaRGBA(red, green, blue, alpha);
+
+	///////////////////
+	// parameters
+	///////////////////
+
+	exc_augend->fadestart = max(min(
+		exc_augend->fadestart
+			+ (subFadeStart ? -1 : 1) // subtract fadestart
+			* exc_addend->fadestart
+		, 31), 0);
+
+	exc_augend->fadeend = max(min(
+		exc_augend->fadeend
+			+ (subFadeEnd ? -1 : 1) // subtract fadeend
+			* exc_addend->fadeend
+		, 31), 0);
+
+	if (!ignoreFog) // overwrite fog with new value
+		exc_augend->fog = exc_addend->fog;
+
+	///////////////////
+	// put it together
+	///////////////////
 
 	if (!(exc = R_GetColormapFromList(exc_augend)))
 	{
