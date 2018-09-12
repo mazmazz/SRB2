@@ -1128,7 +1128,7 @@ static void HWR_SplitWall(sector_t *sector, wallVert3D *wallVerts, INT32 texnum,
 			else
 			{
 				lightnum = *list[i].lightlevel;
-				colormap = list[i].extra_colormap;
+				colormap = *list[i].extra_colormap;
 			}
 		}
 
@@ -3355,12 +3355,12 @@ static void HWR_Subsector(size_t num)
 		light = R_GetPlaneLight(gr_frontsector, locFloorHeight, false);
 		if (gr_frontsector->floorlightsec == -1)
 			floorlightlevel = *gr_frontsector->lightlist[light].lightlevel;
-		floorcolormap = gr_frontsector->lightlist[light].extra_colormap;
+		floorcolormap = *gr_frontsector->lightlist[light].extra_colormap;
 
 		light = R_GetPlaneLight(gr_frontsector, locCeilingHeight, false);
 		if (gr_frontsector->ceilinglightsec == -1)
 			ceilinglightlevel = *gr_frontsector->lightlist[light].lightlevel;
-		ceilingcolormap = gr_frontsector->lightlist[light].extra_colormap;
+		ceilingcolormap = *gr_frontsector->lightlist[light].extra_colormap;
 	}
 
 	sub->sector->extra_colormap = gr_frontsector->extra_colormap;
@@ -3486,7 +3486,7 @@ static void HWR_Subsector(size_t num)
 					                       *rover->bottomheight,
 					                       *gr_frontsector->lightlist[light].lightlevel,
 					                       rover->alpha-1 > 255 ? 255 : rover->alpha-1, rover->master->frontsector, PF_Translucent,
-					                       false, gr_frontsector->lightlist[light].extra_colormap);
+					                       false, *gr_frontsector->lightlist[light].extra_colormap);
 #endif
 				}
 				else
@@ -3494,7 +3494,7 @@ static void HWR_Subsector(size_t num)
 					HWR_GetFlat(levelflats[*rover->bottompic].lumpnum);
 					light = R_GetPlaneLight(gr_frontsector, centerHeight, dup_viewz < cullHeight ? true : false);
 					HWR_RenderPlane(NULL, &extrasubsectors[num], false, *rover->bottomheight, PF_Occlude, *gr_frontsector->lightlist[light].lightlevel, levelflats[*rover->bottompic].lumpnum,
-					                rover->master->frontsector, 255, false, gr_frontsector->lightlist[light].extra_colormap);
+					                rover->master->frontsector, 255, false, *gr_frontsector->lightlist[light].extra_colormap);
 				}
 			}
 
@@ -3549,7 +3549,7 @@ static void HWR_Subsector(size_t num)
 					                        *rover->topheight,
 					                        *gr_frontsector->lightlist[light].lightlevel,
 					                        rover->alpha-1 > 255 ? 255 : rover->alpha-1, rover->master->frontsector, PF_Translucent,
-					                        false, gr_frontsector->lightlist[light].extra_colormap);
+					                        false, *gr_frontsector->lightlist[light].extra_colormap);
 #endif
 
 				}
@@ -3558,7 +3558,7 @@ static void HWR_Subsector(size_t num)
 					HWR_GetFlat(levelflats[*rover->toppic].lumpnum);
 					light = R_GetPlaneLight(gr_frontsector, centerHeight, dup_viewz < cullHeight ? true : false);
 					HWR_RenderPlane(NULL, &extrasubsectors[num], true, *rover->topheight, PF_Occlude, *gr_frontsector->lightlist[light].lightlevel, levelflats[*rover->toppic].lumpnum,
-					                  rover->master->frontsector, 255, false, gr_frontsector->lightlist[light].extra_colormap);
+					                  rover->master->frontsector, 255, false, *gr_frontsector->lightlist[light].extra_colormap);
 				}
 			}
 		}
@@ -4069,8 +4069,8 @@ static void HWR_DrawSpriteShadow(gr_vissprite_t *spr, GLPatch_t *gpatch, float t
 			if (!(spr->mobj->frame & FF_FULLBRIGHT))
 				lightlevel = *sector->lightlist[light].lightlevel;
 
-			if (sector->lightlist[light].extra_colormap)
-				colormap = sector->lightlist[light].extra_colormap;
+			if (*sector->lightlist[light].extra_colormap)
+				colormap = *sector->lightlist[light].extra_colormap;
 		}
 		else
 		{
@@ -4231,7 +4231,7 @@ static void HWR_SplitSprite(gr_vissprite_t *spr)
 
 	// Start with the lightlevel and colormap from the top of the sprite
 	lightlevel = *list[sector->numlights - 1].lightlevel;
-	colormap = list[sector->numlights - 1].extra_colormap;
+	colormap = *list[sector->numlights - 1].extra_colormap;
 	i = 0;
 	temp = FLOAT_TO_FIXED(realtop);
 
@@ -4247,7 +4247,7 @@ static void HWR_SplitSprite(gr_vissprite_t *spr)
 		{
 			if (!(spr->mobj->frame & FF_FULLBRIGHT))
 				lightlevel = *list[i-1].lightlevel;
-			colormap = list[i-1].extra_colormap;
+			colormap = *list[i-1].extra_colormap;
 			break;
 		}
 	}
@@ -4255,7 +4255,7 @@ static void HWR_SplitSprite(gr_vissprite_t *spr)
 	i = R_GetPlaneLight(sector, temp, false);
 	if (!(spr->mobj->frame & FF_FULLBRIGHT))
 		lightlevel = *list[i].lightlevel;
-	colormap = list[i].extra_colormap;
+	colormap = *list[i].extra_colormap;
 #endif
 
 	for (i = 0; i < sector->numlights; i++)
@@ -4271,7 +4271,7 @@ static void HWR_SplitSprite(gr_vissprite_t *spr)
 		{
 			if (!(spr->mobj->frame & FF_FULLBRIGHT))
 				lightlevel = *list[i].lightlevel;
-			colormap = list[i].extra_colormap;
+			colormap = *list[i].extra_colormap;
 		}
 
 #ifdef ESLOPE
@@ -4602,8 +4602,8 @@ static inline void HWR_DrawPrecipitationSprite(gr_vissprite_t *spr)
 			if (!(spr->mobj->frame & FF_FULLBRIGHT))
 				lightlevel = *sector->lightlist[light].lightlevel;
 
-			if (sector->lightlist[light].extra_colormap)
-				colormap = sector->lightlist[light].extra_colormap;
+			if (*sector->lightlist[light].extra_colormap)
+				colormap = *sector->lightlist[light].extra_colormap;
 		}
 		else
 		{
