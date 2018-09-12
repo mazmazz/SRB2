@@ -1390,9 +1390,6 @@ static void P_LoadSideDefs2(lumpnum_t lumpnum)
 			sd->sector = sec = &sectors[sector_num];
 		}
 
-		// refined to allow colormaps to work as wall textures if invalid as colormaps
-		// but valid as textures.
-
 		sd->sector = sec = &sectors[SHORT(msd->sector)];
 
 		// Colormaps!
