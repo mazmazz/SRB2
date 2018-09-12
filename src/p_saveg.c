@@ -1062,6 +1062,7 @@ typedef enum
 	tc_noenemies,
 	tc_eachtime,
 	tc_disappear,
+	tc_fadecolormap,
 #ifdef POLYOBJECTS
 	tc_polyrotate, // haleyjd 03/26/06: polyobjects
 	tc_polymove,
@@ -1620,6 +1621,22 @@ static void SaveDisappearThinker(const thinker_t *th, const UINT8 type)
 	WRITEINT32(save_p, ht->exists);
 }
 
+//
+// SaveFadeColormapThinker
+//
+// Saves a fadecolormap_t thinker
+//
+static void SaveFadeColormapThinker(const thinker_t *th, const UINT8 type)
+{
+	const fadecolormap_t *ht = (const void *)th;
+	WRITEUINT8(save_p, type);
+	WRITEUINT32(save_p, SaveSector(ht->sector));
+	SaveExtraColormap(save_p, ht->source_exc);
+	SaveExtraColormap(save_p, ht->dest_exc);
+	WRITEINT32(save_p, ht->duration);
+	WRITEINT32(save_p, ht->timer);
+}
+
 #ifdef POLYOBJECTS
 
 //
@@ -1905,6 +1922,11 @@ static void P_NetArchiveThinkers(void)
 		else if (th->function.acp1 == (actionf_p1)T_Disappear)
 		{
 			SaveDisappearThinker(th, tc_disappear);
+			continue;
+		}
+		else if (th->function.acp1 == (actionf_p1)T_FadeColormap)
+		{
+			SaveFadeColormapThinker(th, tc_fadecolormap);
 			continue;
 		}
 #ifdef POLYOBJECTS
@@ -2571,6 +2593,25 @@ static inline void LoadDisappearThinker(actionf_p1 thinker)
 	P_AddThinker(&ht->thinker);
 }
 
+//
+// LoadFadeColormapThinker
+//
+// Loads a fadecolormap_t from a save game
+//
+static inline void LoadFadeColormapThinker(actionf_p1 thinker)
+{
+	fadecolormap_t *ht = Z_Malloc(sizeof (*ht), PU_LEVSPEC, NULL);
+	ht->thinker.function.acp1 = thinker;
+	ht->sector = LoadSector(READUINT32(save_p));
+	ht->source_exc = LoadExtraColormap(save_p);
+	ht->dest_exc = LoadExtraColormap(save_p);
+	ht->duration = READINT32(save_p);
+	ht->timer = READINT32(save_p);
+	if (ht->sector)
+		ht->sector->fadecolormapdata = ht;
+	P_AddThinker(&ht->thinker);
+}
+
 #ifdef POLYOBJECTS
 
 //
@@ -2740,7 +2781,7 @@ static void P_NetUnArchiveThinkers(void)
 	// clear sector thinker pointers so they don't point to non-existant thinkers for all of eternity
 	for (i = 0; i < numsectors; i++)
 	{
-		sectors[i].floordata = sectors[i].ceilingdata = sectors[i].lightingdata = NULL;
+		sectors[i].floordata = sectors[i].ceilingdata = sectors[i].lightingdata = sectors[i].fadecolormapdata = NULL;
 	}
 
 	// read in saved thinkers
@@ -2856,6 +2897,11 @@ static void P_NetUnArchiveThinkers(void)
 			case tc_disappear:
 				LoadDisappearThinker((actionf_p1)T_Disappear);
 				break;
+
+			case tc_fadecolormap:
+				LoadFadeColormapThinker((actionf_p1)T_FadeColormap);
+				break;
+
 #ifdef POLYOBJECTS
 			case tc_polyrotate:
 				LoadPolyrotatetThinker((actionf_p1)T_PolyObjRotate);

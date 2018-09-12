@@ -1399,6 +1399,7 @@ static void P_LoadSideDefs2(lumpnum_t lumpnum)
 		{
 			case 63: // variable colormap via 242 linedef
 			case 606: //SoM: 4/4/2000: Just colormap transfer
+			case 455: // Fade colormaps! mazmazz 9/12/2018 (:flag_us:)
 				// SoM: R_CreateColormap will only create a colormap in software mode...
 				// Perhaps we should just call it instead of doing the calculations here.
 				sd->colormap_data = R_CreateColormap(msd->toptexture, msd->midtexture,
