@@ -2893,7 +2893,7 @@ void T_PolyObjFade(polyfade_t *th)
 		if (po->translucency >= NUMTRANSMAPS) // invisible
 			po->flags &= ~POF_RENDERALL;
 		else
-			po->flags |= POF_RENDERALL;
+			po->flags |= (po->spawnflags & POF_RENDERALL);
 
 		// set collision
 		if (th->docollision && th->speed)
@@ -2905,14 +2905,15 @@ void T_PolyObjFade(polyfade_t *th)
 			}
 			else
 			{
-				po->flags |= POF_SOLID;
-				po->flags &= ~POF_NOSPECIALS;
+				po->flags |= (po->spawnflags & POF_SOLID);
+				if (!(po->spawnflags & POF_NOSPECIALS))
+					po->flags &= ~POF_NOSPECIALS;
 			}
 		}
 	}
 	else
 	{
-		po->flags |= POF_RENDERALL;
+		po->flags |= (po->spawnflags & POF_RENDERALL);
 
 		// set collision
 		if (th->docollision && th->speed)
@@ -2924,8 +2925,9 @@ void T_PolyObjFade(polyfade_t *th)
 			}
 			else
 			{
-				po->flags |= POF_SOLID;
-				po->flags &= ~POF_NOSPECIALS;
+				po->flags |= (po->spawnflags & POF_SOLID);
+				if (!(po->spawnflags & POF_NOSPECIALS))
+					po->flags &= ~POF_NOSPECIALS;
 			}
 		}
 	}
