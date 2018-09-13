@@ -1392,6 +1392,8 @@ static void P_LoadSideDefs2(lumpnum_t lumpnum)
 
 		sd->sector = sec = &sectors[SHORT(msd->sector)];
 
+		sd->colormap_data = NULL;
+
 		// Colormaps!
 		switch (sd->special)
 		{
