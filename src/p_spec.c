@@ -103,7 +103,7 @@ static void Add_Pusher(pushertype_e type, fixed_t x_mag, fixed_t y_mag, mobj_t *
 static void Add_MasterDisappearer(tic_t appeartime, tic_t disappeartime, tic_t offset, INT32 line, INT32 sourceline);
 static void P_ResetColormapFader(sector_t *sector);
 static void Add_ColormapFader(sector_t *sector, extracolormap_t *source_exc, extracolormap_t *dest_exc,
-	INT32 duration);
+	boolean ticbased, INT32 duration);
 static void P_AddBlockThinker(sector_t *sec, line_t *sourceline);
 static void P_AddFloatThinker(sector_t *sec, INT32 tag, line_t *sourceline);
 //static void P_AddBridgeThinker(line_t *sourceline, sector_t *sec);
@@ -3270,7 +3270,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 				else
 					Z_Free(exc);
 
-				Add_ColormapFader(&sectors[secnum], source_exc, dest_exc,
+				Add_ColormapFader(&sectors[secnum], source_exc, dest_exc, (line->flags & ML_EFFECT4), // tic-based timing
 					(line->sidenum[1] != 0xFFFF ? abs(sides[line->sidenum[1]].rowoffset >> FRACBITS) : abs(P_AproxDistance(line->dx, line->dy) >> FRACBITS)));
 			}
 			break;
@@ -7205,7 +7205,7 @@ static void P_ResetColormapFader(sector_t *sector)
 }
 
 static void Add_ColormapFader(sector_t *sector, extracolormap_t *source_exc, extracolormap_t *dest_exc,
-	INT32 duration)
+	boolean ticbased, INT32 duration)
 {
 	P_ResetColormapFader(sector);
 
@@ -7221,7 +7221,18 @@ static void Add_ColormapFader(sector_t *sector, extracolormap_t *source_exc, ext
 	d->sector = sector;
 	d->source_exc = source_exc;
 	d->dest_exc = dest_exc;
-	d->duration = d->timer = duration;
+
+	if (ticbased)
+	{
+		d->ticbased = true;
+		d->duration = d->timer = duration;
+	}
+	else
+	{
+		d->ticbased = false;
+		d->timer = 256;
+		d->duration = duration; // use as speed
+	}
 
 	sector->fadecolormapdata = d;
 	P_AddThinker(&d->thinker); // add thinker
@@ -7229,7 +7240,8 @@ static void Add_ColormapFader(sector_t *sector, extracolormap_t *source_exc, ext
 
 void T_FadeColormap(fadecolormap_t *d)
 {
-	if (--d->timer <= 0)
+	if ((d->ticbased && --d->timer <= 0)
+		|| (!d->ticbased && (d->timer -= d->duration) <= 0)) // d->duration used as speed decrement
 	{
 		d->sector->extra_colormap = d->dest_exc;
 		P_ResetColormapFader(d->sector);
@@ -7237,7 +7249,8 @@ void T_FadeColormap(fadecolormap_t *d)
 	else
 	{
 		extracolormap_t *exc;
-		fixed_t factor = min(FixedDiv(d->duration - d->timer, d->duration), 1*FRACUNIT);
+		INT32 duration = d->ticbased ? d->duration : 256;
+		fixed_t factor = min(FixedDiv(duration - d->timer, duration), 1*FRACUNIT);
 		INT16 cr, cg, cb, ca, fadestart, fadeend, fog;
 		INT32 rgba, fadergba;
 
