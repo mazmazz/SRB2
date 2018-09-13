@@ -1399,7 +1399,7 @@ static void P_LoadSideDefs2(lumpnum_t lumpnum)
 			case 606: //SoM: 4/4/2000: Just colormap transfer
 				// SoM: R_CreateColormap will only create a colormap in software mode...
 				// Perhaps we should just call it instead of doing the calculations here.
-				sec->extra_colormap = sec->spawn_extra_colormap = R_CreateColormap(msd->toptexture, msd->midtexture,
+				sd->colormap_data = R_CreateColormap(msd->toptexture, msd->midtexture,
 					msd->bottomtexture);
 				sd->toptexture = sd->midtexture = sd->bottomtexture = 0;
 				break;
