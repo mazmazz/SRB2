@@ -1348,7 +1348,7 @@ static void PolyVisible(line_t *line)
 		po->flags |= POF_SOLID;
 
 	po->flags &= ~POF_NOSPECIALS;
-	po->flags |= POF_RENDERALL;
+	po->flags |= (po->spawnflags & POF_RENDERALL);
 }
 
 //
