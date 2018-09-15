@@ -7251,7 +7251,7 @@ static void P_ResetFakeFloorFader(ffloor_t *rover, fade_t *data, boolean finaliz
 	// find any existing thinkers and remove them, then replace with new data
 	if (fadingdata != data)
 	{
-		if (fadingdata->thinker)
+		if (fadingdata)
 		{
 			if (finalize)
 				P_FadeFakeFloor(rover,
