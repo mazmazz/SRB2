@@ -7516,6 +7516,7 @@ static boolean P_FadeFakeFloor(ffloor_t *rover, INT16 sourcevalue, INT16 destval
 	boolean stillfading = false;
 	INT32 alpha;
 	fade_t *fadingdata = (fade_t *)rover->fadingdata;
+	(void)docolormap; // *shrug* maybe we can use this in the future. For now, let's be consistent with our other function params
 
 	if (rover->master->special == 258) // Laser block
 		return false;
@@ -7774,6 +7775,8 @@ static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloor
 	boolean doexists, boolean dotranslucent, boolean dolighting, boolean docolormap,
 	boolean docollision, boolean doghostfade, boolean exactalpha)
 {
+	fade_t *d;
+
 	// If fading an invisible FOF whose render flags we did not yet set,
 	// initialize its alpha to 1
 	if (dotranslucent &&
@@ -7787,7 +7790,7 @@ static void P_AddFakeFloorFader(ffloor_t *rover, size_t sectornum, size_t ffloor
 	if (rover->alpha == max(1, min(256, relative ? rover->alpha + destvalue : destvalue)))
 		return;
 
-	fade_t *d = Z_Malloc(sizeof *d, PU_LEVSPEC, NULL);
+	d = Z_Malloc(sizeof *d, PU_LEVSPEC, NULL);
 
 	d->thinker.function.acp1 = (actionf_p1)T_Fade;
 	d->rover = rover;
