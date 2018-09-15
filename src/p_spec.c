@@ -1402,6 +1402,7 @@ static boolean PolyFade(line_t *line)
 {
 	INT32 polyObjNum = line->tag;
 	polyobj_t *po;
+	polyfadedata_t pfd;
 
 	if (!(po = Polyobj_GetForNum(polyObjNum)))
 	{
@@ -1412,8 +1413,6 @@ static boolean PolyFade(line_t *line)
 	// don't allow line actions to affect bad polyobjects
 	if (po->isBad)
 		return 0;
-
-	polyfadedata_t pfd;
 
 	pfd.polyObjNum = polyObjNum;
 
