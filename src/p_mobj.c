@@ -7096,6 +7096,8 @@ void P_MobjThinker(mobj_t *mobj)
 				return;
 			mobj->floorz = tmfloorz;
 			mobj->ceilingz = tmceilingz;
+			mobj->floorrover = tmfloorrover;
+			mobj->ceilingrover = tmceilingrover;
 
 			if ((mobj->eflags & MFE_UNDERWATER) && mobj->health > 0)
 			{
@@ -7609,6 +7611,8 @@ void P_SceneryThinker(mobj_t *mobj)
 			return;
 		mobj->floorz = tmfloorz;
 		mobj->ceilingz = tmceilingz;
+		mobj->floorrover = tmfloorrover;
+		mobj->ceilingrover = tmceilingrover;
 	}
 	else
 	{
@@ -7690,6 +7694,9 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 				mobj->subsector->sector->c_slope ? P_GetZAt(mobj->subsector->sector->c_slope, x, y) :
 #endif
 				mobj->subsector->sector->ceilingheight;
+
+	mobj->floorrover = NULL;
+	mobj->ceilingrover = NULL;
 
 	// Tells MobjCheckWater that the water height was not set.
 	mobj->watertop = INT32_MAX;
@@ -7904,6 +7911,9 @@ static precipmobj_t *P_SpawnPrecipMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype
 				mobj->subsector->sector->c_slope ? P_GetZAt(mobj->subsector->sector->c_slope, x, y) :
 #endif
 				mobj->subsector->sector->ceilingheight;
+
+	mobj->floorrover = NULL;
+	mobj->ceilingrover = NULL;
 
 	mobj->z = z;
 	mobj->momz = mobjinfo[type].speed;
