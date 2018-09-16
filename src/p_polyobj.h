@@ -216,8 +216,8 @@ typedef struct polyfade_s
 	boolean docollision;
 	boolean doghostfade;
 	boolean ticbased;
+	INT32 duration;
 	INT32 timer;
-	INT32 speed;
 } polyfade_t;
 
 //
