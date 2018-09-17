@@ -916,6 +916,10 @@ void R_ParseTEXTURESLump(UINT16 wadNum, INT32 *texindex)
 	Z_Free((void *)texturesText);
 }
 
+#ifdef EXTRACOLORMAPLUMPS
+static lumplist_t *colormaplumps = NULL; ///\todo free leak
+static size_t numcolormaplumps = 0;
+
 static inline lumpnum_t R_CheckNumForNameList(const char *name, lumplist_t *list, size_t listsize)
 {
 	size_t i;
@@ -931,10 +935,6 @@ static inline lumpnum_t R_CheckNumForNameList(const char *name, lumplist_t *list
 	}
 	return LUMPERROR;
 }
-
-#ifdef EXTRACOLORMAPLUMPS
-static lumplist_t *colormaplumps = NULL; ///\todo free leak
-static size_t numcolormaplumps = 0;
 
 static void R_InitExtraColormaps(void)
 {
