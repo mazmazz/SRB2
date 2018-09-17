@@ -122,9 +122,9 @@ typedef struct {
 	int (*module_ctl_set) ( openmpt_module * mod, const char * ctl, const char * value );
 
 	// positioning
-	double (*module_get_duration_seconds) ( openmpt_module * mod );
-	double (*module_get_position_seconds) ( openmpt_module * mod );
-	double (*module_set_position_seconds) ( openmpt_module * mod, double seconds );
+	// double (*module_get_duration_seconds) ( openmpt_module * mod );
+	// double (*module_get_position_seconds) ( openmpt_module * mod );
+	// double (*module_set_position_seconds) ( openmpt_module * mod, double seconds );
 	int32_t (*module_get_num_subsongs) ( openmpt_module * mod );
 	int (*module_select_subsong) ( openmpt_module * mod, int32_t subsong );
 } openmpt_loader;
@@ -135,7 +135,7 @@ static openmpt_loader openmpt = {
 	NULL, NULL, // module loading
 	NULL, // audio callback
 	NULL, NULL, NULL, // playback settings
-	NULL, NULL, NULL, NULL, NULL // positioning
+	NULL, NULL//, NULL, NULL, NULL // positioning
 };
 
 #ifdef OPENMPT_DYNAMIC
@@ -183,9 +183,9 @@ static void load_openmpt(void)
 	FUNCTION_LOADER(module_ctl_set, openmpt_module_ctl_set, int (*) ( openmpt_module * mod, const char * ctl, const char * value ))
 
 	// positioning
-	FUNCTION_LOADER(module_get_duration_seconds, openmpt_module_get_duration_seconds, double (*) ( openmpt_module * mod ))
-	FUNCTION_LOADER(module_get_position_seconds, openmpt_module_get_position_seconds, double (*) ( openmpt_module * mod ))
-	FUNCTION_LOADER(module_set_position_seconds, openmpt_module_set_position_seconds, double (*) ( openmpt_module * mod, double seconds ))
+	// FUNCTION_LOADER(module_get_duration_seconds, openmpt_module_get_duration_seconds, double (*) ( openmpt_module * mod ))
+	// FUNCTION_LOADER(module_get_position_seconds, openmpt_module_get_position_seconds, double (*) ( openmpt_module * mod ))
+	// FUNCTION_LOADER(module_set_position_seconds, openmpt_module_set_position_seconds, double (*) ( openmpt_module * mod, double seconds ))
 	FUNCTION_LOADER(module_get_num_subsongs, openmpt_module_get_num_subsongs, int32_t (*) ( openmpt_module * mod ))
 	FUNCTION_LOADER(module_select_subsong, openmpt_module_select_subsong, int (*) ( openmpt_module * mod, int32_t subsong ))
 
