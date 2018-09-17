@@ -250,9 +250,7 @@ void S_RegisterSoundStuff(void)
 
 #ifdef HAVE_OPENMPT
 	CV_RegisterVar(&cv_modfilter);
-	CONS_Printf("libopenmpt version: %s\n", openmpt_get_string("library_version"));
-	CONS_Printf("libopenmpt build date: %s\n", openmpt_get_string("build"));
-#endif	
+#endif
 
 #if defined (macintosh) && !defined (HAVE_SDL) // mp3 playlist stuff
 	{
