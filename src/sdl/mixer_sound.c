@@ -87,6 +87,137 @@ static const char *mod_err_str;
 static UINT16 current_subsong;
 #endif
 
+///
+/// OpenMPT Loading
+///
+
+#ifdef HAVE_OPENMPT
+
+// Dynamic loading inspired by SDL Mixer
+// Why: It's hard to compile for Windows without MSVC dependency, see https://trac.videolan.org/vlc/ticket/13055
+// So let's not force that on the user, and they can download it if they want.
+//
+// ADD FUNCTIONS HERE AS YOU USE THEM!!!!!
+typedef struct {
+	int loaded;
+	void *handle;
+
+	// errors
+	int (*module_error_get_last) ( openmpt_module * mod );
+	const char *(*error_string) ( int error );
+	const char *(*get_string) ( const char * key );
+
+	// module loading
+	void (*module_destroy) ( openmpt_module * mod );
+	openmpt_module *(*module_create_from_memory2) ( const void * filedata, size_t filesize, openmpt_log_func logfunc, void * loguser, openmpt_error_func errfunc, void * erruser, int * error, const char * * error_message, const openmpt_module_initial_ctl * ctls );
+
+	// audio callback
+	size_t (*module_read_interleaved_stereo) ( openmpt_module * mod, int32_t samplerate, size_t count, int16_t * interleaved_stereo );
+
+	// playback settings
+	int (*module_set_render_param) ( openmpt_module * mod, int param, int32_t value );
+	int (*module_set_repeat_count) ( openmpt_module * mod, int32_t repeat_count );
+	int (*module_ctl_set) ( openmpt_module * mod, const char * ctl, const char * value );
+
+	// positioning
+	// double (*module_get_duration_seconds) ( openmpt_module * mod );
+	// double (*module_get_position_seconds) ( openmpt_module * mod );
+	// double (*module_set_position_seconds) ( openmpt_module * mod, double seconds );
+	int32_t (*module_get_num_subsongs) ( openmpt_module * mod );
+	int (*module_select_subsong) ( openmpt_module * mod, int32_t subsong );
+} openmpt_loader;
+
+static openmpt_loader openmpt = {
+	0, NULL,
+	NULL, NULL, NULL, // errors
+	NULL, NULL, // module loading
+	NULL, // audio callback
+	NULL, NULL, NULL, // playback settings
+	NULL, NULL//, NULL, NULL, NULL // positioning
+};
+
+#ifdef OPENMPT_DYNAMIC
+#define FUNCTION_LOADER(NAME, FUNC, SIG) \
+    openmpt.NAME = (SIG) SDL_LoadFunction(openmpt.handle, #FUNC); \
+    if (openmpt.NAME == NULL) { SDL_UnloadObject(openmpt.handle); openmpt.handle = NULL; return; }
+#else
+#define FUNCTION_LOADER(NAME, FUNC, SIG) \
+    openmpt.NAME = FUNC;
+#endif
+
+static void load_openmpt(void)
+{
+	if (openmpt.loaded)
+		return;
+
+#ifdef OPENMPT_DYNAMIC
+#if defined(_WIN32) || defined(_WIN64)
+	openmpt.handle = SDL_LoadObject("libopenmpt.dll");
+#else
+	openmpt.handle = SDL_LoadObject("libopenmpt.so");
+#endif
+	if (openmpt.handle == NULL)
+	{
+		CONS_Printf("libopenmpt not found, not loading.\n");
+		return;
+	}
+#endif
+
+	// errors
+	FUNCTION_LOADER(module_error_get_last, openmpt_module_error_get_last, int (*) ( openmpt_module * mod ))
+	FUNCTION_LOADER(error_string, openmpt_error_string, const char *(*) ( int error ))
+	FUNCTION_LOADER(get_string, openmpt_get_string, const char *(*) ( const char * key ))
+
+	// module loading
+	FUNCTION_LOADER(module_destroy, openmpt_module_destroy, void (*) ( openmpt_module * mod ))
+	FUNCTION_LOADER(module_create_from_memory2, openmpt_module_create_from_memory2, openmpt_module *(*) ( const void * filedata, size_t filesize, openmpt_log_func logfunc, void * loguser, openmpt_error_func errfunc, void * erruser, int * error, const char * * error_message, const openmpt_module_initial_ctl * ctls ))
+
+	// audio callback
+	FUNCTION_LOADER(module_read_interleaved_stereo, openmpt_module_read_interleaved_stereo, size_t (*) ( openmpt_module * mod, int32_t samplerate, size_t count, int16_t * interleaved_stereo ))
+
+	// playback settings
+	FUNCTION_LOADER(module_set_render_param, openmpt_module_set_render_param, int (*) ( openmpt_module * mod, int param, int32_t value ))
+	FUNCTION_LOADER(module_set_repeat_count, openmpt_module_set_repeat_count, int (*) ( openmpt_module * mod, int32_t repeat_count ))
+	FUNCTION_LOADER(module_ctl_set, openmpt_module_ctl_set, int (*) ( openmpt_module * mod, const char * ctl, const char * value ))
+
+	// positioning
+	// FUNCTION_LOADER(module_get_duration_seconds, openmpt_module_get_duration_seconds, double (*) ( openmpt_module * mod ))
+	// FUNCTION_LOADER(module_get_position_seconds, openmpt_module_get_position_seconds, double (*) ( openmpt_module * mod ))
+	// FUNCTION_LOADER(module_set_position_seconds, openmpt_module_set_position_seconds, double (*) ( openmpt_module * mod, double seconds ))
+	FUNCTION_LOADER(module_get_num_subsongs, openmpt_module_get_num_subsongs, int32_t (*) ( openmpt_module * mod ))
+	FUNCTION_LOADER(module_select_subsong, openmpt_module_select_subsong, int (*) ( openmpt_module * mod, int32_t subsong ))
+
+#ifdef OPENMPT_DYNAMIC
+	// this will be unset if a function failed to load
+	if (openmpt.handle == NULL)
+	{
+		CONS_Printf("libopenmpt found but failed to load.\n");
+		return;
+	}
+#endif
+
+	CONS_Printf("libopenmpt version: %s\n", openmpt.get_string("library_version"));
+	CONS_Printf("libopenmpt build date: %s\n", openmpt.get_string("build"));
+
+	openmpt.loaded = 1;
+}
+
+static void unload_openmpt(void)
+{
+#ifdef OPENMPT_DYNAMIC
+	if (openmpt.loaded)
+	{
+		SDL_UnloadObject(openmpt.handle);
+		openmpt.handle = NULL;
+		openmpt.loaded = 0;
+	}
+#endif
+}
+
+#undef FUNCTION_LOADER
+
+#endif
+
 void I_StartupSound(void)
 {
 	I_Assert(!sound_started);
@@ -116,6 +247,10 @@ void I_StartupSound(void)
 		return;
 	}
 
+#ifdef HAVE_OPENMPT
+	load_openmpt();
+#endif
+
 	sound_started = true;
 	songpaused = false;
 	Mix_AllocateChannels(256);
@@ -137,6 +272,11 @@ void I_ShutdownSound(void)
 #ifdef HAVE_LIBGME
 	if (gme)
 		gme_delete(gme);
+#endif
+#ifdef HAVE_OPENMPT
+	if (mod)
+		openmpt.module_destroy(mod);
+	unload_openmpt();
 #endif
 }
 
@@ -489,9 +629,9 @@ static void mix_openmpt(void *udata, Uint8 *stream, int len)
 
 	(void)udata;
 
-	openmpt_module_set_render_param(mod, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, cv_modfilter.value);
-	openmpt_module_set_repeat_count(mod, -1); // Always repeat
-	openmpt_module_read_interleaved_stereo(mod, SAMPLERATE, BUFFERSIZE, (short *)stream);
+	openmpt.module_set_render_param(mod, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, cv_modfilter.value);
+	openmpt.module_set_repeat_count(mod, -1); // Always repeat
+	openmpt.module_read_interleaved_stereo(mod, SAMPLERATE, BUFFERSIZE, (short *)stream);
 
 	// apply volume to stream
 	for (i = 0, p = (short *)stream; i < len/2; i++, p++)
@@ -556,7 +696,7 @@ void I_ShutdownDigMusic(void)
 	if (mod)
 	{
 		Mix_HookMusic(NULL, NULL);
-		openmpt_module_destroy(mod);
+		openmpt.module_destroy(mod);
 		mod = NULL;
 	}
 #endif
@@ -699,21 +839,25 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 	{
 		case MUS_MODPLUG_UNUSED:
 		case MUS_MOD:
-			mod = openmpt_module_create_from_memory2(data, len, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-			if (!mod)
-			{
-				mod_err = openmpt_module_error_get_last(mod);
-				mod_err_str = openmpt_error_string(mod_err);
-				CONS_Alert(CONS_ERROR, "openmpt_module_create_from_memory2: %s\n", mod_err_str);
+			if (openmpt.loaded) {
+				mod = openmpt.module_create_from_memory2(data, len, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+				if (!mod)
+				{
+					mod_err = openmpt.module_error_get_last(mod);
+					mod_err_str = openmpt.error_string(mod_err);
+					CONS_Alert(CONS_ERROR, "openmpt.module_create_from_memory2: %s\n", mod_err_str);
+				}
+				else
+				{
+					openmpt.module_select_subsong(mod, 0);
+					current_subsong = 0;
+					Mix_HookMusic(mix_openmpt, mod);
+				}
+				Mix_FreeMusic(music);
+				music = NULL;
 				return true;
 			}
-			else
-			{
-				openmpt_module_select_subsong(mod, 0);
-				current_subsong = 0;
-				Mix_HookMusic(mix_openmpt, mod);
-			}
-		break;
+			// else, fall through
 		case MUS_WAV:
 		case MUS_MID:
 		case MUS_OGG:
@@ -791,7 +935,7 @@ void I_StopDigSong(void)
 	if (mod)
 	{
 		Mix_HookMusic(NULL, NULL);
-		openmpt_module_destroy(mod);
+		openmpt.module_destroy(mod);
 		mod = NULL;
 		current_subsong = -1;
 	}
@@ -833,7 +977,7 @@ boolean I_SetSongSpeed(float speed)
 	if (mod)
 	{
 		sprintf(modspd, "%g", speed);
-		openmpt_module_ctl_set(mod, "play.tempo_factor", modspd);
+		openmpt.module_ctl_set(mod, "play.tempo_factor", modspd);
 		return true;
 	}
 #else
@@ -877,9 +1021,9 @@ boolean I_SetSongTrack(int track)
 	if (mod)
 	{
 		SDL_LockAudio();
-		if (track >= 0 && track < openmpt_module_get_num_subsongs(mod))
+		if (track >= 0 && track < openmpt.module_get_num_subsongs(mod))
 		{
-			openmpt_module_select_subsong(mod, track);
+			openmpt.module_select_subsong(mod, track);
 			current_subsong = track;
 			SDL_UnlockAudio();
 			return true;
