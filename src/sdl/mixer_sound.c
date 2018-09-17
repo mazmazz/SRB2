@@ -825,7 +825,7 @@ boolean I_PlaySong(boolean looping)
 #ifdef HAVE_OPENMPT
 	if (mod)
 	{
-		openmpt.module_select_subsong(mod, 0);
+		openmpt_module_select_subsong(mod, 0);
 		current_subsong = 0;
 		Mix_HookMusic(mix_openmpt, mod);
 		return true;
