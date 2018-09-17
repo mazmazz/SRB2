@@ -60,14 +60,12 @@
 #endif
 #endif
 
-static UINT16 BUFFERSIZE = 2048;	
+static UINT16 BUFFERSIZE = 2048;
 static UINT16 SAMPLERATE = 44100;
 
 #ifdef HAVE_OPENMPT
 #include "libopenmpt/libopenmpt.h"
-static CV_PossibleValue_t interpolationfilter_cons_t[] = {{0, "Default"}, {1, "None"}, {2, "Linear"}, {4, "Cubic"}, {8, "Windowed sinc"}, {0, NULL}};
-consvar_t cv_modfilter = {"module_filter", "0", CV_SAVE, interpolationfilter_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
-#endif	
+#endif
 
 UINT8 sound_started = false;
 
@@ -538,7 +536,7 @@ void I_InitDigMusic(void)
 
 #ifdef HAVE_OPENMPT
 	current_subsong = -1;
-#endif		
+#endif
 }
 
 void I_ShutdownDigMusic(void)
@@ -582,7 +580,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 
 #ifdef HAVE_OPENMPT
 	I_Assert(!mod);
-#endif		
+#endif
 
 	if (lumpnum == LUMPERROR)
 		return false;
@@ -714,7 +712,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 				openmpt_module_select_subsong(mod, 0);
 				current_subsong = 0;
 				Mix_HookMusic(mix_openmpt, mod);
-			}	
+			}
 		break;
 		case MUS_WAV:
 		case MUS_MID:
@@ -723,8 +721,8 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 			Mix_HookMusic(NULL, NULL);
 			break;
 		default:
-			break;	
-	}	
+			break;
+	}
 #endif
 
 	// Find the OGG loop point.
@@ -797,7 +795,7 @@ void I_StopDigSong(void)
 		mod = NULL;
 		current_subsong = -1;
 	}
-#endif 	
+#endif
 	if (!music)
 		return;
 	Mix_HookMusicFinished(NULL);
@@ -841,7 +839,7 @@ boolean I_SetSongSpeed(float speed)
 #else
 	(void)speed;
 	return false;
-#endif			
+#endif
 	return false;
 }
 
@@ -887,7 +885,7 @@ boolean I_SetSongTrack(int track)
 			return true;
 		}
 		SDL_UnlockAudio();
-		return false;	
+		return false;
 	}
 #endif
 return true;
