@@ -740,9 +740,9 @@ boolean I_LoadSong(char *data, size_t len)
 			}
 			else
 			{
-				openmpt_module_select_subsong(mod, 0);
-				current_subsong = 0;
-				Mix_HookMusic(mix_openmpt, mod);
+				Mix_FreeMusic(music);
+				music = NULL;
+				return true;
 			}
 		break;
 		case MUS_WAV:
@@ -818,6 +818,16 @@ boolean I_PlaySong(boolean looping)
 		gme_start_track(gme, 0);
 		current_track = 0;
 		Mix_HookMusic(mix_gme, gme);
+		return true;
+	}
+	else
+#endif
+#ifdef HAVE_OPENMPT
+	if (mod)
+	{
+		openmpt.module_select_subsong(mod, 0);
+		current_subsong = 0;
+		Mix_HookMusic(mix_openmpt, mod);
 		return true;
 	}
 	else
