@@ -846,7 +846,6 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 					mod_err = openmpt.module_error_get_last(mod);
 					mod_err_str = openmpt.error_string(mod_err);
 					CONS_Alert(CONS_ERROR, "openmpt.module_create_from_memory2: %s\n", mod_err_str);
-					return true;
 				}
 				else
 				{
@@ -854,7 +853,9 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 					current_subsong = 0;
 					Mix_HookMusic(mix_openmpt, mod);
 				}
-				break;
+				Mix_FreeMusic(music);
+				music = NULL;
+				return true;
 			}
 			// else, fall through
 		case MUS_WAV:
