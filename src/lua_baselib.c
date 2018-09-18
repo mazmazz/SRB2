@@ -713,6 +713,47 @@ static int lib_pSetObjectMomZ(lua_State *L)
 	return 0;
 }
 
+static int lib_pPlayJingle(lua_State *L)
+{
+	jingletype_t jingletype = (jingletype_t)luaL_checknumber(L, 1);
+	player_t *player = NULL;
+	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
+		player = *((player_t **)luaL_checkudata(L, 2, META_PLAYER));
+	NOHUD
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	if (!player || P_IsLocalPlayer(player))
+	{
+		P_PlayJingle(player, jingletype);
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+static int lib_pPlayJingleMusic(lua_State *L)
+{
+	const char *musname = luaL_checkstring(L, 1);
+	UINT16 musflags = luaL_optnumber(L, 2, 0);
+	boolean looping = lua_opttrueboolean(L, 3);
+	UINT16 status = luaL_optnumber(L, 4, 0);
+	player_t *player = NULL;
+	if (!lua_isnone(L, 5) && lua_isuserdata(L, 5))
+		player = *((player_t **)luaL_checkudata(L, 5, META_PLAYER));
+	NOHUD
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	if (!player || P_IsLocalPlayer(player))
+	{
+		P_PlayJingleMusic(player, musname, musflags, looping, status);
+		lua_pushboolean(L, true);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
 static int lib_pRestoreMusic(lua_State *L)
 {
 	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
@@ -2427,6 +2468,8 @@ static luaL_Reg lib[] = {
 	{"P_InSpaceSector",lib_pInSpaceSector},
 	{"P_InQuicksand",lib_pInQuicksand},
 	{"P_SetObjectMomZ",lib_pSetObjectMomZ},
+	{"P_PlayJingle",lib_pPlayJingle},
+	{"P_PlayJingleMusic",lib_pPlayJingleMusic},
 	{"P_RestoreMusic",lib_pRestoreMusic},
 	{"P_SpawnShieldOrb",lib_pSpawnShieldOrb},
 	{"P_SpawnGhostMobj",lib_pSpawnGhostMobj},

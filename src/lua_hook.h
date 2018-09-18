@@ -14,6 +14,7 @@
 
 #include "r_defs.h"
 #include "d_player.h"
+#include "p_local.h" // jingletype_t
 
 enum hook {
 	hook_NetVars=0,
@@ -44,6 +45,7 @@ enum hook {
 	hook_HurtMsg,
 	hook_PlayerSpawn,
 	hook_MusicChange,
+	hook_MusicJingle,
 
 	hook_MAX // last hook
 };
@@ -81,6 +83,7 @@ boolean LUAh_HurtMsg(player_t *player, mobj_t *inflictor, mobj_t *source); // Ho
 #ifdef HAVE_LUA_MUSICPLUS
 boolean LUAh_MusicChange(const char *oldname, char *newname, UINT16 *mflags, boolean *looping,
 	UINT32 *position, UINT32 *prefadems, UINT32 *fadeinms); // Hook for music changes
+boolean LUAh_MusicJingle(jingletype_t jingletype, char *newname, UINT16 *musflags, boolean *looping); // Hook for music jingle play
 #endif
 
 #endif
