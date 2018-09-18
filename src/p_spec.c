@@ -3202,6 +3202,9 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			for (secnum = -1; (secnum = P_FindSectorFromLineTag(line, secnum)) >= 0 ;)
 			{
 				extracolormap_t *source_exc, *dest_exc, *exc;
+				INT32 speed = (INT32)((line->flags & ML_DONTPEGBOTTOM) || !sides[line->sidenum[0]].rowoffset) && line->sidenum[1] != 0xFFFF ?
+					abs(sides[line->sidenum[1]].rowoffset >> FRACBITS)
+					: abs(sides[line->sidenum[0]].rowoffset >> FRACBITS);
 
 				// Prevent continuous execs from interfering on an existing fade
 				if (!(line->flags & ML_EFFECT5)
