@@ -251,6 +251,7 @@ typedef struct
 	UINT16 muspostbosstrack;    ///< Post-bossdeath track.
 	UINT32 muspostbosspos;      ///< Post-bossdeath position
 	UINT32 muspostbossfadein;   ///< Post-bossdeath fade-in milliseconds.
+	UINT32 musicinterfadeout;  ///< Fade out level music on intermission screen in milliseconds
 
 	// Lua stuff.
 	// (This is not ifdeffed so the map header structure can stay identical, just in case.)
