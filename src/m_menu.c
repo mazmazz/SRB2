@@ -1230,6 +1230,8 @@ static menuitem_t OP_SoundOptionsMenu[] =
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle SFX"   , M_ToggleSFX,        50},
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle Digital Music", M_ToggleDigital,     60},
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle MIDI Music", M_ToggleMIDI,        70},
+
+	{IT_STRING | IT_CVAR, NULL, "Reset Music Upon Dying", &cv_resetmusic, 90},
 };
 
 static menuitem_t OP_DataOptionsMenu[] =

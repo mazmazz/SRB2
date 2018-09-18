@@ -1462,7 +1462,8 @@ void S_ChangeMusicEx(const char *mmusic, UINT16 mflags, boolean looping, UINT32 
 		return;
 	}
 
-	if (prefadems && S_MusicPlaying()) // queue music change for after fade // allow even if the music is the same
+	if (prefadems) // queue music change for after fade // allow even if the music is the same
+		// && S_MusicPlaying() // Let the delay happen even if we're not playing music
 	{
 		CONS_Debug(DBG_DETAILED, "Now fading out song %s\n", music_name);
 		S_QueueMusic(newmusic, mflags, looping, position, fadeinms);
