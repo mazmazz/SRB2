@@ -636,7 +636,14 @@ static void P_DeNightserizePlayer(player_t *player)
 	}
 
 	// Restore from drowning music
-	P_RestoreMusic(player);
+	if (mapheaderinfo[gamemap-1]->levelflags & LF_MIXNIGHTSCOUNTDOWN)
+	{
+		S_StopSoundByNum(sfx_timeup);
+		S_StopFadingMusic();
+		S_SetInternalMusicVolume(100);
+	}
+	else
+		P_RestoreMusic(player);
 }
 //
 // P_NightserizePlayer
@@ -675,7 +682,16 @@ void P_NightserizePlayer(player_t *player, INT32 nighttime)
 	player->nightstime = player->startedtime = nighttime*TICRATE;
 	player->bonustime = false;
 
-	P_RestoreMusic(player);
+	// Restore from drowning music
+	if (mapheaderinfo[gamemap-1]->levelflags & LF_MIXNIGHTSCOUNTDOWN)
+	{
+		S_StopSoundByNum(sfx_timeup);
+		S_StopFadingMusic();
+		S_SetInternalMusicVolume(100);
+	}
+	else
+		P_RestoreMusic(player);
+
 	P_SetMobjState(player->mo->tracer, S_SUPERTRANS1);
 
 	if (gametype == GT_RACE || gametype == GT_COMPETITION)
@@ -5575,14 +5591,28 @@ static void P_NiGHTSMovement(player_t *player)
 	{
 		P_DeNightserizePlayer(player);
 		S_StartScreamSound(player->mo, sfx_s3k66);
-//		S_StopSoundByNum(sfx_timeup); // Kill the "out of time" music, if it's playing. Dummied out, as some on the dev team thought it wasn't Sonic-y enough (Mystic, notably). Uncomment to restore. -SH
-		P_RestoreMusic(player); // I have my doubts that this is the right place for this...
+
+		if (mapheaderinfo[gamemap-1]->levelflags & LF_MIXNIGHTSCOUNTDOWN)
+		{
+			S_StopSoundByNum(sfx_timeup);
+			S_StopFadingMusic();
+			S_SetInternalMusicVolume(100);
+		}
+		else
+			P_RestoreMusic(player);
 
 		return;
 	}
 	else if (P_IsLocalPlayer(player) && player->nightstime == 10*TICRATE)
-//		S_StartSound(NULL, sfx_timeup); // that creepy "out of time" music from NiGHTS. Dummied out, as some on the dev team thought it wasn't Sonic-y enough (Mystic, notably). Uncomment to restore. -SH
-		S_ChangeMusicInternal("drown",false);
+	{
+		if (mapheaderinfo[gamemap-1]->levelflags & LF_MIXNIGHTSCOUNTDOWN)
+		{
+			S_FadeMusic(0, 10*MUSICRATE);
+			S_StartSound(NULL, sfx_timeup); // that creepy "out of time" music from NiGHTS.
+		}
+		else
+			S_ChangeMusicInternal((((maptol & TOL_NIGHTS) && !G_IsSpecialStage(gamemap)) ? "_ntime" : "_drown"), false);
+	}
 
 
 	if (player->mo->z < player->mo->floorz)
