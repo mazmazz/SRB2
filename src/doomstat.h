@@ -239,7 +239,7 @@ typedef struct
 	UINT8 levelselect;    ///< Is this map available in the level select? If so, which map list is it available in?
 	SINT8 bonustype;      ///< What type of bonus does this level have? (-1 for null.)
 
-	UINT8 levelflags;     ///< LF_flags:  merged eight booleans into one UINT8 for space, see below
+	UINT8 levelflags;     ///< LF_flags:  merged booleans into one UINT16 for space, see below
 	UINT8 menuflags;      ///< LF2_flags: options that affect record attack / nights mode menus
 
 	// NiGHTS stuff.
@@ -258,6 +258,7 @@ typedef struct
 #define LF_NOSSMUSIC      4 ///< Disable Super Sonic music
 #define LF_NORELOAD       8 ///< Don't reload level on death
 #define LF_NOZONE        16 ///< Don't include "ZONE" on level title
+#define LF_MIXNIGHTSCOUNTDOWN 32 ///< Play sfx_timeup instead of music change for NiGHTS countdown
 
 #define LF2_HIDEINMENU     1 ///< Hide in the multiplayer menu
 #define LF2_HIDEINSTATS    2 ///< Hide in the statistics screen
