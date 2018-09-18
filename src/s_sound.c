@@ -1564,6 +1564,7 @@ void S_SetMusicVolume(INT32 digvolume, INT32 seqvolume)
 	switch(I_SongType())
 	{
 		case MU_MID:
+		case MU_MID_EX:
 		//case MU_MOD:
 		//case MU_GME:
 			I_SetMusicVolume(seqvolume&31);
@@ -1610,7 +1611,7 @@ boolean S_FadeOutStopMusic(UINT32 ms)
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void S_Start(void)
+void S_StartEx(boolean reset)
 {
 	if (mapmusflags & MUSIC_RELOADRESET)
 	{
@@ -1620,7 +1621,7 @@ void S_Start(void)
 		mapmusposition = mapheaderinfo[gamemap-1]->muspos;
 	}
 
-	if (cv_resetmusic.value)
+	if (cv_resetmusic.value || reset)
 		S_StopMusic();
 	S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 }
