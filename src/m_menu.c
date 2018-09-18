@@ -287,6 +287,9 @@ menu_t OP_VideoOptionsDef, OP_VideoModeDef;
 menu_t OP_OpenGLOptionsDef, OP_OpenGLFogDef, OP_OpenGLColorDef;
 #endif
 menu_t OP_SoundOptionsDef;
+#if defined(HAVE_MIXERX) || defined(HAVE_OPENMPT)
+menu_t OP_SoundAdvancedDef;
+#endif
 static void M_ToggleSFX(void);
 static void M_ToggleDigital(void);
 static void M_ToggleMIDI(void);
@@ -1230,7 +1233,45 @@ static menuitem_t OP_SoundOptionsMenu[] =
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle SFX"   , M_ToggleSFX,        50},
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle Digital Music", M_ToggleDigital,     60},
 	{IT_STRING    | IT_CALL,  NULL,  "Toggle MIDI Music", M_ToggleMIDI,        70},
+
+#if defined(HAVE_MIXERX) || defined(HAVE_OPENMPT)
+	{IT_STRING 	  | IT_SUBMENU, NULL, "Advanced Settings...", &OP_SoundAdvancedDef, 90},
+#endif
 };
+
+#if defined(HAVE_MIXERX) && defined(HAVE_OPENMPT)
+static menuitem_t OP_SoundAdvancedMenu[] =
+{
+	{IT_HEADER, NULL, "MIDI", NULL, 10},
+
+	{IT_STRING | IT_CVAR, NULL, "MIDI Player", &cv_midiplayer, 22},
+	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "FluidSynth Sound Font File", &cv_midisoundfontpath, 32},
+	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "TiMidity++ Config Folder", &cv_miditimiditypath, 60},
+
+	{IT_HEADER, NULL, "MOD", NULL, 94},
+
+	{IT_STRING | IT_CVAR, NULL, "Instrument Filter", &cv_modfilter, 106}
+};
+#else
+#ifdef HAVE_MIXERX
+static menuitem_t OP_SoundAdvancedMenu[] =
+{
+	{IT_HEADER, NULL, "MIDI", NULL, 10},
+
+	{IT_STRING | IT_CVAR, NULL, "MIDI Player", &cv_midiplayer, 22},
+	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "FluidSynth Sound Font File", &cv_midisoundfontpath, 32},
+	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "TiMidity++ Config Folder", &cv_miditimiditypath, 60}
+};
+#endif
+#ifdef HAVE_OPENMPT
+static menuitem_t OP_SoundAdvancedMenu[] =
+{
+	{IT_HEADER, NULL, "MOD", NULL, 10},
+
+	{IT_STRING | IT_CVAR, NULL, "Instrument Filter", &cv_modfilter, 22}
+};
+#endif
+#endif
 
 static menuitem_t OP_DataOptionsMenu[] =
 {
@@ -1692,6 +1733,9 @@ menu_t OP_VideoModeDef =
 	NULL
 };
 menu_t OP_SoundOptionsDef = DEFAULTMENUSTYLE("M_SOUND", OP_SoundOptionsMenu, &OP_MainDef, 60, 30);
+#if defined(HAVE_MIXERX) || defined(HAVE_OPENMPT)
+menu_t OP_SoundAdvancedDef = DEFAULTMENUSTYLE("M_SOUND", OP_SoundAdvancedMenu, &OP_SoundOptionsDef, 30, 30);
+#endif
 menu_t OP_GameOptionsDef = DEFAULTMENUSTYLE("M_GAME", OP_GameOptionsMenu, &OP_MainDef, 30, 30);
 menu_t OP_ServerOptionsDef = DEFAULTMENUSTYLE("M_SERVER", OP_ServerOptionsMenu, &OP_MainDef, 30, 30);
 
@@ -6981,7 +7025,7 @@ static void M_ToggleDigital(void)
 	else
 	{
 		digital_disabled = true;
-		if (S_MusicType() != MU_MID)
+		if (S_MusicType() != MU_MID && S_MusicType() != MU_MID_EX)
 		{
 			if (midi_disabled)
 				S_StopMusic();
@@ -7019,7 +7063,7 @@ static void M_ToggleMIDI(void)
 	else
 	{
 		midi_disabled = true;
-		if (S_MusicType() == MU_MID)
+		if (S_MusicType() == MU_MID || S_MusicType() == MU_MID_EX)
 		{
 			if (digital_disabled)
 				S_StopMusic();

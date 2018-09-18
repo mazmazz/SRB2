@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2016 by Sonic Team Junior.
+// Copyright (C) 1999-2018 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -39,6 +39,10 @@ extern INT32 msg_id;
 
 #if defined(HAVE_BLUA) && defined(HAVE_LUA_MUSICPLUS)
 #include "lua_hook.h" // MusicChange hook
+#endif
+
+#ifdef HAVE_OPENMPT
+#include "libopenmpt/libopenmpt.h"
 #endif
 
 #ifdef HW3SOUND
@@ -93,6 +97,18 @@ consvar_t cv_numChannels = {"snd_channels", "32", CV_SAVE|CV_CALL, CV_Unsigned, 
 #endif
 
 static consvar_t surround = {"surround", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+
+#if defined(HAVE_MIXERX) && !defined(HAVE_MIXER) // mixer_sound.c defines these with static handler methods
+static CV_PossibleValue_t midiplayer_cons_t[] = {{MIDI_OPNMIDI, "OPNMIDI"}, {MIDI_Fluidsynth, "Fluidsynth"}, {MIDI_Timidity, "Timidity"}, {MIDI_Native, "Native"}, {0, NULL}};
+consvar_t cv_midiplayer = {"midiplayer", "OPNMIDI" /*MIDI_OPNMIDI*/, CV_CALL|CV_NOINIT|CV_SAVE, midiplayer_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_midisoundfontpath = {"midisoundfont", "sf2/8bit.sf2", CV_CALL|CV_NOINIT|CV_SAVE, NULL, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_miditimiditypath = {"midisoundbank", "./timidity", CV_SAVE, NULL, NULL, 0, NULL, NULL, 0, 0, NULL};
+#endif
+
+#ifdef HAVE_OPENMPT
+static CV_PossibleValue_t interpolationfilter_cons_t[] = {{0, "Default"}, {1, "None"}, {2, "Linear"}, {4, "Cubic"}, {8, "Windowed sinc"}, {0, NULL}};
+consvar_t cv_modfilter = {"modfilter", "0", CV_SAVE, interpolationfilter_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
+#endif
 
 #define S_MAX_VOLUME 127
 
@@ -247,6 +263,10 @@ void S_RegisterSoundStuff(void)
 #endif
 	CV_RegisterVar(&surround);
 	CV_RegisterVar(&cv_samplerate);
+
+#ifdef HAVE_OPENMPT
+	CV_RegisterVar(&cv_modfilter);
+#endif
 
 #if defined (macintosh) && !defined (HAVE_SDL) // mp3 playlist stuff
 	{
@@ -1564,6 +1584,7 @@ void S_SetMusicVolume(INT32 digvolume, INT32 seqvolume)
 	switch(I_SongType())
 	{
 		case MU_MID:
+		case MU_MID_EX:
 		//case MU_MOD:
 		//case MU_GME:
 			I_SetMusicVolume(seqvolume&31);
@@ -1610,7 +1631,7 @@ boolean S_FadeOutStopMusic(UINT32 ms)
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void S_Start(void)
+void S_StartEx(boolean reset)
 {
 	if (mapmusflags & MUSIC_RELOADRESET)
 	{
@@ -1620,7 +1641,7 @@ void S_Start(void)
 		mapmusposition = mapheaderinfo[gamemap-1]->muspos;
 	}
 
-	if (cv_resetmusic.value)
+	if (cv_resetmusic.value || reset)
 		S_StopMusic();
 	S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 }
