@@ -187,6 +187,14 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->mustrack = 0;
 	DEH_WriteUndoline("MUSICPOS", va("%d", mapheaderinfo[num]->mustrack), UNDO_NONE);
 	mapheaderinfo[num]->muspos = 0;
+	DEH_WriteUndoline("MUSICPOSTBOSS", mapheaderinfo[num]->muspostbossname, UNDO_NONE);
+	mapheaderinfo[num]->muspostbossname[0] = '\0';
+	DEH_WriteUndoline("MUSICPOSTBOSSTRACK", va("%d", mapheaderinfo[num]->muspostbosstrack), UNDO_NONE);
+	mapheaderinfo[num]->muspostbosstrack = 0;
+	DEH_WriteUndoline("MUSICPOSTBOSSPOS", va("%d", mapheaderinfo[num]->muspostbosspos), UNDO_NONE);
+	mapheaderinfo[num]->muspostbosspos = 0;
+	DEH_WriteUndoline("MUSICPOSTBOSSFADEIN", va("%d", mapheaderinfo[num]->muspostbossfadein), UNDO_NONE);
+	mapheaderinfo[num]->muspostbossfadein = 0;
 	DEH_WriteUndoline("FORCECHARACTER", va("%d", mapheaderinfo[num]->forcecharacter), UNDO_NONE);
 	mapheaderinfo[num]->forcecharacter[0] = '\0';
 	DEH_WriteUndoline("WEATHER", va("%d", mapheaderinfo[num]->weather), UNDO_NONE);
