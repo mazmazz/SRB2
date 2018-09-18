@@ -33,6 +33,10 @@ extern consvar_t cv_midisoundfontpath;
 extern consvar_t cv_miditimiditypath;
 #endif
 
+#ifdef HAVE_OPENMPT
+extern consvar_t cv_modfilter;
+#endif
+
 #ifdef SNDSERV
 extern consvar_t sndserver_cmd, sndserver_arg;
 #endif
