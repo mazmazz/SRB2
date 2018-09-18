@@ -3367,7 +3367,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			INT16 destvalue = line->sidenum[1] != 0xffff ?
 				(INT16)(sides[line->sidenum[1]].textureoffset>>FRACBITS) : (INT16)(line->dx>>FRACBITS);
 			INT16 speed = line->sidenum[1] != 0xffff ?
-				(INT16)(sides[line->sidenum[1]].rowoffset>>FRACBITS) : (INT16)(abs(line->dy)>>FRACBITS);
+				(INT16)(abs(sides[line->sidenum[1]].rowoffset>>FRACBITS)) : (INT16)(abs(line->dy)>>FRACBITS);
 			INT16 sectag = (INT16)(sides[line->sidenum[0]].textureoffset>>FRACBITS);
 			INT16 foftag = (INT16)(sides[line->sidenum[0]].rowoffset>>FRACBITS);
 			sector_t *sec; // Sector that the FOF is visible in
@@ -3395,6 +3395,15 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 				{
 					CONS_Debug(DBG_GAMELOGIC, "Line type 453 Executor: Can't find a FOF control sector with tag %d\n", foftag);
 					return;
+				}
+
+				// Prevent continuous execs from interfering on an existing fade
+				if (!(line->flags & ML_EFFECT5)
+					&& rover->fadingdata)
+					//&& ((fade_t*)rover->fadingdata)->timer > (ticbased ? 2 : speed*2))
+				{
+					CONS_Debug(DBG_GAMELOGIC, "Line type 453 Executor: Fade FOF thinker already exists, timer: %d\n", ((fade_t*)rover->fadingdata)->timer);
+					continue;
 				}
 
 				if (speed > 0)
