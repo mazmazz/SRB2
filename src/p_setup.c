@@ -195,6 +195,8 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->muspostbosspos = 0;
 	DEH_WriteUndoline("MUSICPOSTBOSSFADEIN", va("%d", mapheaderinfo[num]->muspostbossfadein), UNDO_NONE);
 	mapheaderinfo[num]->muspostbossfadein = 0;
+	DEH_WriteUndoline("MUSICINTERFADEOUT", va("%d", mapheaderinfo[num]->musicinterfadeout), UNDO_NONE);
+	mapheaderinfo[num]->musicinterfadeout = 0;
 	DEH_WriteUndoline("FORCECHARACTER", va("%d", mapheaderinfo[num]->forcecharacter), UNDO_NONE);
 	mapheaderinfo[num]->forcecharacter[0] = '\0';
 	DEH_WriteUndoline("WEATHER", va("%d", mapheaderinfo[num]->weather), UNDO_NONE);
@@ -235,7 +237,6 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->menuflags = 0;
 	// TODO grades support for delfile (pfft yeah right)
 	P_DeleteGrades(num);
-	mapheaderinfo[num]->musicinterfadeout = 0;
 	// an even further impossibility, delfile custom opts support
 	mapheaderinfo[num]->customopts = NULL;
 	mapheaderinfo[num]->numCustomOptions = 0;
