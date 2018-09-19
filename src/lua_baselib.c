@@ -715,7 +715,7 @@ static int lib_pSetObjectMomZ(lua_State *L)
 
 static int lib_pPlayJingle(lua_State *L)
 {
-	jingletype_t jingletype = (jingletype_t)luaL_checknumber(L, 1);
+	jingletype_t jingletype = min(luaL_checknumber(L, 1), NUMJINGLES);
 	player_t *player = NULL;
 	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
 		player = *((player_t **)luaL_checkudata(L, 2, META_PLAYER));
