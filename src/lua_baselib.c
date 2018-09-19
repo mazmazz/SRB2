@@ -740,8 +740,6 @@ static int lib_pPlayJingleMusic(lua_State *L)
 	if (!lua_isnone(L, 5) && lua_isuserdata(L, 5))
 		player = *((player_t **)luaL_checkudata(L, 5, META_PLAYER));
 	NOHUD
-	if (!player)
-		return LUA_ErrInvalid(L, "player_t");
 	if (!player || P_IsLocalPlayer(player))
 	{
 		P_PlayJingleMusic(player, musname, musflags, looping, status);
