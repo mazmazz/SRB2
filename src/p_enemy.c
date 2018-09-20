@@ -3250,10 +3250,8 @@ void A_WaterShield(mobj_t *actor)
 	player->powers[pw_underwater] = 0;
 
 	if (player->powers[pw_spacetime] > 1)
-	{
 		player->powers[pw_spacetime] = 0;
-		P_RestoreMusic(player);
-	}
+
 	S_StartSound(player->mo, actor->info->seesound);
 }
 
