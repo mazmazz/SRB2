@@ -218,6 +218,13 @@ static void unload_openmpt(void)
 
 #endif
 
+#ifdef HAVE_OPENMPT
+void openmptlogger(const char *message, void *user)
+{
+		CONS_Printf("%s\n", message);
+}
+#endif
+
 void I_StartupSound(void)
 {
 	I_Assert(!sound_started);
@@ -840,7 +847,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 		case MUS_MODPLUG_UNUSED:
 		case MUS_MOD:
 			if (openmpt.loaded) {
-				mod = openmpt.module_create_from_memory2(data, len, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+				mod = openmpt.module_create_from_memory2(data, len, openmptlogger, NULL, NULL, NULL, NULL, NULL, NULL);
 				if (!mod)
 				{
 					mod_err = openmpt.module_error_get_last(mod);
