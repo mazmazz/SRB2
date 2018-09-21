@@ -279,10 +279,4 @@ void I_PlayCD(UINT8 track, UINT8 looping);
 */
 boolean I_SetVolumeCD(INT32 volume);
 
-#ifdef HAVE_OPENMPT
-/**	\Helper function to log OpenMPT warnings and errors
-*/
-void openmptlogger(const char *message);
-#endif
-
 #endif
