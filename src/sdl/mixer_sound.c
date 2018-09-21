@@ -846,6 +846,7 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 	{
 		case MUS_MODPLUG_UNUSED:
 		case MUS_MOD:
+		case MUS_MODPLUG:
 			if (openmpt.loaded) {
 				mod = openmpt.module_create_from_memory2(data, len, openmptlogger, NULL, NULL, NULL, NULL, NULL, NULL);
 				if (!mod)
@@ -869,6 +870,8 @@ boolean I_StartDigSong(const char *musicname, boolean looping)
 		case MUS_MID:
 		case MUS_OGG:
 		case MUS_MP3:
+		case MUS_MP3_MAD:
+		case MUS_FLAC:
 			Mix_HookMusic(NULL, NULL);
 			break;
 		default:
