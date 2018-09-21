@@ -282,7 +282,7 @@ boolean I_SetVolumeCD(INT32 volume);
 #ifdef HAVE_OPENMPT
 /**	\Helper function to log OpenMPT warnings and errors
 */
-void openmptlogger(const char *message, void *user);
+void openmptlogger(const char *message);
 #endif
 
 #endif

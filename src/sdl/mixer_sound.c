@@ -219,7 +219,7 @@ static void unload_openmpt(void)
 #endif
 
 #ifdef HAVE_OPENMPT
-void openmptlogger(const char *message, void *user)
+void openmptlogger(const char *message)
 {
 		CONS_Printf("%s\n", message);
 }
