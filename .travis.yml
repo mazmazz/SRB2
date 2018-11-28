@@ -248,8 +248,8 @@ before_install:
   - mkdir -p $HOME/srb2_cache
 
 script:
-  - if [[ "$BUILDFTP_ENABLED" == "1" ] && [ "$BUILDFTP_HOSTNAME" != "" ]]
-  - then if [[ "$BUILDFTP_OSNAMES" == "" ] || [ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]
+  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]
+  - then if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]
   - then make -k package
   - else make -k
   - fi
@@ -258,10 +258,10 @@ script:
 
 after_success:
   # Check whether to upload to FTP
-  - if [[ "$BUILDFTP_ENABLED" == "1" ] && [ "$BUILDFTP_HOSTNAME" != "" ]]
-  - then if [[ "$BUILDFTP_OSNAMES" == "" ] || [ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]
+  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]
+  - then if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]
   - then if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]
-  - then if [[ "$BUILDFTP_BRANCHES" == "" ] || [ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]
+  - then if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]
   # Setup for FTP upload
   - if [[ $TRAVIS_OS_NAME == "osx" ]]; then brew install wput; fi
   # Output commit details
