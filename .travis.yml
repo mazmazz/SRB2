@@ -297,7 +297,7 @@ after_success:
   # With file `commit.txt` and folder(s) `bin` and `package`
   #
   # BUILDFTP_ENABLED = 1                       (leave blank to disable)
-  # BUILDFTP_OSNAMES = osx                     (whitelist of OS names to allow uploading; leave blank to upload all OSes
+  # BUILDFTP_OSNAMES = osx                     (whitelist of OS names to allow uploading; leave blank to upload from all OSes)
   # BUILDFTP_BRANCHES = master,branch1,branch2 (whitelist of branches to upload; leave blank to upload all branches)
   # BUILDFTP_OPTIONALFILES = 1                 (to download and package music.dta and README files; leave blank to disable)
   # BUILDFTP_BINARY = 1                        (upload bin/ folder; leave blank to disable)
@@ -320,7 +320,7 @@ after_success:
       echo "" >> "commit.txt";
       if [[ "$BUILDFTP_PORT" == "" ]]; then BUILDFTP_PORT=21; fi;
       if [[ "$BUILDFTP_PROTOCOL" == "" ]]; then BUILDFTP_PROTOCOL=ftp; fi;
-      BUILDFTP_LOCATION=$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER
+      BUILDFTP_LOCATION=$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER;
       echo "Uploading to FTP...";
       wput "commit.txt" "$BUILDFTP_LOCATION/commit.txt";
       wput "package/SRB2-2.1.20-Darwin.dmg" "$BUILDFTP_LOCATION/SRB2.dmg";
