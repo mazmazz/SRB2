@@ -254,11 +254,10 @@ before_script:
     fi;
   - mkdir build
   - cd build
+  - mkdir package
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/bin
-  - chmod 777 "$PWD/bin/Sonic Robo Blast 2.app"
-  - sudo chmod 777 "$PWD/bin/Sonic Robo Blast 2.app"
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/bin -DCPACK_PACKAGE_DIRECTORY=$PWD/package -DCHMOD_BUNDLE_ITEMS=TRUE
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
@@ -269,23 +268,24 @@ before_install:
   - mkdir -p $HOME/srb2_cache
 
 script:
-  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]; then
-      if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
-        if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-          if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
-            make -k package;
-          else
-            make -k;
-          fi;
-        else
-          make -k;
-        fi;
-      else
-        make -k;
-      fi;
-    else
-      make -k;
-    fi;
+  # - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]; then
+  #     if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
+  #       if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+  #         if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
+  #           make -k package;
+  #         else
+  #           make -k;
+  #         fi;
+  #       else
+  #         make -k;
+  #       fi;
+  #     else
+  #       make -k;
+  #     fi;
+  #   else
+  #     make -k;
+  #   fi;
+  - sudo make -k package
 
 after_success:
   # Check whether to upload to FTP
@@ -304,7 +304,9 @@ after_success:
             if [[ "$BUILDFTP_PROTOCOL" == "" ]]; then BUILDFTP_PROTOCOL=ftp; fi;
             echo "Uploading to FTP...";
             wput "commit.txt" "$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/commit.txt";
-            wput --basename='$PWD' "$PWD/bin" "$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/";
+            wput "SRB2-2.1.20-Darwin.dmg" "$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/";
+            wput "bin" "$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/";
+            wput "package" "$BUILDFTP_PROTOCOL://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/";
           fi;
         fi;
       fi;
