@@ -228,6 +228,7 @@ addons:
     - libgme-dev
     - zlib1g-dev
     - p7zip-full
+    - wput
 
 before_script:
   - wget --verbose --server-response -c http://rosenthalcastle.org/srb2/SRB2-v2115-assets-2.7z -O $HOME/srb2_cache/SRB2-v2115-assets-2.7z
@@ -262,7 +263,7 @@ after_success:
   - then if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]
   - then if [[ "$BUILDFTP_BRANCHES" == "" ] || [ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]
   # Setup for FTP upload
-  - brew install wput
+  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then brew install wput; fi
   # Output commit details
   - echo "Travis Build - $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH - $TRAVIS_JOB_NUMBER - $TRAVIS_JOB_NAME" > "commit.txt"
   - echo "Job ID $TRAVIS_JOB_ID" >> "commit.txt"
@@ -271,7 +272,7 @@ after_success:
   - echo "$TRAVIS_COMMIT_MESSAGE" >> "commit.txt"
   - echo "" >> "Commit.txt"
   # Initialize FTP parameters
-  - if [[ "$BUILDFTP_PORT" == "" ]] then BUILDFTP_PORT=21; fi
+  - if [[ "$BUILDFTP_PORT" == "" ]]; then BUILDFTP_PORT=21; fi
   # Start FTP upload procedure
   - echo "Uploading to FTP..."
   - wput "commit.txt" "ftp://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/commit.txt"
