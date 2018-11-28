@@ -231,8 +231,8 @@ addons:
     - wput
 
 before_script:
-#   - wget --verbose --server-response -c http://rosenthalcastle.org/srb2/SRB2-v2115-assets-2.7z -O $HOME/srb2_cache/SRB2-v2115-assets-2.7z
-#   - 7z x $HOME/srb2_cache/SRB2-v2115-assets-2.7z -oassets
+  - wget --verbose --server-response -c http://rosenthalcastle.org/srb2/SRB2-v2115-assets-2.7z -O $HOME/srb2_cache/SRB2-v2115-assets-2.7z
+  - 7z x $HOME/srb2_cache/SRB2-v2115-assets-2.7z -oassets
   - mkdir build
   - cd build
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
