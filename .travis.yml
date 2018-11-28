@@ -246,4 +246,37 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl -O -L https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1.dmg; hdiutil attach SDL2_mixer-2.0.1.dmg; sudo cp -a /Volumes/SDL2_mixer/SDL2_mixer.framework /Library/Frameworks/; fi
   - mkdir -p $HOME/srb2_cache
 
-script: make -k
+script:
+  - if [[ "$BUILDFTP_ENABLED" == "1" ] && [ "$BUILDFTP_HOSTNAME" != "" ]]
+  - then if [[ "$BUILDFTP_OSNAMES" == "" ] || [ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]
+  - then make -k package
+  - else make -k
+  - fi
+  - else make -k
+  - fi
+
+after_success:
+  # Check whether to upload to FTP
+  - if [[ "$BUILDFTP_ENABLED" == "1" ] && [ "$BUILDFTP_HOSTNAME" != "" ]]
+  - then if [[ "$BUILDFTP_OSNAMES" == "" ] || [ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]
+  - then if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]
+  - then if [[ "$BUILDFTP_BRANCHES" == "" ] || [ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]
+  # Setup for FTP upload
+  - brew install wput
+  # Output commit details
+  - echo "Travis Build - $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH - $TRAVIS_JOB_NUMBER - $TRAVIS_JOB_NAME" > "commit.txt"
+  - echo "Job ID $TRAVIS_JOB_ID" >> "commit.txt"
+  - echo "" >> "commit.txt"
+  - echo "Commit $TRAVIS_COMMIT" >> "commit.txt"
+  - echo "$TRAVIS_COMMIT_MESSAGE" >> "commit.txt"
+  - echo "" >> "Commit.txt"
+  # Initialize FTP parameters
+  - if [[ "$BUILDFTP_PORT" == "" ]] then BUILDFTP_PORT=21; fi
+  # Start FTP upload procedure
+  - echo "Uploading to FTP..."
+  - wput "commit.txt" "ftp://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/commit.txt"
+  # End FTP upload procedure
+  - fi
+  - fi
+  - fi
+  - fi
