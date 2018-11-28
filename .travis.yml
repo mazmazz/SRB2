@@ -233,6 +233,25 @@ addons:
 before_script:
   - wget --verbose --server-response -c http://rosenthalcastle.org/srb2/SRB2-v2115-assets-2.7z -O $HOME/srb2_cache/SRB2-v2115-assets-2.7z
   - 7z x $HOME/srb2_cache/SRB2-v2115-assets-2.7z -oassets
+  # Get optional files too
+  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]; then
+      if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
+        if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+          if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
+            if [[ "$BUILDFTP_OPTIONALFILES" == "1" ]]; then
+              wget --verbose --server-response -c http://alam.srb2.org/SRB2/2.1.21-Final/Resources/music.dta -O $HOME/srb2_cache/music.dta;
+              wget --verbose --server-response -c http://alam.srb2.org/SRB2/2.1.21-Final/Resources/README.txt -O $HOME/srb2_cache/README.txt;
+              wget --verbose --server-response -c http://alam.srb2.org/SRB2/2.1.21-Final/Resources/LICENSE.txt -O $HOME/srb2_cache/LICENSE.txt;
+              wget --verbose --server-response -c http://alam.srb2.org/SRB2/2.1.21-Final/Resources/LICENSE-3RD-PARTY.txt -O $HOME/srb2_cache/LICENSE-3RD-PARTY.txt;
+              cp $HOME/srb2_cache/music.dta assets/music.dta;
+              cp $HOME/srb2_cache/README.txt assets/README.txt;
+              cp $HOME/srb2_cache/LICENSE.txt assets/LICENSE.txt;
+              cp $HOME/srb2_cache/LICENSE.txt assets/LICENSE-3RD-PARTY.txt;
+            fi;
+          fi;
+        fi;
+      fi;
+    fi;
   - mkdir build
   - cd build
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
