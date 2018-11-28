@@ -32,6 +32,9 @@ endforeach()
 # Installation
 
 if(CLANG)
+	message("Installing assets with CLANG")
+	message("${outname}.app/Contents/Resources")
+	message("${CMAKE_CURRENT_SOURCE_DIR}")
 	get_target_property(outname SRB2SDL2 OUTPUT_NAME)
 	install(FILES ${SRB2_ASSET_REQUIRED}
 		DESTINATION "${outname}.app/Contents/Resources"
@@ -41,6 +44,9 @@ if(CLANG)
 		OPTIONAL
 	)
 else()
+	message("Installing assets regularly")
+	message("${outname}")
+	message("${CMAKE_CURRENT_SOURCE_DIR}")
 	install(FILES ${SRB2_ASSET_REQUIRED}
 		DESTINATION .
 	)
