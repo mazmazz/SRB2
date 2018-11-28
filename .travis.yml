@@ -256,7 +256,7 @@ before_script:
   - cd build
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
-  - cmake .. -DCMAKE_BUILD_TYPE=Release
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/build/$TRAVIS_REPO_SLUG/build/bin
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
@@ -301,6 +301,8 @@ after_success:
             if [[ "$BUILDFTP_PORT" == "" ]]; then BUILDFTP_PORT=21; fi;
             echo "Uploading to FTP...";
             wput "commit.txt" "ftp://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/commit.txt";
+            cd "$HOME/build/$TRAVIS_REPO_SLUG/build/bin";
+            wput --basename='$HOME/build/$TRAVIS_REPO_SLUG/build' "$HOME/build/$TRAVIS_REPO_SLUG/build/bin" ""ftp://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/";
           fi;
         fi;
       fi;
