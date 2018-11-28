@@ -258,8 +258,9 @@ script:
   - echo "Skipping build"
 
 after_success:
-  - stat -c "%a %n" "$PWD/bin/Sonic Robo Blast 2.app"
+  - cd bin
+  - ls -l
   - chmod 777 "$PWD/bin/Sonic Robo Blast 2.app"
-  - stat -c "%a %n" "$PWD/bin/Sonic Robo Blast 2.app"
+  - ls -l
   - sudo chmod 777 "$PWD/bin/Sonic Robo Blast 2.app"
-  - stat -c "%a %n" "$PWD/bin/Sonic Robo Blast 2.app"
+  - ls -l
