@@ -236,7 +236,7 @@ before_script:
       if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
         if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
           if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
-            BUILDFTP_ACTIVE=1
+            BUILDFTP_ACTIVE=1;
           fi;
         fi;
       fi;
