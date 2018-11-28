@@ -8,12 +8,10 @@
 
 ## Dependencies
 - NASM (x86 builds only)
-- SDL2 (Linux/OS X only)
-- SDL2-Mixer (Linux/OS X only)
-- libupnp (Linux/OS X only)
-- libgme (Linux/OS X only)
-
-Warning: 64-bit builds are not netgame compatible with 32-bit builds. Use at your own risk.
+- SDL2
+- SDL2-Mixer
+- libupnp
+- libgme
 
 ## Compiling
 
