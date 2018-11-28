@@ -248,12 +248,22 @@ before_install:
   - mkdir -p $HOME/srb2_cache
 
 script:
-  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]];
-      then if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]];
-        then make -k package;
-        else make -k;
+  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]; then
+      if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
+        if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+          if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
+            make -k package;
+          else
+            make -k;
+          fi;
+        else
+          make -k;
+        fi;
+      else
+        make -k;
       fi;
-      else make -k;
+    else
+      make -k;
     fi;
 
 after_success:
@@ -271,7 +281,7 @@ after_success:
             echo "" >> "commit.txt";
             if [[ "$BUILDFTP_PORT" == "" ]]; then BUILDFTP_PORT=21; fi;
             echo "Uploading to FTP...";
-            wput "commit.txt" "ftp://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/commit.txt";
+            wput "commit.txt" "ftp://$BUILDFTP_USER:$BUILDFTP_PASS@$BUILDFTP_HOSTNAME:$BUILDFTP_PORT/$BUILDFTP_PATH/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_JOB_ID-$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_NAME/commit.txt";
           fi;
         fi;
       fi;
