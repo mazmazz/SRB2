@@ -268,24 +268,23 @@ before_install:
   - mkdir -p $HOME/srb2_cache
 
 script:
-  # - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]; then
-  #     if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
-  #       if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-  #         if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
-  #           make -k package;
-  #         else
-  #           make -k;
-  #         fi;
-  #       else
-  #         make -k;
-  #       fi;
-  #     else
-  #       make -k;
-  #     fi;
-  #   else
-  #     make -k;
-  #   fi;
-  - sudo make -k package
+  - if [[ "$BUILDFTP_ENABLED" == "1" ]] && [[ "$BUILDFTP_HOSTNAME" != "" ]]; then
+      if [[ "$BUILDFTP_OSNAMES" == "" ]] || [[ $BUILDFTP_OSNAMES == *"$TRAVIS_OS_NAME"* ]]; then
+        if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+          if [[ "$BUILDFTP_BRANCHES" == "" ]] || [[ $BUILDFTP_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
+            make -k package;
+          else
+            make -k;
+          fi;
+        else
+          make -k;
+        fi;
+      else
+        make -k;
+      fi;
+    else
+      make -k;
+    fi;
 
 after_success:
   # Check whether to upload to FTP
