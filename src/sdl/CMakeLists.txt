@@ -269,15 +269,16 @@ if(${SDL2_FOUND})
 
 
 	# Mac bundle fixup
-	if(${CMAKE_SYSTEM} MATCHES Darwin)
-		install(CODE "
-			include(BundleUtilities)
-			fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/Sonic Robo Blast 2.app\"
-				\"\"
-				/Library/Frameworks
-			)"
-		)
-	endif()
+	# ./package/_CPack_Packages/Darwin/DragNDrop/SRB2-2.1.20-Darwin/Sonic Robo Blast 2.app
+	#if(${CMAKE_SYSTEM} MATCHES Darwin)
+	#	install(CODE "
+	#		include(BundleUtilities)
+	#		fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/Sonic Robo Blast 2.app\"
+	#			\"\"
+	#			/Library/Frameworks
+	#		)"
+	#	)
+	#endif()
 
 	set(SRB2_SDL2_AVAILABLE YES PARENT_SCOPE)
 else()

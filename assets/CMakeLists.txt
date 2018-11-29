@@ -50,6 +50,13 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 		DESTINATION .
 		OPTIONAL
 	)
+	install(CODE "
+		include(BundleUtilities)
+		fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/${outname}.app\"
+			\"\"
+			/Library/Frameworks
+		)"
+	)
 else()
 	install(FILES ${SRB2_ASSET_REQUIRED}
 		DESTINATION .
