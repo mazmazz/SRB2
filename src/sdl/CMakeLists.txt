@@ -269,16 +269,19 @@ if(${SDL2_FOUND})
 
 
 	# Mac bundle fixup
-	# ./package/_CPack_Packages/Darwin/DragNDrop/SRB2-2.1.20-Darwin/Sonic Robo Blast 2.app
-	#if(${CMAKE_SYSTEM} MATCHES Darwin)
-	#	install(CODE "
-	#		include(BundleUtilities)
-	#		fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/Sonic Robo Blast 2.app\"
-	#			\"\"
-	#			/Library/Frameworks
-	#		)"
-	#	)
-	#endif()
+	# HACK: THIS IS IMPORTANT! See the escaped \${CMAKE_INSTALL_PREFIX}? This
+	# makes it so that var is evaluated LATER during cpack, not right now!
+	# This fixes the quirk where the bundled libraries don't land in the final package
+	# https://cmake.org/pipermail/cmake/2011-March/043532.html
+	if(${CMAKE_SYSTEM} MATCHES Darwin)
+		install(CODE "
+			include(BundleUtilities)
+			fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/Sonic Robo Blast 2.app\"
+				\"\"
+				/Library/Frameworks
+			)"
+		)
+	endif()
 
 	set(SRB2_SDL2_AVAILABLE YES PARENT_SCOPE)
 else()
