@@ -11,6 +11,9 @@ set(SRB2_ASSET_REQUIRED
 
 set(SRB2_ASSET_OPTIONAL
 	${CMAKE_CURRENT_SOURCE_DIR}/music.dta
+)
+
+set(SRB2_ASSET_DOCS
 	${CMAKE_CURRENT_SOURCE_DIR}/README.txt
 	${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt
 	${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-3RD-PARTY.txt
@@ -31,11 +34,11 @@ endforeach()
 
 # Installation
 
-if(CLANG)
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+	get_target_property(outname SRB2SDL2 OUTPUT_NAME)
 	message("Installing assets with CLANG")
 	message("${outname}.app/Contents/Resources")
 	message("${CMAKE_CURRENT_SOURCE_DIR}")
-	get_target_property(outname SRB2SDL2 OUTPUT_NAME)
 	install(FILES ${SRB2_ASSET_REQUIRED}
 		DESTINATION "${outname}.app/Contents/Resources"
 	)
@@ -43,14 +46,19 @@ if(CLANG)
 		DESTINATION "${outname}.app/Contents/Resources"
 		OPTIONAL
 	)
+	install(FILES ${SRB2_ASSET_DOCS}
+		DESTINATION .
+		OPTIONAL
+	)
 else()
-	message("Installing assets regularly")
-	message("${outname}")
-	message("${CMAKE_CURRENT_SOURCE_DIR}")
 	install(FILES ${SRB2_ASSET_REQUIRED}
 		DESTINATION .
 	)
 	install(FILES ${SRB2_ASSET_OPTIONAL}
+		DESTINATION .
+		OPTIONAL
+	)
+	install(FILES ${SRB2_ASSET_DOCS}
 		DESTINATION .
 		OPTIONAL
 	)
