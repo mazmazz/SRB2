@@ -324,6 +324,6 @@ after_success:
       echo "Uploading to FTP...";
       wput "commit.txt" "$BUILDFTP_LOCATION/commit.txt";
       wput "package/SRB2-2.1.20-Darwin.dmg" "$BUILDFTP_LOCATION/SRB2.dmg";
-      if [[ "$BUILDFTP_NOPACKAGE" != "1" ]]; then wput "package" "$BUILDFTP_LOCATION/"; fi;
       if [[ "$BUILDFTP_BINARY" == "1" ]]; then wput "bin" "$BUILDFTP_LOCATION/"; fi;
+      if [[ "$BUILDFTP_NOPACKAGE" != "1" ]]; then wput "package" "$BUILDFTP_LOCATION/"; fi;
     fi
