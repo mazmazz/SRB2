@@ -63,7 +63,6 @@ matrix:
           compiler: gcc-4.8
           env:
           - _DEPLOYER_JOB_ENABLED=1
-          - _DEPLOYER_FTP_TARGET=1
           - _DEPLOYER_DPUT_TARGET=1
           - _DEPLOYER_PACKAGE_SOURCE=1
           - _DEPLOYER_PACKAGE_BINARY=1
