@@ -9,7 +9,7 @@ if [[ "$__DEPLOYER_FTP_ACTIVE" == "1" ]] || [[ "$__DEPLOYER_DPUT_ACTIVE" == "1" 
 	if [[ "$__DEPLOYER_DEBIAN_ACTIVE" == "1" ]]; then
 		echo "Building Debian package(s)"
 
-		sudo apt-get install devscripts debhelper secure-delete;
+		sudo apt-get install devscripts debhelper secure-delete expect;
 
 		# Build source packages first, since they zip up the entire source folder,
 		# binaries and all
@@ -38,15 +38,16 @@ if [[ "$__DEPLOYER_FTP_ACTIVE" == "1" ]] || [[ "$__DEPLOYER_DPUT_ACTIVE" == "1" 
 			cd ../assets;
 
 			# make sure the asset files exist, download them if they don't
-			debuild -T build;
+			#echo "Checking asset files for asset Debian package";
+			#debuild -T build;
 
 			if [[ "$_DEPLOYER_PACKAGE_SOURCE" == "1" ]]; then
-				echo "Building main source Debian package";
+				echo "Building asset source Debian package";
 				debuild -S -us -uc;
 			fi;
 
 			if [[ "$_DEPLOYER_PACKAGE_BINARY" == "1" ]]; then
-				echo "Building main binary Debian package";
+				echo "Building asset binary Debian package";
 				debuild -us -uc;
 			fi;
 
@@ -90,8 +91,13 @@ if [[ "$__DEPLOYER_FTP_ACTIVE" == "1" ]] || [[ "$__DEPLOYER_DPUT_ACTIVE" == "1" 
 
 				for n in ${PACKAGEFILENAMES}; do
 					for f in ./$n*.changes; do
-						debsign "$f" \
-							-p"gpg --passphrase-file $OLDPWD/phrase.txt --batch";
+						expect <(cat <<EOD
+spawn debsign "$f" -p"gpg --passphrase-file $OLDPWD/phrase.txt --batch";
+expect "Would you like to use the current signature?"
+send "Y\r"
+interact
+EOD
+);
 					done;
 				done;
 
@@ -119,8 +125,13 @@ if [[ "$__DEPLOYER_FTP_ACTIVE" == "1" ]] || [[ "$__DEPLOYER_DPUT_ACTIVE" == "1" 
 
 				for n in ${PACKAGEFILENAMES}; do
 					for f in ./$n*.changes; do
-						debsign "$f" \
-							-p"gpg --passphrase-file $OLDPWD/phrase.txt --batch";
+						expect <(cat <<EOD
+spawn debsign "$f" -p"gpg --passphrase-file $OLDPWD/phrase.txt --batch";
+expect "Would you like to use the current signature?"
+send "Y\r"
+interact
+EOD
+);
 					done;
 				done;
 
