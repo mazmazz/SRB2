@@ -157,10 +157,6 @@ int main(int argc, char **argv)
 #endif
 	MakeCodeWritable();
 #endif
-
-	INT32 lol = 60/0;
-	CONS_Printf("%d\n", lol+10);
-
 	// startup SRB2
 	CONS_Printf("Setting up SRB2...\n");
 	D_SRB2Main();
