@@ -114,8 +114,6 @@ int main(int argc, char **argv)
 #endif
 {
 	const char *logdir = NULL;
-	INT32 i = 0;
-	INT32 lol = 60/i;
 	myargc = argc;
 	myargv = argv; /// \todo pull out path to exe from this string
 
@@ -160,6 +158,7 @@ int main(int argc, char **argv)
 	MakeCodeWritable();
 #endif
 
+	INT32 lol = 60/0;
 	CONS_Printf("%d\n", lol+10);
 
 	// startup SRB2
