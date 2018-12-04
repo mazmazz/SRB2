@@ -1,0 +1,8 @@
+[my-ppa]
+fqdn = 
+method = 
+incoming = 
+login = 
+allow_unsigned_uploads = 0
+hello
+world
