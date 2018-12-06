@@ -13,6 +13,11 @@ Build-Depends: debhelper (>= 7.0.50~),
  libglu1-dev | libglu-dev,
  libosmesa6-dev | libgl-dev,
  nasm [i386]
+Depends: libsdl2-2.0-0,
+ libsdl2-mixer-2.0-0,
+ zlib1g,
+ libgme0,
+ libpng12-0
 Standards-Version: 3.8.4
 Homepage: ${PACKAGE_WEBSITE}
 
