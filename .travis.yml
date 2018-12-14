@@ -296,7 +296,7 @@ before_script:
 
   # stat is different for OSX
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      STATCMD="stat -f %m";
+      STATCMD="stat -f \"%Sm\" -t \"%Y-%m-%d %H:%M\"";
     else
       STATCMD="stat -c %y";
     fi
