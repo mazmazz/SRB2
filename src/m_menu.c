@@ -71,9 +71,9 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 //int	vsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 #endif
 
-#if defined (__GNUC__) && (__GNUC__ >= 4)
-#define FIXUPO0
-#endif
+// #if defined (__GNUC__) && (__GNUC__ >= 4)
+// #define FIXUPO0
+// #endif
 
 #define SKULLXOFF -32
 #define LINEHEIGHT 16
@@ -4122,9 +4122,9 @@ static boolean M_AddonsRefresh(void)
 	return false;
 }
 
-#ifdef FIXUPO0
-#pragma GCC optimize ("0")
-#endif
+// #ifdef FIXUPO0
+// #pragma GCC optimize ("0")
+// #endif
 
 static void M_DrawAddons(void)
 {
@@ -4271,9 +4271,9 @@ static void M_DrawAddons(void)
 		V_DrawSmallScaledPatch(x, y + 4, 0, addonsp[NUM_EXT+2]);
 }
 
-#ifdef FIXUPO0
-#pragma GCC reset_options
-#endif
+// #ifdef FIXUPO0
+// #pragma GCC reset_options
+// #endif
 
 static void M_AddonExec(INT32 ch)
 {
