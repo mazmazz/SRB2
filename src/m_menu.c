@@ -4197,16 +4197,16 @@ static void M_DrawAddons(void)
 	if (m > (ssize_t)sizedirmenu)
 		m = sizedirmenu;
 
-	// // then top...
-	// i = m - (2*numaddonsshown + 1);
+	// then top...
+	i = m - (2*numaddonsshown + 1);
 
-	// // then adjust!
-	// if (i < 0)
-	// {
-	// 	if ((m -= i) > (ssize_t)sizedirmenu)
-	// 		m = sizedirmenu;
-	// 	i = 0;
-	// }
+	// then adjust!
+	if (i < 0)
+	{
+		// if ((m -= i) > (ssize_t)sizedirmenu)
+		// 	m = sizedirmenu;
+		// i = 0;
+	}
 
 	// if (i != 0)
 	// 	V_DrawString(19, y+4 - (skullAnimCounter/5), highlightflags, "\x1A");
