@@ -4203,9 +4203,9 @@ static void M_DrawAddons(void)
 	// then adjust!
 	if (i < 0)
 	{
-		// if ((m -= i) > (ssize_t)sizedirmenu)
-		// 	m = sizedirmenu;
-		// i = 0;
+		if ((m -= i) > (ssize_t)sizedirmenu)
+			m = sizedirmenu;
+		i = 0;
 	}
 
 	// if (i != 0)
