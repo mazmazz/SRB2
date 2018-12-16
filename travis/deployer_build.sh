@@ -5,20 +5,20 @@
 #
 # Builds the required targets depending on which sub-modules are enabled
 
-if [[ "$__DEPLOYER_FTP_ACTIVE" == "1" ]] || [[ "$__DEPLOYER_DPUT_ACTIVE" == "1" ]]; then
-	if [[ "$__DEPLOYER_DEBIAN_ACTIVE" == "1" ]]; then
+if [[ "$__DPL_FTP_ACTIVE" == "1" ]] || [[ "$__DPL_DPUT_ACTIVE" == "1" ]]; then
+	if [[ "$__DPL_DEBIAN_ACTIVE" == "1" ]]; then
 		echo "Building Debian package(s)"
 
 		sudo apt-get install devscripts debhelper secure-delete expect;
 
 		# Build source packages first, since they zip up the entire source folder,
 		# binaries and all
-		if [[ "$PACKAGE_MAIN_NOBUILD" != "1" ]]; then
+		if [[ "$_DPL_PACKAGE_MAIN" == "1" ]]; then
 			. ../debian_template.sh main;
 			OLDPWD=$PWD; # [repo]/build
 			cd ..; # repo root
 
-			if [[ "$_DEPLOYER_PACKAGE_SOURCE" == "1" ]]; then
+			if [[ "$_DPL_PACKAGE_SOURCE" == "1" ]]; then
 				echo "Building main source Debian package";
 				expect <(cat <<EOD
 spawn debuild -S -us -uc;
@@ -29,7 +29,7 @@ EOD
 );
 			fi;
 
-			if [[ "$_DEPLOYER_PACKAGE_BINARY" == "1" ]]; then
+			if [[ "$_DPL_PACKAGE_BINARY" == "1" ]]; then
 				echo "Building main binary Debian package";
 				expect <(cat <<EOD
 spawn debuild -us -uc;
@@ -44,7 +44,7 @@ EOD
 		fi;
 
 		# Also an asset package
-		if [[ "$PACKAGE_ASSET_BUILD" == "1" ]]; then
+		if [[ "$_DPL_PACKAGE_ASSET" == "1" ]]; then
 			. ../debian_template.sh asset;
 			OLDPWD=$PWD; # [repo]/build
 			cd ../assets;
@@ -53,7 +53,7 @@ EOD
 			#echo "Checking asset files for asset Debian package";
 			#debuild -T build;
 
-			if [[ "$_DEPLOYER_PACKAGE_SOURCE" == "1" ]]; then
+			if [[ "$_DPL_PACKAGE_SOURCE" == "1" ]]; then
 				echo "Building asset source Debian package";
 				expect <(cat <<EOD
 spawn debuild -S -us -uc;
@@ -64,7 +64,7 @@ EOD
 );
 			fi;
 
-			if [[ "$_DEPLOYER_PACKAGE_BINARY" == "1" ]]; then
+			if [[ "$_DPL_PACKAGE_BINARY" == "1" ]]; then
 				echo "Building asset binary Debian package";
 				expect <(cat <<EOD
 spawn debuild -us -uc;
@@ -79,14 +79,14 @@ EOD
 		fi;
 
 		# Now sign our packages
-		if [[ "$DEPLOYER_PGP_KEY_PRIVATE" != "" ]] && [[ "$DEPLOYER_PGP_KEY_PASSPHRASE" != "" ]]; then
+		if [[ "$DPL_PGP_KEY_PRIVATE" != "" ]] && [[ "$DPL_PGP_KEY_PASSPHRASE" != "" ]]; then
 			# Get the key to sign
 			# Do this AFTER debuild so that we can specify the passphrase in command line
-			echo "$DEPLOYER_PGP_KEY_PRIVATE" | base64 --decode > key.asc;
-			echo "$DEPLOYER_PGP_KEY_PASSPHRASE" > phrase.txt;
+			echo "$DPL_PGP_KEY_PRIVATE" | base64 --decode > key.asc;
+			echo "$DPL_PGP_KEY_PASSPHRASE" > phrase.txt;
 			gpg --import key.asc;
 
-			if [[ "$PACKAGE_MAIN_NOBUILD" != "1" ]]; then
+			if [[ "$_DPL_PACKAGE_MAIN" == "1" ]]; then
 				echo "Signing main package(s)";
 
 				PACKAGEFILENAME=${PACKAGE_NAME}_${PACKAGE_VERSION}${PACKAGE_SUBVERSION}${PACKAGE_REVISION};
@@ -122,7 +122,7 @@ EOD
 				cd $OLDPWD;
 			fi;
 
-			if [[ "$PACKAGE_ASSET_BUILD" == "1" ]]; then
+			if [[ "$_DPL_PACKAGE_ASSET" == "1" ]]; then
 				echo "Signing asset package(s)";
 
 				PACKAGEFILENAME=${PACKAGE_NAME}-data_${PACKAGE_VERSION}${PACKAGE_SUBVERSION}${PACKAGE_REVISION};
@@ -161,7 +161,7 @@ EOD
 		#
 		# Check for binary building
 		#
-		if [[ "$_DEPLOYER_BINARY" == "1" ]]; then
+		if [[ "$_DPL_BINARY" == "1" ]]; then
 			echo "Building a Binary";
 			make -k;
 		fi;
@@ -169,7 +169,7 @@ EOD
 		#
 		# Check for package building
 		#
-		if [[ "$_DEPLOYER_PACKAGE_BINARY" == "1" ]]; then
+		if [[ "$_DPL_PACKAGE_BINARY" == "1" ]]; then
 			echo "Building a Package";
 
 			# Make an OSX package; superuser is required for library bundling
