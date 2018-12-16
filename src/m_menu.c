@@ -4193,9 +4193,9 @@ static void M_DrawAddons(void)
 	V_DrawFill(x + MAXSTRINGLENGTH*8+5 - 21, (y - 1) + i, 1, m, hilicol);
 
 	// get bottom...
-	// m = dir_on[menudepthleft] + numaddonsshown + 1;
-	// if (m > (ssize_t)sizedirmenu)
-	// 	m = sizedirmenu;
+	m = dir_on[menudepthleft] + numaddonsshown + 1;
+	if (m > (ssize_t)sizedirmenu)
+		m = sizedirmenu;
 
 	// // then top...
 	// i = m - (2*numaddonsshown + 1);
