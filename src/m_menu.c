@@ -4129,7 +4129,7 @@ static boolean M_AddonsRefresh(void)
 static void M_DrawAddons(void)
 {
 	INT32 x, y;
-	ssize_t i, m;
+	INT32 i, m;
 	const UINT8 *flashcol = NULL;
 	UINT8 hilicol;
 
@@ -4152,8 +4152,8 @@ static void M_DrawAddons(void)
 		y = FRACUNIT;
 	else
 	{
-		x = FixedDiv(((ssize_t)(numwadfiles) - (ssize_t)(mainwads+1))<<FRACBITS, ((ssize_t)MAX_WADFILES - (ssize_t)(mainwads+1))<<FRACBITS);
-		y = FixedDiv((((ssize_t)packetsizetally-(ssize_t)mainwadstally)<<FRACBITS), ((((ssize_t)MAXFILENEEDED*sizeof(UINT8)-(ssize_t)mainwadstally)-(5+22))<<FRACBITS)); // 5+22 = (a.ext + checksum length) is minimum addition to packet size tally
+		x = FixedDiv(((INT32)(numwadfiles) - (INT32)(mainwads+1))<<FRACBITS, ((INT32)MAX_WADFILES - (INT32)(mainwads+1))<<FRACBITS);
+		y = FixedDiv((((INT32)packetsizetally-(INT32)mainwadstally)<<FRACBITS), ((((INT32)MAXFILENEEDED*sizeof(UINT8)-(INT32)mainwadstally)-(5+22))<<FRACBITS)); // 5+22 = (a.ext + checksum length) is minimum addition to packet size tally
 		if (x > y)
 			y = x;
 		if (y > FRACUNIT) // happens because of how we're shrinkin' it a little
@@ -4180,7 +4180,7 @@ static void M_DrawAddons(void)
 		i = 0;
 	else
 	{
-		ssize_t q = m;
+		INT32 q = m;
 		m = ((2*numaddonsshown + 1) * m)/sizedirmenu;
 		if (dir_on[menudepthleft] <= numaddonsshown) // all the way up
 			i = 0;
@@ -4194,7 +4194,7 @@ static void M_DrawAddons(void)
 
 	// get bottom...
 	m = dir_on[menudepthleft] + numaddonsshown + 1;
-	if (m > (ssize_t)sizedirmenu)
+	if (m > (INT32)sizedirmenu)
 		m = sizedirmenu;
 
 	// then top...
@@ -4203,13 +4203,13 @@ static void M_DrawAddons(void)
 	// then adjust!
 	if (i < 0)
 	{
-		if ((m -= i) > (ssize_t)sizedirmenu)
+		if ((m -= i) > (INT32)sizedirmenu)
 			m = sizedirmenu;
 		i = 0;
 	}
 
-	// if (i != 0)
-	// 	V_DrawString(19, y+4 - (skullAnimCounter/5), highlightflags, "\x1A");
+	if (i != 0)
+		V_DrawString(19, y+4 - (skullAnimCounter/5), highlightflags, "\x1A");
 
 	if (skullAnimCounter < 4)
 		flashcol = V_GetStringColormap(highlightflags);
@@ -4247,7 +4247,7 @@ static void M_DrawAddons(void)
 		y += 16;
 	}
 
-	if (m != (ssize_t)sizedirmenu)
+	if (m != (INT32)sizedirmenu)
 		V_DrawString(19, y-12 + (skullAnimCounter/5), highlightflags, "\x1B");
 
 	y = BASEVIDHEIGHT - currentMenu->y + 1;
