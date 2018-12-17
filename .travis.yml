@@ -7,9 +7,6 @@ language: c
 sudo: required
 dist: trusty
 
-global:
-    - DPL_ZSTART=lol; . ./travis/deployer_defaults.sh; . ./travis/deployer.sh;
-
 matrix:
     include:
         - os: linux
