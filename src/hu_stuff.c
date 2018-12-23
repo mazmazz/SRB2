@@ -913,7 +913,7 @@ static INT32 head = 0, tail = 0;*/
 // WHY DO YOU OVERCOMPLICATE EVERYTHING?????????
 
 // Clear spaces so we don't end up with messages only made out of emptiness
-static boolean HU_clearChatSpaces()
+static boolean HU_clearChatSpaces(void)
 {
 	size_t i = 0; // Used to just check our message
 	char c; // current character we're iterating.
@@ -2001,7 +2001,7 @@ void HU_Drawer(void)
 	{
 		typelines = 1;
 		chat_scrolltime = 0;
-		if (!OLDCHAT && cv_consolechat.value < 2) // Don't display minimized chat if you set the mode to Window (Hidden)
+		if (!OLDCHAT && cv_consolechat.value < 2 && netgame) // Don't display minimized chat if you set the mode to Window (Hidden)
 			HU_drawMiniChat(); // draw messages in a cool fashion.
 	}
 
