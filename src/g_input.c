@@ -1198,6 +1198,7 @@ void G_Controldefault(void)
 	gamecontrol[gc_lookup     ][0] = KEY_UPARROW;
 	gamecontrol[gc_lookdown   ][0] = KEY_DOWNARROW;
 	gamecontrol[gc_centerview ][0] = KEY_END;
+	gamecontrol[gc_centerview ][1] = KEY_JOY1+9; // Right Stick
 	gamecontrol[gc_talkkey    ][0] = 't';
 	gamecontrol[gc_talkkey    ][1] = KEY_HAT1+2; // D-Pad Left
 	gamecontrol[gc_teamkey    ][0] = 'y';
@@ -1218,6 +1219,7 @@ void G_Controldefault(void)
 	gamecontrolbis[gc_tossflag  ][0] = KEY_2JOY1+0; // A
 	gamecontrolbis[gc_use       ][0] = KEY_2JOY1+4; // LB
 	gamecontrolbis[gc_camreset  ][0] = KEY_2JOY1+3; // Y
+	gamecontrolbis[gc_centerview][0] = KEY_2JOY1+9; // Right Stick
 	gamecontrolbis[gc_jump      ][0] = KEY_2JOY1+5; // RB
 	//gamecontrolbis[gc_pause     ][0] = KEY_2JOY1+6; // Back
 	//gamecontrolbis[gc_systemmenu][0] = KEY_2JOY1+7; // Start
@@ -1383,7 +1385,8 @@ static INT32 G_FilterKeyByVersion(INT32 numctrl, INT32 keyidx, INT32 player, INT
 		numctrl == gc_weaponnext || numctrl == gc_weaponprev || numctrl == gc_tossflag ||
 		numctrl == gc_use || numctrl == gc_camreset || numctrl == gc_jump ||
 		numctrl == gc_pause || numctrl == gc_systemmenu || numctrl == gc_camtoggle ||
-		numctrl == gc_screenshot || numctrl == gc_talkkey || numctrl == gc_scores
+		numctrl == gc_screenshot || numctrl == gc_talkkey || numctrl == gc_scores ||
+		numctrl == gc_centerview
 	))
 	{
 		INT32 keynum = 0, existingctrl = 0;
