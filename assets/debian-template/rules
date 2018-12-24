@@ -67,7 +67,6 @@ build:
 		fi; \
 		if [ -f $(RESOURCEDIR)/${DEBFILEVAR} ]; then \
 			$(INSTALL) $(RESOURCEDIR)/${DEBFILEVAR} $(DIR)/debian/tmp/$(DATADIR)/${DEBFILEVAR}; \
-			echo $(RESOURCEDIR)/${DEBFILEVAR} >> $(DIR)/debian/source/include-binaries; \
 		fi; \
 		if [ ! -f $(DIR)/debian/tmp/$(DATADIR)/${DEBFILEVAR} ]; then \
 			echo $(DIR)/debian/tmp/$(DATADIR)/${DEBFILEVAR} not found and could not be downloaded!; \
@@ -81,7 +80,6 @@ build:
 		fi; \
 		if [ -f $(RESOURCEDIR)/${DEBFILEVAR} ]; then \
 			$(INSTALL) $(RESOURCEDIR)/${DEBFILEVAR} $(DIR)/debian/tmp/$(DATADIR)/${DEBFILEVAR}; \
-			echo $(RESOURCEDIR)/${DEBFILEVAR} >> $(DIR)/debian/source/include-binaries; \
 		fi; \
 	done
 	# Do the same for OPTIONALFILES if GETOPTIONALFILES == 1
@@ -92,7 +90,6 @@ build:
 			fi; \
 			if [ -f $(RESOURCEDIR)/${DEBFILEVAR} ]; then \
 				$(INSTALL) $(RESOURCEDIR)/${DEBFILEVAR} $(DIR)/debian/tmp/$(DATADIR)/${DEBFILEVAR}; \
-				echo $(RESOURCEDIR)/${DEBFILEVAR} >> $(DIR)/debian/source/include-binaries; \
 			fi; \
 		done; \
 	fi;
