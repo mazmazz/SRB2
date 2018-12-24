@@ -63,6 +63,7 @@
 : ${PACKAGE_WEBSITE:=<http://www.srb2.org>}
 
 : ${PACKAGE_ASSET_MINVERSION:=2.1.21}  # Number this the version BEFORE the actual required version, because we do a > check
+: ${PACKAGE_ASSET_MAXVERSION:=2.1.23}  # Number this the version AFTER the actual required version, because we do a < check
 
 : ${PROGRAM_NAME:=Sonic Robo Blast 2}
 : ${PROGRAM_VENDOR:=Sonic Team Junior}
@@ -87,6 +88,7 @@ export PACKAGE_VERSION="${PACKAGE_VERSION}"
 export PACKAGE_SUBVERSION="${PACKAGE_SUBVERSION}" # in case we have this
 export PACKAGE_REVISION="${PACKAGE_REVISION}"
 export PACKAGE_ASSET_MINVERSION="${PACKAGE_ASSET_MINVERSION}"
+export PACKAGE_ASSET_MAXVERSION="${PACKAGE_ASSET_MAXVERSION}"
 export PACKAGE_INSTALL_PATH="${PACKAGE_INSTALL_PATH}"
 export PACKAGE_LINK_PATH="${PACKAGE_LINK_PATH}"
 export PACKAGE_DISTRO="${PACKAGE_DISTRO}"
