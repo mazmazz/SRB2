@@ -51,12 +51,23 @@ DATAFILES := ${ASSET_FILES_REQUIRED}
 DOCFILES := ${ASSET_FILES_DOCS}
 OPTIONALFILES := ${ASSET_FILES_OPTIONAL}
 GETOPTIONALFILES := ${ASSET_FILES_OPTIONAL_GET}
+NOPACKAGEFILES := 1
 
 DATADIR	:= $(shell echo "${PACKAGE_INSTALL_PATH}" | sed -e 's/^\///')
 RESOURCEDIR := .
 WGET	:= wget -P $(RESOURCEDIR) -c -nc
 
 build:
+	if [ "$(NOPACKAGEFILES)" = "1" ]; then \
+		$(RM) $(RESOURCEDIR)/*.wad; \
+		$(RM) $(RESOURCEDIR)/*.dta; \
+		$(RM) $(RESOURCEDIR)/*.plr; \
+		$(RM) $(RESOURCEDIR)/*.wpn; \
+		$(RM) $(RESOURCEDIR)/*.srb; \
+		$(RM) $(RESOURCEDIR)/*.dll; \
+		$(RM) $(RESOURCEDIR)/*.txt; \
+		$(RM) $(DIR)/debian/source/include-binaries; \
+	fi;
 	$(MKDIR) $(DIR)/debian/tmp/$(DATADIR)
 	> $(DIR)/debian/source/include-binaries
 	# This will need to be updated every time SRB2 official version is
