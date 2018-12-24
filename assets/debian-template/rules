@@ -85,7 +85,7 @@ build:
 		fi; \
 	done
 	# Do the same for OPTIONALFILES if GETOPTIONALFILES == 1
-	if [[ "$(GETOPTIONALFILES)" == "1" ]]; then \
+	if [ "$(GETOPTIONALFILES)" = "1" ]; then \
 		for file in $(OPTIONALFILES); do \
 			if [ ! -f $(RESOURCEDIR)/${DEBFILEVAR} ]; then \
 				$(WGET) ${ASSET_BASE_PATH}/${DEBFILEVAR}; \

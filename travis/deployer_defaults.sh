@@ -8,7 +8,7 @@
 
 # Core Parameters
 : ${DPL_ENABLED}                # Enable Deployer behavior; must be set for any deployment activity
-: ${DPL_JOB_ALL}                # Enable all jobs for deployment
+: ${DPL_JOB_ENABLE_ALL}         # Enable all jobs for deployment
 : ${DPL_TERMINATE_TESTS}        # Terminate all build test jobs (used in .travis.yml)
 : ${DPL_TRIGGER}                # Use a [word] in the commit message to trigger Deployer
 : ${DPL_JOBNAMES}               # Trigger Deployer by job name
@@ -26,8 +26,8 @@
 : ${_DPL_PACKAGE_ASSET}         # Build asset installation package. Linux only.
 
 # Asset File Parameters
-: ${ASSET_ARCHIVE_PATH:=http://rosenthalcastle.org/srb2/SRB2-v2115-assets-2.7z}
-: ${ASSET_BASE_PATH:=http://alam.srb2.org/SRB2/2.1.21-Final/Resources}
+: ${ASSET_ARCHIVE_PATH:=https://github.com/mazmazz/SRB2/releases/download/SRB2_release_2.1.21_assets/SRB2-v2115-assets-2.7z}
+: ${ASSET_BASE_PATH:=https://github.com/mazmazz/SRB2/releases/download/SRB2_release_2.1.21_assets}
 : ${ASSET_FILES_REQUIRED:=srb2.srb zones.dta player.dta rings.dta patch.dta}
 : ${ASSET_FILES_DOCS:=README.txt LICENSE.txt LICENSE-3RD-PARTY.txt}
 : ${ASSET_FILES_OPTIONAL:=music.dta}
@@ -52,7 +52,7 @@
 # Package Parameters
 : ${PACKAGE_NAME:=srb2}
 : ${PACKAGE_VERSION:=2.1.21}
-: ${PACKAGE_SUBVERSION:=~14.04trusty}
+: ${PACKAGE_SUBVERSION}         # Highly recommended to set this to reflect the distro series target (e.g., ~18.04bionic)
 : ${PACKAGE_REVISION}           # Defaults to UTC timestamp
 : ${PACKAGE_INSTALL_PATH:=/usr/games/SRB2}
 : ${PACKAGE_LINK_PATH:=/usr/games}
@@ -62,7 +62,8 @@
 : ${PACKAGE_GROUP_NAME_EMAIL:=Sonic Team Junior <stjr@srb2.org>}
 : ${PACKAGE_WEBSITE:=<http://www.srb2.org>}
 
-: ${PACKAGE_ASSET_MINVERSION:=2.1.15}
+: ${PACKAGE_ASSET_MINVERSION:=2.1.14}  # Number this the version BEFORE the actual required version, because we do a > check
+: ${PACKAGE_ASSET_MAXVERSION:=2.1.22}  # Number this the version AFTER the actual required version, because we do a < check
 
 : ${PROGRAM_NAME:=Sonic Robo Blast 2}
 : ${PROGRAM_VENDOR:=Sonic Team Junior}
@@ -87,6 +88,7 @@ export PACKAGE_VERSION="${PACKAGE_VERSION}"
 export PACKAGE_SUBVERSION="${PACKAGE_SUBVERSION}" # in case we have this
 export PACKAGE_REVISION="${PACKAGE_REVISION}"
 export PACKAGE_ASSET_MINVERSION="${PACKAGE_ASSET_MINVERSION}"
+export PACKAGE_ASSET_MAXVERSION="${PACKAGE_ASSET_MAXVERSION}"
 export PACKAGE_INSTALL_PATH="${PACKAGE_INSTALL_PATH}"
 export PACKAGE_LINK_PATH="${PACKAGE_LINK_PATH}"
 export PACKAGE_DISTRO="${PACKAGE_DISTRO}"
