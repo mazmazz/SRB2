@@ -1009,7 +1009,7 @@ static const char *credits[] = {
 	"\"Steel Titanium\"",
 	"Ben \"Cue\" Woodford",
 	// Git contributors with 5+ approved merges of substantive quality,
-	// or at least one groundbreaking merge, may be named.
+	// or contributors with at least one groundbreaking merge, may be named.
 	// Everyone else is acknowledged under "Special Thanks > SRB2 Community Contributors".
 	"",
 	"\1Sprite Artists",
