@@ -1012,7 +1012,7 @@ void V_DrawFadeConsBack(INT32 plines)
 
 // Gets string colormap, used for 0x80 color codes
 //
-static const UINT8 *V_GetStringColormap(INT32 colorflags)
+UINT8 *V_GetStringColormap(INT32 colorflags)
 {
 	switch ((colorflags & V_CHARCOLORMASK) >> V_CHARCOLORSHIFT)
 	{
