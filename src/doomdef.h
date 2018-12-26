@@ -154,7 +154,7 @@ extern FILE *logstream;
 #define VERSIONSTRING "v2.1.23"
 #define VERSIONSTRINGW L"v2.1.23"
 // Hey! If you change this, add 1 to the MODVERSION below!
-// Otherwise we can't force updates!
+// Otherwise we can't force updates !
 #endif
 
 // Does this version require an added patch file?
