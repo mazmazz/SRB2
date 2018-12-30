@@ -10,33 +10,40 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 if not [%DPL_ENABLED%] == [1] (
-    echo "Deployer is not enabled..."
+    echo Deployer is not enabled...
     exit /b
 )
 
 : Don't do DD installs because fmodex DLL handling is not implemented.
 if [%CONFIGURATION%] == [DD] (
-    echo "Deployer does not support DD build..."
+    echo Deployer does not support DD build...
     exit /b
 )
 
 if [%CONFIGURATION%] == [DD64] (
-    echo "Deployer does not support DD build..."
+    echo Deployer does not support DD build...
     exit /b
 )
 
 : Substring match from https://stackoverflow.com/questions/7005951/batch-file-find-if-substring-is-in-string-not-in-a-file
 : The below line says "if deployer is NOT in string"
 : Note that APPVEYOR_REPO_BRANCH for pull request builds is the BASE branch that PR is merging INTO
-if not [%APPVEYOR_REPO_TAG%] == [true] (
-    if x%APPVEYOR_REPO_BRANCH:deployer=%==x%APPVEYOR_REPO_BRANCH% (
-        echo "Deployer is enabled but we are not in a release tag or a 'deployer' branch..."
+if x%APPVEYOR_REPO_BRANCH:deployer=%==x%APPVEYOR_REPO_BRANCH% (
+    if not [%APPVEYOR_REPO_TAG%] == [true] (
+        echo Deployer is enabled but we are not in a release tag or a 'deployer' branch...
         exit /b
+    ) else (
+        if not [%DPL_TAG_ENABLED%] == [1] (
+            echo Deployer is not enabled for release tags...
+            exit /b
+        )
     )
-) else (
+)
+
+: Release tags always get optional assets (music.dta)
+if [%APPVEYOR_REPO_TAG%] == [true] (
     set "ASSET_FILES_OPTIONAL_GET=1"
 )
-: Release tags always get optional assets (music.dta)
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 : Get asset archives
