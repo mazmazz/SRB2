@@ -108,16 +108,23 @@ mkdir "assets\deployer\patch"
 
 : Copy optional files to full installer (music.dta)
 if [%ASSET_FILES_OPTIONAL_GET%] == [1] (
-    robocopy "%ASSET_FILES_OPTIONAL_PATH_LOCAL%" "assets\deployer\installer"
+    xcopy /I /Y "%ASSET_FILES_OPTIONAL_PATH_LOCAL%" "assets\deployer\installer"
 )
 
 : Copy EXE -- BUILD_PATH is from appveyor.yml
-robocopy "%BUILD_PATH%\*" "assets\deployer\installer" /XD "*.debug" ".gitignore"
-robocopy "%BUILD_PATH%\*" "assets\deployer\patch" /XD "*.debug" ".gitignore"
+robocopy "%BUILD_PATH%" "assets\deployer\installer" * /XD "*.debug" ".gitignore"
+robocopy "%BUILD_PATH%" "assets\deployer\patch" * /XD "*.debug" ".gitignore"
 
 : Are we building DD? (we were supposed to exit earlier!)
 if [%CONFIGURATION%] == [DD] ( set "DPL_INSTALLER_NAME=%DPL_INSTALLER_NAME%-DD" )
 if [%CONFIGURATION%] == [DD64] ( set "DPL_INSTALLER_NAME=%DPL_INSTALLER_NAME%-DD" )
+
+: If we are not a release tag, suffix the filename
+if not [%APPVEYOR_REPO_TAG%] == [true] (
+    set "INSTALLER_SUFFIX=-%APPVEYOR_REPO_BRANCH%-%GITSHORT%-%CONFIGURATION%"
+) else (
+    set "INSTALLER_SUFFIX="
+)
 
 if not [%X86_64%] == [1] ( goto X86_INSTALL )
 
@@ -132,14 +139,14 @@ if [%ASSET_PATCH_GET_DLL%] == [1] (
 )
 
 : Build the installer
-7z a -sfx7z.sfx "%DPL_INSTALLER_NAME%-x64-Installer.exe" .\assets\deployer\installer\*
+7z a -sfx7z.sfx "%DPL_INSTALLER_NAME%-x64-Installer%INSTALLER_SUFFIX%.exe" .\assets\deployer\installer\*
 
 : Build the patch
-7z a "%DPL_INSTALLER_NAME%-x64-Patch.zip" .\assets\deployer\patch\*
+7z a "%DPL_INSTALLER_NAME%-x64-Patch%INSTALLER_SUFFIX%.zip" .\assets\deployer\patch\*
 
 : Upload artifacts
-appveyor PushArtifact "%DPL_INSTALLER_NAME%-x64-Installer.exe"
-appveyor PushArtifact "%DPL_INSTALLER_NAME%-x64-Patch.zip"
+appveyor PushArtifact "%DPL_INSTALLER_NAME%-x64-Installer%INSTALLER_SUFFIX%.exe"
+appveyor PushArtifact "%DPL_INSTALLER_NAME%-x64-Patch%INSTALLER_SUFFIX%.zip"
 
 : We only do x86 OR x64, one at a time, so exit now.
 goto EOF
@@ -155,14 +162,14 @@ if [%ASSET_PATCH_GET_DLL%] == [1] (
 )
 
 : Build the installer
-7z a -sfx7z.sfx "%DPL_INSTALLER_NAME%-Installer.exe" .\assets\deployer\installer\*
+7z a -sfx7z.sfx "%DPL_INSTALLER_NAME%-Installer%INSTALLER_SUFFIX%.exe" .\assets\deployer\installer\*
 
 : Build the patch
-7z a "%DPL_INSTALLER_NAME%-Patch.zip" .\assets\deployer\patch\*
+7z a "%DPL_INSTALLER_NAME%-Patch%INSTALLER_SUFFIX%.zip" .\assets\deployer\patch\*
 
 : Upload artifacts
-appveyor PushArtifact "%DPL_INSTALLER_NAME%-Installer.exe"
-appveyor PushArtifact "%DPL_INSTALLER_NAME%-Patch.zip"
+appveyor PushArtifact "%DPL_INSTALLER_NAME%-Installer%INSTALLER_SUFFIX%.exe"
+appveyor PushArtifact "%DPL_INSTALLER_NAME%-Patch%INSTALLER_SUFFIX%.zip"
 
 : We only do x86 OR x64, one at a time, so exit now.
 goto EOF
