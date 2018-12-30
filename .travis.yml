@@ -1,7 +1,7 @@
 # Travis-CI Config
 #
 # You may use the Deployer to upload packages and builds to external servers.
-# See deployer/travis/deployer.sh for environment variables to configure.
+# See deployer/travis/deployer_defaults.sh for environment variables to configure.
 
 language: c
 sudo: required
@@ -298,12 +298,12 @@ matrix:
           #gcc-4.8 (Ubuntu 4.8.5-2ubuntu1~14.04.1) 4.8.5
 
         ################################
-        # The below asset bots waste space. It would be nice if the asset files
-        # were not included in the source package itself, so these can deploy to
-        # each Ubuntu target without manual intervention.
+        # The below asset bots produce packages that occupy too much space.
+        # It would be nice if the asset files were not included in the source package itself,
+        # so these can deploy to each Ubuntu target without manual intervention.
         #
-        # Currently, the packages occupy too much of Launchpad's available space allocation.
-        # Copy the packages from *one* bot and the space usage is not increased.
+        # Currently, to get around Launchpad's space limitation,
+        # copy the packages from *one* bot and the space usage is not increased.
         ################################
         # - os: linux
         #   addons:
@@ -401,7 +401,7 @@ matrix:
 
 ################################
 # Deployer Buildbots - Linux binaries
-# List Ubuntu LTS next, newest to oldest
+# List Ubuntu LTS, newest to oldest
 # Then list non-LTS, newest to oldest
 ################################
         - os: linux
