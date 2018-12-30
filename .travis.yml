@@ -575,6 +575,10 @@ before_install:
         exit;
       fi;
     fi
+  # If we're triggered by release tag, force ASSET_FILES_OPTIONAL_GET=1
+  - if [[ "$__DPL_TAG_ELIGIBLE" = "1" ]]; then
+      ASSET_FILES_OPTIONAL_GET=1;
+    fi;
 
 
 install:
