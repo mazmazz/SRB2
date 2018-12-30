@@ -10,7 +10,7 @@ environment:
  MINGW_SDK: c:\msys64\mingw32
  # c:\msys64 x86_64 has gcc 8.2.0, so use c:\mingw-w64 7.3.0 instead
  MINGW_SDK_64: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
- CFLAGS: -Wall -W -Werror -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=3 -Wno-tautological-compare -Wno-error=suggest-attribute=noreturn
+ CFLAGS: %CFLAGS% -Wall -W -Werror -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=3 -Wno-tautological-compare -Wno-error=suggest-attribute=noreturn
  NASM_ZIP: nasm-2.12.01
  NASM_URL: http://www.nasm.us/pub/nasm/releasebuilds/2.12.01/win64/nasm-2.12.01-win64.zip
  UPX_ZIP: upx391w
@@ -29,7 +29,6 @@ cache:
 install:
 - if [%CONFIGURATION%] == [SDL64] ( set "MINGW_SDK=%MINGW_SDK_64%" )
 - if [%CONFIGURATION%] == [SDL64] ( set "CCACHE_CC=%CCACHE_CC_64%" )
-- if [%CONFIGURATION%] == [SDL64] ( set "CFLAGS=%CFLAGS% -march=nocona" )
 
 - if not exist "%NASM_ZIP%.zip" appveyor DownloadFile "%NASM_URL%" -FileName "%NASM_ZIP%.zip"
 - 7z x -y "%NASM_ZIP%.zip" -o%TMP% >null
