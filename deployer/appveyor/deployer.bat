@@ -75,21 +75,27 @@ call :ARCHIVE_NAME_PARTS
 set "ASSET_ARCHIVE_PATCH_PATH_LOCAL=%localarchivepath%"
 if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_ARCHIVE_PATCH_PATH%" -FileName "%localarchivepath%"
 
+echo "Testing for x86"
 if not [%X86_64%] == [1] (
+    echo "Attempting x86 asset download"
     set "archivepath=%ASSET_ARCHIVE_X86_PATH%"
     call :ARCHIVE_NAME_PARTS
     set "ASSET_ARCHIVE_X86_PATH_LOCAL=%localarchivepath%"
     if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_ARCHIVE_X86_PATH%" -FileName "%localarchivepath%"
 )
 
+echo "Testing for x64"
 if [%X86_64%] == [1] (
+    echo "Attempting x64 asset download"
     set "archivepath=%ASSET_ARCHIVE_X64_PATH%"
     call :ARCHIVE_NAME_PARTS
     set "ASSET_ARCHIVE_X64_PATH_LOCAL=%localarchivepath%"
     if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_ARCHIVE_X64_PATH%" -FileName "%localarchivepath%"
 )
 
+echo "Testing for optional"
 if [%ASSET_FILES_OPTIONAL_GET%] == [1] (
+    echo "Attempting optional asset download"
     set "archivepath=%ASSET_FILES_OPTIONAL_PATH%"
     call :ARCHIVE_NAME_PARTS
     set "ASSET_FILES_OPTIONAL_PATH_LOCAL=%localarchivepath%"
@@ -112,8 +118,8 @@ if [%ASSET_FILES_OPTIONAL_GET%] == [1] (
 )
 
 : Copy EXE -- BUILD_PATH is from appveyor.yml
-robocopy "%BUILD_PATH%" "assets\deployer\installer" * /XD "*.debug" ".gitignore"
-robocopy "%BUILD_PATH%" "assets\deployer\patch" * /XD "*.debug" ".gitignore"
+robocopy "%BUILD_PATH%" "assets\deployer\installer" /XF "*.debug" ".gitignore"
+robocopy "%BUILD_PATH%" "assets\deployer\patch" /XF "*.debug" ".gitignore"
 
 : Are we building DD? (we were supposed to exit earlier!)
 if [%CONFIGURATION%] == [DD] ( set "DPL_INSTALLER_NAME=%DPL_INSTALLER_NAME%-DD" )
