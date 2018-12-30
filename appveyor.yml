@@ -19,6 +19,8 @@ environment:
  CCACHE_URL: http://alam.srb2.org/ccache.exe
  CCACHE_COMPRESS: true
  CCACHE_DIR: C:\Users\appveyor\.ccache
+ # Disable UPX by default. The user can override this in their Appveyor project settings
+ EXTRA_MFLAGS: NOUPX=1
 
 cache:
 - nasm-2.12.01.zip
@@ -36,7 +38,7 @@ install:
 
 - if not exist "%UPX_ZIP%.zip" appveyor DownloadFile "%UPX_URL%" -FileName "%UPX_ZIP%.zip"
 - 7z x -y "%UPX_ZIP%.zip" -o%TMP% >null
-- robocopy /S /xx /ns /nc /nfl /ndl /np /njh /njs "%TMP%\%UPX_ZIP%" "%MINGW_SDK%\bin" upx.exe || exit 0
+- if not [%NOUPX%] == [1] ( robocopy /S /xx /ns /nc /nfl /ndl /np /njh /njs "%TMP%\%UPX_ZIP%" "%MINGW_SDK%\bin" upx.exe || exit 0 )
 
 - if not exist "%CCACHE_EXE%" appveyor DownloadFile "%CCACHE_URL%" -FileName "%CCACHE_EXE%"
 - ccache -M 99M
@@ -59,7 +61,9 @@ before_build:
 - upx -V
 - ccache -V
 - ccache -s
-- set "SRB2_MFLAGS=-C src WARNINGMODE=1 CCACHE=1 GCC72=1 NOOBJDUMP=1"
+# explicitly set EXTRA_MFLAGS so it will resolve successfully
+- if [%EXTRA_MFLAGS%] == [] ( set "EXTRA_MFLAGS=" )
+- set "SRB2_MFLAGS=-C src WARNINGMODE=1 CCACHE=1 GCC72=1 NOOBJDUMP=1 %EXTRA_MFLAGS%"
 - if [%CONFIGURATION%] == [SDL64] (
     set "SRB2_MFLAGS=%SRB2_MFLAGS% MINGW64=1 SDL=1"
   ) else (
