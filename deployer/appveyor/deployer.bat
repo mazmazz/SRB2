@@ -75,31 +75,25 @@ call :ARCHIVE_NAME_PARTS
 set "ASSET_ARCHIVE_PATCH_PATH_LOCAL=%localarchivepath%"
 if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_ARCHIVE_PATCH_PATH%" -FileName "%localarchivepath%"
 
-echo "Testing for x86"
 if not [%X86_64%] == [1] (
-    echo "Attempting x86 asset download"
     set "archivepath=%ASSET_ARCHIVE_X86_PATH%"
     call :ARCHIVE_NAME_PARTS
-    set "ASSET_ARCHIVE_X86_PATH_LOCAL=%localarchivepath%"
-    if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_ARCHIVE_X86_PATH%" -FileName "%localarchivepath%"
+    set "ASSET_ARCHIVE_X86_PATH_LOCAL=!localarchivepath!"
+    if not exist "!localarchivepath!" appveyor DownloadFile "%ASSET_ARCHIVE_X86_PATH%" -FileName "!localarchivepath!"
 )
 
-echo "Testing for x64"
 if [%X86_64%] == [1] (
-    echo "Attempting x64 asset download"
     set "archivepath=%ASSET_ARCHIVE_X64_PATH%"
     call :ARCHIVE_NAME_PARTS
-    set "ASSET_ARCHIVE_X64_PATH_LOCAL=%localarchivepath%"
-    if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_ARCHIVE_X64_PATH%" -FileName "%localarchivepath%"
+    set "ASSET_ARCHIVE_X64_PATH_LOCAL=!localarchivepath!"
+    if not exist "!localarchivepath!" appveyor DownloadFile "%ASSET_ARCHIVE_X64_PATH%" -FileName "!localarchivepath!"
 )
 
-echo "Testing for optional"
 if [%ASSET_FILES_OPTIONAL_GET%] == [1] (
-    echo "Attempting optional asset download"
     set "archivepath=%ASSET_FILES_OPTIONAL_PATH%"
     call :ARCHIVE_NAME_PARTS
-    set "ASSET_FILES_OPTIONAL_PATH_LOCAL=%localarchivepath%"
-    if not exist "%localarchivepath%" appveyor DownloadFile "%ASSET_FILES_OPTIONAL_PATH%" -FileName "%localarchivepath%"
+    set "ASSET_FILES_OPTIONAL_PATH_LOCAL=!localarchivepath!"
+    if not exist "!localarchivepath!" appveyor DownloadFile "%ASSET_FILES_OPTIONAL_PATH%" -FileName "!localarchivepath!"
 )
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -141,7 +135,7 @@ if not [%X86_64%] == [1] ( goto X86_INSTALL )
 : Extract DLL binaries
 7z x -y "%ASSET_ARCHIVE_X64_PATH_LOCAL%" -o"assets\deployer\installer" >null
 if [%ASSET_PATCH_GET_DLL%] == [1] (
-    7z x -y "%ASSET_ARCHIVE_X64_PATH_LOCAL%" -o"assets\deployer\patch" >null
+    7z x -y "!ASSET_ARCHIVE_X64_PATH_LOCAL!" -o"assets\deployer\patch" >null
 )
 
 : Build the installer
@@ -164,7 +158,7 @@ goto EOF
 : Extract DLL binaries
 7z x -y "%ASSET_ARCHIVE_X86_PATH_LOCAL%" -o"assets\deployer\installer" >null
 if [%ASSET_PATCH_GET_DLL%] == [1] (
-    7z x -y "%ASSET_ARCHIVE_X86_PATH_LOCAL%" -o"assets\deployer\patch" >null
+    7z x -y "!ASSET_ARCHIVE_X86_PATH_LOCAL!" -o"assets\deployer\patch" >null
 )
 
 : Build the installer
