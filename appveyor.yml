@@ -52,7 +52,7 @@ configuration:
 - SDL64
 - SDL
 - DD
-#- DD64
+- DD64
 
 matrix:
   allow_failures:
