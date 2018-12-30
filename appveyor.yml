@@ -20,7 +20,7 @@ environment:
  CCACHE_COMPRESS: true
  CCACHE_DIR: C:\Users\appveyor\.ccache
  # Disable UPX by default. The user can override this in their Appveyor project settings
- EXTRA_MFLAGS: NOUPX=1
+ EXTRA_MFLAGS: "NOUPX=1"
 
 cache:
 - nasm-2.12.01.zip
