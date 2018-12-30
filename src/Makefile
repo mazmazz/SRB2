@@ -106,6 +106,12 @@ LINUX=1
 NONX86=1
 endif
 
+ifdef MINGW64
+MINGW=1
+NONX86=1
+NOASM=1
+endif
+
 ifdef HAIKU
 SDL=1
 endif
@@ -175,11 +181,6 @@ endif
 ifdef MINGW
 include win32/Makefile.cfg
 endif #ifdef MINGW
-
-ifdef MINGW64
-MINGW=1
-include win32/Makefile.cfg
-endif #ifdef MINGW64
 
 ifdef UNIX
 UNIXCOMMON=1
