@@ -104,13 +104,17 @@ endif
 ifdef LINUX64
 LINUX=1
 NONX86=1
+# LINUX64 does not imply X86_64=1; could mean ARM64 or Itanium
 endif
 
 ifdef MINGW64
 MINGW=1
 NONX86=1
 NOASM=1
-endif
+# MINGW64 should not necessarily imply X86_64=1, but we make that assumption elsewhere
+# Once that changes, remove this
+X86_64=1
+endif #ifdef MINGW64
 
 ifdef HAIKU
 SDL=1
@@ -289,11 +293,13 @@ OPTS += -DCOMPVERSION
 
 ifndef NONX86
 ifndef GCC29
-	M5=-march=pentium
-	M4=-march=i486
+	M5?=-march=pentium
 else
-	M5=-mpentium
-	M4=-m486
+	M5?=-mpentium
+endif
+else
+ifdef X86_64
+	M5?=-march=nocona
 endif
 endif
 
