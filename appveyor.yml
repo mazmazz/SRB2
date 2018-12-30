@@ -10,7 +10,7 @@ environment:
  MINGW_SDK: c:\msys64\mingw32
  # c:\msys64 x86_64 has gcc 8.2.0, so use c:\mingw-w64 7.3.0 instead
  MINGW_SDK_64: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
- CFLAGS: %CFLAGS% -Wall -W -Werror -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=3 -Wno-tautological-compare -Wno-error=suggest-attribute=noreturn
+ CFLAGS: -Wall -W -Werror -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=3 -Wno-tautological-compare -Wno-error=suggest-attribute=noreturn
  NASM_ZIP: nasm-2.12.01
  NASM_URL: http://www.nasm.us/pub/nasm/releasebuilds/2.12.01/win64/nasm-2.12.01-win64.zip
  UPX_ZIP: upx391w
