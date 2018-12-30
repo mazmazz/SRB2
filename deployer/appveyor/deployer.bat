@@ -42,6 +42,10 @@ if not [%APPVEYOR_REPO_TAG%] == [true] (
 : Get asset archives
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+if [%ASSET_CLEAN%] == [1] (
+    rmdir /s /q "assets\deployer\archives"
+)
+
 if not exist "assets\deployer\archives" mkdir "assets\deployer\archives"
 
 goto EXTRACT_ARCHIVES

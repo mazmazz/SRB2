@@ -40,6 +40,8 @@ environment:
  ASSET_FILES_OPTIONAL_GET: 0
  # For patches, also include the X86/X64 DLLs.
  ASSET_PATCH_DLL_GET: 0
+ # Delete all asset downloads so they can be redownloaded
+ ASSET_CLEAN: 0
 
 cache:
 - nasm-2.12.01.zip
