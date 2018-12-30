@@ -8,6 +8,7 @@
 
 # Core Parameters
 : ${DPL_ENABLED}                # Enable Deployer behavior; must be set for any deployment activity
+: ${DPL_TAG_ENABLED}            # Trigger Deployer for all tag releases
 : ${DPL_JOB_ENABLE_ALL}         # Enable all jobs for deployment
 : ${DPL_TERMINATE_TESTS}        # Terminate all build test jobs (used in .travis.yml)
 : ${DPL_TRIGGER}                # Use a [word] in the commit message to trigger Deployer
@@ -51,7 +52,7 @@
 
 # Package Parameters
 : ${PACKAGE_NAME:=srb2}
-: ${PACKAGE_VERSION:=2.1.22}
+: ${PACKAGE_VERSION:=2.1.23}
 : ${PACKAGE_SUBVERSION}         # Highly recommended to set this to reflect the distro series target (e.g., ~18.04bionic)
 : ${PACKAGE_REVISION}           # Defaults to UTC timestamp
 : ${PACKAGE_INSTALL_PATH:=/usr/games/SRB2}
@@ -63,11 +64,11 @@
 : ${PACKAGE_WEBSITE:=<http://www.srb2.org>}
 
 : ${PACKAGE_ASSET_MINVERSION:=2.1.21}  # Number this the version BEFORE the actual required version, because we do a > check
-: ${PACKAGE_ASSET_MAXVERSION:=2.1.23}  # Number this the version AFTER the actual required version, because we do a < check
+: ${PACKAGE_ASSET_MAXVERSION:=2.1.24}  # Number this the version AFTER the actual required version, because we do a < check
 
 : ${PROGRAM_NAME:=Sonic Robo Blast 2}
 : ${PROGRAM_VENDOR:=Sonic Team Junior}
-: ${PROGRAM_VERSION:=2.1.22}
+: ${PROGRAM_VERSION:=2.1.23}
 : ${PROGRAM_DESCRIPTION:=A free 3D Sonic the Hedgehog fangame closely inspired by the original Sonic games on the Sega Genesis.}
 : ${PROGRAM_FILENAME:=srb2}
 

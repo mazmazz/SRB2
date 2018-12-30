@@ -10,6 +10,7 @@
 # See other shell scripts for more options.
 #
 # DPL_ENABLED = 1                       (leave blank to disable)
+# DPL_TAG_ENABLED = 1                   (run Deployer on all tags)
 # DPL_JOB_ENABLE_ALL = 1                (run Deployer on all jobs; leave blank to act on specific jobs, see below)
 # DPL_JOBNAMES = name1,name2            (whitelist of job names to allow uploading; leave blank to upload from all jobs)
 # DPL_OSNAMES = osx                     (whitelist of OS names to allow uploading; leave blank to upload from all OSes)
@@ -25,8 +26,24 @@
 
 # Validate Deployer state
 if [[ "$DPL_ENABLED" == "1" ]] && [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+    # Test for base eligibility:
+    # Are we in a deployer branch? Or
+    # Are we in a release tag AND DPL_TAG_ENABLED=1?
+    if [[ $TRAVIS_BRANCH == *"deployer"* ]]; then
+        __DPL_BASE_ELIGIBLE=1;
+        __DPL_TERMINATE_EARLY_ELIGIBLE=1;
+    fi;
+
+    # Do not set __DPL_TERMINATE_EARLY_ELIGIBLE because we want to force test builds
+    # for release tags
+    if [[ "$TRAVIS_TAG" != "" ]] && [[ "$DPL_TAG_ENABLED" == "1" ]]; then
+        __DPL_BASE_ELIGIBLE=1;
+        __DPL_TAG_ELIGIBLE=1;
+        __DPL_TERMINATE_EARLY_ELIGIBLE=0;
+    fi;
+
     # Logging message for trigger word
-    if [[ "$DPL_TRIGGER" != "" ]]; then
+    if [[ "$__DPL_TAG_ELIGIBLE" != "1" ]] && [[ "$DPL_TRIGGER" != "" ]]; then
         echo "Testing for trigger $DPL_TRIGGER, commit message: $TRAVIS_COMMIT_MESSAGE";
         echo "[${DPL_TRIGGER}]";
         echo "[${DPL_TRIGGER}-${_DPL_JOB_NAME}]";
@@ -35,19 +52,24 @@ if [[ "$DPL_ENABLED" == "1" ]] && [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
 
     #
     # Search for the trigger word
+    # Force enable if release tags are eligible
     #
-    if [[ "$DPL_TRIGGER" == "" ]] || [[ $TRAVIS_COMMIT_MESSAGE == *"[$DPL_TRIGGER]"* ]] \
+    if [[ "$__DPL_TAG_ELIGIBLE" == "1" ]] || [[ "$DPL_TRIGGER" == "" ]] \
+    || [[ $TRAVIS_COMMIT_MESSAGE == *"[$DPL_TRIGGER]"* ]] \
     || [[ $TRAVIS_COMMIT_MESSAGE == *"[${DPL_TRIGGER}-${_DPL_JOB_NAME}]"* ]] \
     || [[ $TRAVIS_COMMIT_MESSAGE == *"[${DPL_TRIGGER}-${TRAVIS_OS_NAME}]"* ]]; then
         #
         # Whitelist by branch name
+        # Force enable if release tags are eligible
         #
-        if [[ "$DPL_BRANCHES" == "" ]] || [[ $DPL_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
+        if [[ "$__DPL_TAG_ELIGIBLE" == "1" ]] || [[ "$DPL_BRANCHES" == "" ]] || [[ $DPL_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
             # Set this so we only early-terminate builds when we are specifically deploying
             # Trigger string and branch are encompassing conditions; the rest are job-specific
             # This check only matters for deployer branches and when DPL_TERMINATE_TESTS=1,
             # because we're filtering non-deployer jobs.
-            if [[ $TRAVIS_BRANCH == *"deployer"* ]] && [[ "$DPL_TERMINATE_TESTS" == "1" ]]; then
+            #
+            # __DPL_TRY_TERMINATE_EARLY is invalidated in .travis.yml if __DPL_ACTIVE=1
+            if [[ "$__DPL_TERMINATE_EARLY_ELIGIBLE" == "1" ]] && [[ "$DPL_TERMINATE_TESTS" == "1" ]]; then
                 __DPL_TRY_TERMINATE_EARLY=1;
             fi;
 
@@ -112,16 +134,23 @@ if [[ "$DPL_ENABLED" == "1" ]] && [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
             fi;
         fi;
     else
-        if [[ "$DPL_TRIGGER" != "" ]]; then
-            echo "Testing for global trigger [$DPL_TRIGGER, commit message: $TRAVIS_COMMIT_MESSAGE";
-        fi;
-        if [[ "$DPL_TRIGGER" != "" ]] && [[ $TRAVIS_COMMIT_MESSAGE == *"[$DPL_TRIGGER"* ]]; then
-            if [[ "$DPL_BRANCHES" == "" ]] || [[ $DPL_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
-                # This check only matters for deployer branches and when DPL_TERMINATE_TESTS=1,
-                # because we're filtering non-deployer jobs.
-                if [[ $TRAVIS_BRANCH == *"deployer"* ]] && [[ "$DPL_TERMINATE_TESTS" == "1" ]]; then
-                    # Assume that some job received the trigger, so mark this for early termination
-                    __DPL_TRY_TERMINATE_EARLY=1;
+        # Don't evlauate early termination if release tags are eligible,
+        # because all tags are forced.
+        #
+        # This is redundant because __DPL_TERMINATE_EARLY_ELIGIBLE is not set, so this
+        # block would not set __DPL_TRY_TERMINATE_EARLY anyway.
+        if [[ "$__DPL_TAG_ELIGIBLE" != "1" ]]; then
+            if [[ "$DPL_TRIGGER" != "" ]]; then
+                echo "Testing for global trigger [$DPL_TRIGGER, commit message: $TRAVIS_COMMIT_MESSAGE";
+            fi;
+            if [[ "$DPL_TRIGGER" != "" ]] && [[ $TRAVIS_COMMIT_MESSAGE == *"[$DPL_TRIGGER"* ]]; then
+                if [[ "$DPL_BRANCHES" == "" ]] || [[ $DPL_BRANCHES == *"$TRAVIS_BRANCH"* ]]; then
+                    # This check only matters for deployer branches and when DPL_TERMINATE_TESTS=1,
+                    # because we're filtering non-deployer jobs.
+                    if [[ "$__DPL_TERMINATE_EARLY_ELIGIBLE" == "1" ]] && [[ "$DPL_TERMINATE_TESTS" == "1" ]]; then
+                        # Assume that some job received the trigger, so mark this for early termination
+                        __DPL_TRY_TERMINATE_EARLY=1;
+                    fi;
                 fi;
             fi;
         fi;

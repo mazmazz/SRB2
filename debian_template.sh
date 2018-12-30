@@ -84,7 +84,7 @@ evaldirectory () {
 # Initialize package parameter defaults
 #
 if [[ "$__DEBIAN_PARAMETERS_INITIALIZED" != "1" ]]; then
-	. ${DIR}/travis/deployer_defaults.sh;
+	. ${DIR}/deployer/travis/deployer_defaults.sh;
 fi;
 
 # Clean up after ourselves; we only expect to run this script once
