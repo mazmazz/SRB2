@@ -1,7 +1,7 @@
 # Travis-CI Config
 #
 # You may use the Deployer to upload packages and builds to external servers.
-# See travis/deployer.sh for environment variables to configure.
+# See deployer/travis/deployer.sh for environment variables to configure.
 
 language: c
 sudo: required
@@ -525,10 +525,10 @@ addons:
 
 before_install:
   # Initialize Deployer defaults
-  - . ./travis/deployer_defaults.sh
+  - . ./deployer/travis/deployer_defaults.sh
   # Initialize Deployer; check if Deployer is enabled
   # This needs to be run in the current shell so that $__DPL_ACTIVE is set for this session
-  - . ./travis/deployer.sh
+  - . ./deployer/travis/deployer.sh
   # Also check if we should now terminate
   - if [[ "$__DPL_TRY_TERMINATE_EARLY" == "1" ]]; then
       if [[ "$__DPL_ACTIVE" != "1" ]]; then
@@ -630,12 +630,12 @@ before_script:
 script:
   # Build our Makefile from Cmake!
   - if [[ "$__DPL_ACTIVE" == "1" ]]; then
-      . ../travis/deployer_build.sh;
+      . ../deployer/travis/deployer_build.sh;
     else
       make -k;
     fi;
 
 after_success:
   # Run the Deployer scripts
-  - . ../travis/deployer_ftp.sh
-  - . ../travis/deployer_dput.sh
+  - . ../deployer/travis/deployer_ftp.sh
+  - . ../deployer/travis/deployer_dput.sh
