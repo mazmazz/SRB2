@@ -171,7 +171,7 @@ if [%ASSET_PATCH_GET_DLL%] == [1] (
 appveyor PushArtifact "%DPL_INSTALLER_NAME%-Installer%INSTALLER_SUFFIX%.exe"
 appveyor PushArtifact "%DPL_INSTALLER_NAME%-Patch%INSTALLER_SUFFIX%.zip"
 
-: We only do x86 OR x64, one at a time, so exit now.
+: We only do x86 OR x64, one at a time, so exit now
 goto EOF
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
