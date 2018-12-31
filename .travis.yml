@@ -564,9 +564,11 @@ addons:
 before_install:
   # Initialize Deployer defaults
   - . ./deployer/travis/deployer_defaults.sh
+
   # Initialize Deployer; check if Deployer is enabled
   # This needs to be run in the current shell so that $__DPL_ACTIVE is set for this session
   - . ./deployer/travis/deployer.sh
+
   # Also check if we should now terminate
   - if [[ "$__DPL_TRY_TERMINATE_EARLY" == "1" ]]; then
       if [[ "$__DPL_ACTIVE" != "1" ]]; then
@@ -574,6 +576,7 @@ before_install:
         exit;
       fi;
     fi
+
   # If we're triggered by release tag, force ASSET_FILES_OPTIONAL_GET=1
   - if [[ "$__DPL_TAG_ELIGIBLE" = "1" ]]; then
       ASSET_FILES_OPTIONAL_GET=1;
@@ -581,7 +584,15 @@ before_install:
 
 
 install:
+  # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
+  - if [[ "$__DPL_ACTIVE" == "1" ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      set __ARCHOPTS="-march=nocona";
+      export CFLAGS="$__ARCHOPTS";
+    fi;
+
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew --config;
+      brew --env;
       brew update;
       brew install sdl2 game-music-emu zlib p7zip;
       brew install sdl2_mixer --with-flac --with-mpg123;
@@ -659,7 +670,7 @@ before_script:
   - mkdir build
   - cd build
   - mkdir package
-  - export CFLAGS="-Wall -W -Werror $WFLAGS"
+  - export CFLAGS="$__ARCHOPTS -Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
   - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/bin -DCPACK_PACKAGE_DIRECTORY=$PWD/package
       -DSRB2_ASSET_REQUIRED="${SRB2_ASSET_REQUIRED}" -DSRB2_ASSET_OPTIONAL="${SRB2_ASSET_OPTIONAL}"
