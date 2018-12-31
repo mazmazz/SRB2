@@ -655,7 +655,7 @@ before_script:
 
   # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
   - if [[ "$__DPL_ACTIVE" == "1" ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      set __ARCHOPTS="-march=nocona"
+      set __ARCHOPTS="-march=nocona";
     fi;
 
   # Prepare CMake asset lists
