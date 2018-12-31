@@ -584,7 +584,15 @@ before_install:
 
 
 install:
+  # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
+  - if [[ "$__DPL_ACTIVE" == "1" ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      set __ARCHOPTS="-march=nocona";
+      export CFLAGS="$__ARCHOPTS";
+    fi;
+
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew --config;
+      brew --env;
       brew update;
       brew install sdl2 game-music-emu zlib p7zip;
       brew install sdl2_mixer --with-flac --with-mpg123;
@@ -652,11 +660,6 @@ before_script:
 
   # Go back to root repo folder
   - cd "$OLDPWD"
-
-  # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
-  - if [[ "$__DPL_ACTIVE" == "1" ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      set __ARCHOPTS="-march=nocona";
-    fi;
 
   # Prepare CMake asset lists
   - SRB2_ASSET_REQUIRED=$(echo ${ASSET_FILES_REQUIRED// /\;})
