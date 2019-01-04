@@ -7,11 +7,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.4
           compiler: gcc-4.4
@@ -19,11 +22,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.6
           compiler: gcc-4.6
@@ -31,11 +37,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.7
           compiler: gcc-4.7
@@ -48,11 +57,13 @@ matrix:
             apt:
               sources:
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
@@ -62,11 +73,13 @@ matrix:
             apt:
               sources:
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-7
           compiler: gcc-7
@@ -77,11 +90,13 @@ matrix:
             apt:
               sources:
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-8
           compiler: gcc-8
@@ -95,11 +110,13 @@ matrix:
             apt:
               sources:
               - llvm-toolchain-precise-3.5
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - clang-3.5
           compiler: clang-3.5
@@ -110,11 +127,13 @@ matrix:
               sources:
               - llvm-toolchain-precise-3.6
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - clang-3.6
           compiler: clang-3.6
@@ -125,11 +144,13 @@ matrix:
               sources:
               - llvm-toolchain-precise-3.7
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - clang-3.7
           compiler: clang-3.7
@@ -140,11 +161,13 @@ matrix:
               sources:
               - llvm-toolchain-precise-3.8
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - clang-3.8
           compiler: clang-3.8
@@ -155,11 +178,13 @@ matrix:
               sources:
               - llvm-toolchain-precise-3.9
               - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:mazmazz/srb2-test'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - clang-3.9
           compiler: clang-3.9
@@ -170,11 +195,13 @@ matrix:
 #              sources:
 #              - llvm-toolchain-precise-4.0
 #              - ubuntu-toolchain-r-test
+#              - sourceline: 'ppa:mazmazz/srb2-test'
 #              packages:
 #              - libsdl2-mixer-dev
 #              - libpng-dev
 #              - libgl1-mesa-dev
 #              - libgme-dev
+#              - libopenmpt-dev
 #              - p7zip-full
 #              - clang-4.0
 #          compiler: clang-4.0
@@ -185,11 +212,13 @@ matrix:
 #              sources:
 #              - llvm-toolchain-precise-5.0
 #              - ubuntu-toolchain-r-test
+#              - sourceline: 'ppa:mazmazz/srb2-test'
 #              packages:
 #              - libsdl2-mixer-dev
 #              - libpng-dev
 #              - libgl1-mesa-dev
 #              - libgme-dev
+#              - libopenmpt-dev
 #              - p7zip-full
 #              - clang-5.0
 #          compiler: clang-5.0
@@ -241,6 +270,7 @@ addons:
     - libpng-dev
     - libgl1-mesa-dev
     - libgme-dev
+    - libopenmpt-dev
     - p7zip-full
 
 before_script:
@@ -250,7 +280,7 @@ before_script:
   - cd build
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DSRB2_CONFIG_HAVE_OPENMPT=OFF
+  - cmake .. -DCMAKE_BUILD_TYPE=Release
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
