@@ -29,9 +29,9 @@ jobs:
           name: Update APT listing
           command: |
             apt-get -qq update
-            apt-get -qq -y install dirmngr software-properties-common
+            apt-get -qq -y install dirmngr # software-properties-common
             apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 9E6D656D78A5D8BE4329B55671B17A95D3E04B64
-            add-apt-repository -y ppa:mazmazz/srb2-test
+            echo "deb http://ppa.launchpad.net/mazmazz/srb2-test/ubuntu trusty main" >> /etc/apt/sources.list # add-apt-repository -y ppa:mazmazz/srb2-test
             apt-get -qq update
       - run:
           name: Support S3 upload
@@ -41,7 +41,7 @@ jobs:
             - v1-SRB2-APT
       - run:
           name: Install SDK
-          command: apt-get -qq -y install git build-essential nasm libpng12-dev:i386 libsdl2-mixer-dev:i386 libgme-dev:i386 libopenmpt-dev:i386 gettext ccache wget gcc-multilib upx
+          command: apt-get -qq -y install git build-essential nasm libpng12-dev:i386 libsdl2-mixer-dev:i386 libgme-dev:i386 libopenmpt0:i386 libopenmpt-dev:i386 gettext ccache wget gcc-multilib upx
       - save_cache:
           key: v1-SRB2-APT
           paths:
