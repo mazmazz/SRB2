@@ -626,9 +626,9 @@ install:
       brew update;
       brew tap mazmazz/srb2;
       brew install --build-bottle sdl2 game-music-emu zlib p7zip;
-      brew install --build-bottle mazmazz/srb2/sdl2_mixer --with-flac --with-mpg123;
-      brew link sdl2 game-music-emu p7zip mazmazz/srb2/sdl2_mixer;
-      brew postinstall sdl2 game-music-emu zlib p7zip mazmazz/srb2/sdl2_mixer;
+      brew install --build-bottle sdl2_mixer --with-flac --with-mpg123;
+      brew link sdl2 game-music-emu p7zip sdl2_mixer;
+      brew postinstall sdl2 game-music-emu zlib p7zip sdl2_mixer;
       brew install cmake||true;
     fi
   - mkdir -p $HOME/srb2_cache
