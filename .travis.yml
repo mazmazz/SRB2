@@ -585,8 +585,11 @@ before_install:
 
 install:
   # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
-  - if [[ "$__DPL_ACTIVE" == "1" ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      set __ARCHOPTS="-march=lol";
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      llvm --version;
+      gcc --version;
+      g++ --version;
+      set __ARCHOPTS="-bogus -march=nocona";
       export CFLAGS="$__ARCHOPTS";
     fi;
 
