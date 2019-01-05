@@ -602,10 +602,17 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew --env;
     fi;
+
+  # Install library dependencies via Homebrew
+  # Use --build-bottle to build libraries for x86_64's lowest common denominator CPU, core 2
+  # postinstall runs post-install scripts after building a bottle
+  # sdl2_mixer requires options from the formula fork in https://github.com/mazmazz/homebrew-srb2
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update;
+      brew tap mazmazz/srb2;
       brew install --build-bottle sdl2 game-music-emu zlib p7zip;
-      brew install --build-bottle sdl2_mixer --with-flac --with-mpg123;
+      brew install --build-bottle mazmazz/srb2/sdl2_mixer --with-flac --with-mpg123;
+      brew postinstall sdl2 game-music-emu zlib p7zip mazmazz/srb2/sdl2_mixer;
       brew install cmake||true;
     fi
   - mkdir -p $HOME/srb2_cache
