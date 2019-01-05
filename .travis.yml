@@ -57,6 +57,14 @@ matrix:
             apt:
               sources:
               - sourceline: 'ppa:mazmazz/srb2-test'
+              packages:
+              - libsdl2-mixer-dev
+              - libpng-dev
+              - libgl1-mesa-dev
+              - libgme-dev
+              - libopenmpt0
+              - libopenmpt-dev
+              - p7zip-full
           compiler: gcc
           #gcc (Ubuntu 4.8.4-2ubuntu1~14.04) 4.8.4
         - os: linux
@@ -117,6 +125,14 @@ matrix:
             apt:
               sources:
               - sourceline: 'ppa:mazmazz/srb2-test'
+              packages:
+              - libsdl2-mixer-dev
+              - libpng-dev
+              - libgl1-mesa-dev
+              - libgme-dev
+              - libopenmpt0
+              - libopenmpt-dev
+              - p7zip-full
           compiler: clang
           #clang version 3.5.0 (tags/RELEASE_350/final)
         - os: linux
@@ -282,16 +298,6 @@ cache:
   directories:
   - $HOME/srb2_cache
 
-addons:
-  apt:
-    packages:
-    - libsdl2-mixer-dev
-    - libpng-dev
-    - libgl1-mesa-dev
-    - libgme-dev
-    - libopenmpt0
-    - libopenmpt-dev
-    - p7zip-full
 
 before_script:
   - wget --verbose --server-response -c http://rosenthalcastle.org/srb2/SRB2-v2115-assets-2.7z -O $HOME/srb2_cache/SRB2-v2115-assets-2.7z
