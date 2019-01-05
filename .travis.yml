@@ -586,17 +586,23 @@ before_install:
 install:
   # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      clang --version;
-      gcc --version;
-      g++ --version;
       set __ARCHOPTS="-mmacosx-version-min=10.4 -target x86_64-apple-darwin8.7.0 -march=nocona";
       export CFLAGS="$__ARCHOPTS";
       export LDFLAGS="$__ARCHOPTS";
+      export HOMEBREW_CFLAGS="$__ARCHOPTS";
+      export HOMEBREW_LDFLAGS="$__ARCHOPTS";
+      clang --version;
+      gcc --version;
+      g++ --version;
     fi;
 
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew --config;
+    fi;
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew --env;
+    fi;
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update;
       brew install sdl2 game-music-emu zlib p7zip;
       brew install sdl2_mixer --with-flac --with-mpg123;
