@@ -331,11 +331,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:stjr/srb2'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
@@ -365,11 +368,14 @@ matrix:
         # - os: linux
         #   addons:
         #     apt:
+        #       sources:
+        #       - sourceline: 'ppa:stjr/srb2'
         #       packages:
         #       - libsdl2-mixer-dev
         #       - libpng-dev
         #       - libgl1-mesa-dev
         #       - libgme-dev
+        #       - libopenmpt-dev
         #       - p7zip-full
         #       - gcc-4.8
         #   compiler: gcc-4.8
@@ -390,11 +396,14 @@ matrix:
         # - os: linux
         #   addons:
         #     apt:
+        #       sources:
+        #       - sourceline: 'ppa:stjr/srb2'
         #       packages:
         #       - libsdl2-mixer-dev
         #       - libpng-dev
         #       - libgl1-mesa-dev
         #       - libgme-dev
+        #       - libopenmpt-dev
         #       - p7zip-full
         #       - gcc-4.8
         #   compiler: gcc-4.8
@@ -415,11 +424,14 @@ matrix:
         # - os: linux
         #   addons:
         #     apt:
+        #       sources:
+        #       - sourceline: 'ppa:stjr/srb2'
         #       packages:
         #       - libsdl2-mixer-dev
         #       - libpng-dev
         #       - libgl1-mesa-dev
         #       - libgme-dev
+        #       - libopenmpt-dev
         #       - p7zip-full
         #       - gcc-4.8
         #   compiler: gcc-4.8
@@ -440,11 +452,14 @@ matrix:
         # - os: linux
         #   addons:
         #     apt:
+        #       sources:
+        #       - sourceline: 'ppa:stjr/srb2'
         #       packages:
         #       - libsdl2-mixer-dev
         #       - libpng-dev
         #       - libgl1-mesa-dev
         #       - libgme-dev
+        #       - libopenmpt-dev
         #       - p7zip-full
         #       - gcc-4.8
         #   compiler: gcc-4.8
@@ -472,11 +487,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:stjr/srb2'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
@@ -495,11 +513,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:stjr/srb2'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
@@ -518,11 +539,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:stjr/srb2'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
@@ -541,11 +565,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:stjr/srb2'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
@@ -564,11 +591,14 @@ matrix:
         - os: linux
           addons:
             apt:
+              sources:
+              - sourceline: 'ppa:stjr/srb2'
               packages:
               - libsdl2-mixer-dev
               - libpng-dev
               - libgl1-mesa-dev
               - libgme-dev
+              - libopenmpt-dev
               - p7zip-full
               - gcc-4.8
           compiler: gcc-4.8
