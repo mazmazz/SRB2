@@ -282,7 +282,7 @@ matrix:
           - _DPL_JOB_NAME=osx
           - _DPL_FTP_TARGET=1
           - _DPL_PACKAGE_BINARY=1
-          #Apple LLVM version 7.3.0 (clang-703.0.31)
+          #Apple LLVM version 7.3.0  (clang-703.0.31)
 
 
 ################################
