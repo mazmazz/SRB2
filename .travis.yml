@@ -53,6 +53,10 @@ matrix:
           compiler: gcc-4.7
           #gcc-4.7
         - os: linux
+          addons:
+            apt:
+              sources:
+              - sourceline: 'ppa:mazmazz/srb2-test'
           compiler: gcc
           #gcc (Ubuntu 4.8.4-2ubuntu1~14.04) 4.8.4
         - os: linux
@@ -109,6 +113,10 @@ matrix:
           env: WFLAGS="-Wno-tautological-compare -Wno-error=implicit-fallthrough -Wno-implicit-fallthrough -Wno-error=format-overflow"
           #gcc-8 (Ubuntu 7.2.0-1ubuntu1~14.04) 8.1.0
         - os: linux
+          addons:
+            apt:
+              sources:
+              - sourceline: 'ppa:mazmazz/srb2-test'
           compiler: clang
           #clang version 3.5.0 (tags/RELEASE_350/final)
         - os: linux
