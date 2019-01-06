@@ -674,6 +674,11 @@ before_script:
   - export CFLAGS="$__ARCHOPTS -Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
   # If OS X, set -march=core2 to build compatible binaries with old Macs
+  #    set __ARCHOPTS="-mmacosx-version-min=10.4 -target x86_64-apple-darwin8.7.0 -march=core2";
+  #    export CFLAGS="$__ARCHOPTS";
+  #    export LDFLAGS="$__ARCHOPTS";
+  #    export HOMEBREW_CFLAGS="$__ARCHOPTS";
+  #    export HOMEBREW_LDFLAGS="$__ARCHOPTS";
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export CFLAGS="${CFLAGS} -march=core2";
     fi;
