@@ -583,7 +583,8 @@ before_install:
   # This needs to be run in the current shell so that $__DPL_ACTIVE is set for this session
   - . ./deployer/travis/deployer.sh
 
-  # Also check if we should now terminate
+  # Also check if we should now terminate -- see `deployer.sh` for conditions.
+  # This should never happen on non-release buildbots when Deployer is not triggered.
   - if [[ "$__DPL_TRY_TERMINATE_EARLY" == "1" ]]; then
       if [[ "$__DPL_ACTIVE" != "1" ]]; then
         echo "Exiting early because this job is not deploying.";
@@ -596,40 +597,30 @@ before_install:
       ASSET_FILES_OPTIONAL_GET=1;
     fi;
 
+  # Print version info
+  - gcc --version;
+
 
 install:
-  # If OSX, target nocona architecture (earliest 64-bit processor for Mac)
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      set __ARCHOPTS="-mmacosx-version-min=10.4 -target x86_64-apple-darwin8.7.0 -march=core2";
-      export CFLAGS="$__ARCHOPTS";
-      export LDFLAGS="$__ARCHOPTS";
-      export HOMEBREW_CFLAGS="$__ARCHOPTS";
-      export HOMEBREW_LDFLAGS="$__ARCHOPTS";
-      clang --version;
-      gcc --version;
-      g++ --version;
-    fi;
-
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew --config;
-    fi;
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew --env;
-    fi;
-
   # Install OS X library dependencies via Homebrew
-  # `install --build-bottle` builds libraries for x86_64's lowest common denominator CPU, core2
-  # `sdl2_mixer` requires options from the formula tap https://github.com/mazmazz/homebrew-srb2
-  # `link` re-symlinks the packages when restoring from travis cache (except zlib, which is keg-only)
-  # `postinstall` runs post-install scripts after building a bottle
+  # Do this differently for release buildbots:
+  #     * `brew install --build-bottle` builds libraries for x86_64's lowest common denominator CPU, core2
+  #     * `sdl2_mixer` requires options from the formula tap https://github.com/mazmazz/homebrew-srb2
+  #     * `brew postinstall` runs post-install scripts after building a bottle
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update;
       brew tap mazmazz/srb2;
-      brew install --build-bottle sdl2 game-music-emu zlib p7zip;
-      brew install --build-bottle sdl2_mixer --with-flac --with-mpg123;
-      brew link sdl2 game-music-emu p7zip sdl2_mixer;
-      brew postinstall sdl2 game-music-emu zlib p7zip sdl2_mixer;
-      brew install cmake||true;
+    fi;
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      if [[ "$__DPL_ACTIVE" != "1" ]]; then
+        brew install sdl2 sdl2_mixer game-music-emu p7zip;
+        brew install cmake||true;
+      else
+        brew install --build-bottle sdl2 game-music-emu p7zip;
+        brew install --build-bottle mazmazz/srb2/sdl2_mixer --with-flac --with-mpg123;
+        brew postinstall sdl2 game-music-emu p7zip mazmazz/srb2/sdl2_mixer;
+        brew install cmake||true;
+      fi;
     fi
   - mkdir -p $HOME/srb2_cache
 
@@ -650,6 +641,7 @@ before_script:
     fi
 
   # Get asset files (required for MD5)
+  # See `deployer_defaults.sh` for asset download path
   - if [[ "$ASSET_ARCHIVE_PATH" != "" ]]; then
       if [ -f "$(basename $ASSET_ARCHIVE_PATH)" ]; then
         echo "$(basename $ASSET_ARCHIVE_PATH) cache date -- $($STATCMD $(basename $ASSET_ARCHIVE_PATH))";
@@ -681,6 +673,10 @@ before_script:
   - mkdir package
   - export CFLAGS="$__ARCHOPTS -Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
+  # If OS X, set -march=core2 to build compatible binaries with old Macs
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      export CFLAGS="${CFLAGS} -march=core2";
+    fi;
   - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/bin -DCPACK_PACKAGE_DIRECTORY=$PWD/package
       -DSRB2_ASSET_HASHED="${SRB2_ASSET_HASHED}" -DSRB2_ASSET_DOCS="${SRB2_ASSET_DOCS}"
       -DSRB2_ASSET_DIRECTORY="${SRB2_ASSET_DIRECTORY}"
@@ -698,6 +694,7 @@ script:
     fi;
 
 after_success:
-  # Run the Deployer scripts
+  # Run the upload scripts
+  # These do nothing if Deployer is not triggered
   - . ../deployer/travis/deployer_ftp.sh
   - . ../deployer/travis/deployer_dput.sh
