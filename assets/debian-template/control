@@ -5,7 +5,8 @@ Section: games
 Priority: extra
 Maintainer: ${PACKAGE_GROUP_NAME_EMAIL}
 Build-Depends: debhelper (>= 7.0.50~),
- wget
+ wget,
+ resolvconf
 Standards-Version: 3.8.4
 Homepage: ${PACKAGE_WEBSITE}
 

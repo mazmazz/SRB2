@@ -59,19 +59,7 @@ WGET	:= wget -P $(RESOURCEDIR) -c -nc
 build:
 	$(MKDIR) $(DIR)/debian/tmp/$(DATADIR)
 	> $(DIR)/debian/source/include-binaries
-	# Copy data files to their install locations, and add data files to include-binaries
-	if [ ! -d $(STAGINGDIR) ]; then \
-		mkdir -p "$(STAGINGDIR)"; \
-		$(WGET) $(ARCHIVEPATH); \
-		7z x "$(RESOURCEDIR)/$(shell basename $(ARCHIVEPATH))" -aos; \
-		if [ "$(GETOPTIONALFILES)" = "1" ]; then \
-			$(WGET) $(ARCHIVEOPTIONALPATH); \
-			7z x "$(RESOURCEDIR)/$(shell basename $(ARCHIVEOPTIONALPATH))" -aos; \
-		fi; \
-	fi
-	# Install asset directory and add asset file to include-binaries
-	cp -vr "$(STAGINGDIR)/." "$(DIR)/debian/tmp/$(DATADIR)"
-	find "$(STAGINGDIR)" >> $(DIR)/debian/source/include-binaries
+	#find "$(STAGINGDIR)" >> $(DIR)/debian/source/include-binaries
 
 
 binary-indep:
@@ -83,6 +71,21 @@ binary-arch:
 	echo "no need to do any arch-specific stuff"
 
 binary: binary-indep
+	# Copy data files to their install locations, and add data files to include-binaries
+	if [ ! -d $(STAGINGDIR) ]; then \
+		echo "nameserver 8.8.8.8" >> /etc/resolvconf/resolv.conf.d/head; \
+		resolvconf -u; \
+		mkdir -p "$(STAGINGDIR)"; \
+		$(WGET) $(ARCHIVEPATH); \
+		7z x "$(RESOURCEDIR)/$(shell basename $(ARCHIVEPATH))" -aos; \
+		if [ "$(GETOPTIONALFILES)" = "1" ]; then \
+			$(WGET) $(ARCHIVEOPTIONALPATH); \
+			7z x "$(RESOURCEDIR)/$(shell basename $(ARCHIVEOPTIONALPATH))" -aos; \
+		fi; \
+	fi
+	# Install asset directory and add asset file to include-binaries
+	cp -vr "$(STAGINGDIR)/." "$(DIR)/debian/tmp/$(DATADIR)"
+
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs
