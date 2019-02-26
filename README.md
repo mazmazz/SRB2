@@ -51,6 +51,7 @@ Previously, colormaps were assigned to a limited number of entries.
 This was merged for the next major version, currently in private development.
 
 * [Documentation and list of branches](https://github.com/mazmazz/SRB2/wiki/Fade-FOF-Test). Click on a branch name to view pull request code.
+* [Pull request for colormap code rewrite](https://github.com/STJr/SRB2/compare/SRB2_release_2.1.21...mazmazz:public-colormap-overhaul)
 
 ![srb20011](https://git.magicalgirl.moe/STJr/SRB2Internal/uploads/dbddaf9c7ad5057bfd50cb5d61a750ef/srb20011.gif)
 ![srb20002](https://git.magicalgirl.moe/STJr/SRB2Internal/uploads/774f6383a98a187ba5b18321afa2608c/srb20002.gif)
@@ -64,6 +65,7 @@ This work also involved a major rewrite of legacy code. I refactored the game's 
 an obsolete duality between MIDI and digital music playback. This resulted in a new, simpler API for music playback.
 
 * [Documentation and list of branches](https://github.com/mazmazz/SRB2/wiki/MusicPlus-Test). Click on a branch name to view pull request code.
+* [Pull request for music code refactoring](https://git.magicalgirl.moe/STJr/SRB2/merge_requests/278)
 * [Watch this YouTube playlist to see the features in action](https://www.youtube.com/watch?v=DMB5qy3dMEU&index=4&list=PLVIEmOPX_YO1sFlGCLZA1Q-ujL30rTM3b).
 
 ### YouTube Level Tutorial
