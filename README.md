@@ -44,9 +44,9 @@ environments were tested, the game continues to be released for 64-bit.
 ### Fading Platforms
 
 These features allow floating platforms to fade translucently and for colored lights to fade between
-different colors. This work involved a significant rewrite of legacy code. I cleaned up and re-architected
-the game's colormap lighting code to allocate color data dynamically. Previously, colormaps were
-assigned to a limited number of entries.
+different colors. This work involved a team effort in significantly rewriting the legacy lighting code.
+An associate cleaned up the old code, while I re-architected his cleanup work to allocate color data dynamically.
+Previously, colormaps were assigned to a limited number of entries.
 
 This was merged for the next major version, currently in private development.
 
