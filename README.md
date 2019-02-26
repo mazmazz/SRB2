@@ -52,6 +52,10 @@ This was merged for the next major version, currently in private development.
 
 * [Documentation and list of branches](https://github.com/mazmazz/SRB2/wiki/Fade-FOF-Test). Click on a branch name to view pull request code.
 * [Pull request for colormap code rewrite](https://github.com/STJr/SRB2/compare/SRB2_release_2.1.21...mazmazz:public-colormap-overhaul)
+* YouTube demos:
+    * [Platform fading](https://www.youtube.com/watch?v=L6h5f3h3B3s)
+    * [Global colormap fading](https://youtu.be/xuIWzMJX0_c)
+    * [Colormap memory benchmark](https://youtu.be/qYQD5juqlPc)
 
 ![srb20011](https://git.magicalgirl.moe/STJr/SRB2Internal/uploads/dbddaf9c7ad5057bfd50cb5d61a750ef/srb20011.gif)
 ![srb20002](https://git.magicalgirl.moe/STJr/SRB2Internal/uploads/774f6383a98a187ba5b18321afa2608c/srb20002.gif)
