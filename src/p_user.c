@@ -57,6 +57,29 @@ static void P_NukeAllPlayers(player_t *player);
 #endif
 
 //
+// Jingle stuff.
+//
+
+jingle_t jingleinfo[NUMJINGLES] = {
+	// {musname, looping, reset, nest}
+	{""        , false}, // JT_NONE
+	{""        , false}, // JT_OTHER
+	{""        , false}, // JT_MASTER
+	{"xtlife"    , false},
+	{"shoes"  ,  true},
+	{"invinc"    , false},
+	{"minvnc"   , false},
+	{"drown"  , false},
+	{"supers"  ,  true},
+	{"gmover"  , false},
+	{"drown"  , false},  // JT_NIGHTSTIMEOUT
+	{"drown"  , false}   // JT_SSTIMEOUT
+	// {"lclear"  , false},
+	// {"racent"  ,  true},
+	// {"contsc"  ,  true}
+};
+
+//
 // Movement.
 //
 
