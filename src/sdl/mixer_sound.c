@@ -643,7 +643,7 @@ void I_InitMusic(void)
 void I_ShutdownMusic(void)
 {
 	I_UnselectSong();
-	// do we also need to unload all loaded songs?
+	// purging preloaded songs is handled in s_sound.c
 }
 
 /// ------------------------

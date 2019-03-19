@@ -1557,6 +1557,9 @@ static void P_LoadRawSideDefs2(void *data)
 					else // Assume it's a proper music name.
 						M_Memcpy(sd->text, process, 6);
 					sd->text[6] = 0;
+
+					// Preload this music
+					S_LoadMusicEx(sd->text, PU_LEVEL, false);
 				}
 				else
 					sd->text[0] = 0;
@@ -2782,6 +2785,12 @@ boolean P_SetupLevel(boolean skipprecip)
 	S_StopSounds();
 	S_ClearSfx();
 
+	// Unload the previously loaded level music.
+	// But don't unload the currently playing music if we're using the same one
+	// for the new map.
+	S_PurgePreloadedMusic(PU_LEVEL, false);
+	S_PurgePreloadedMusic(PU_PURGELEVEL, false);
+
 	// As oddly named as this is, this handles music only.
 	// We should be fine starting it here.
 	S_Start();
@@ -3251,12 +3260,18 @@ boolean P_AddWadFile(const char *wadfilename)
 			{
 				CONS_Debug(DBG_SETUP, "Music %.8s replaced\n", name);
 				mreplaces++;
+				// reload the already preloaded music, but only if it is not playing
+				if (stricmp(S_MusicName(), name))
+					S_LoadMusicEx(name, 0, true);
 			}
 		}
 		else if (name[0] == 'O' && name[1] == '_')
 		{
 			CONS_Debug(DBG_SETUP, "Music %.8s replaced\n", name);
 			digmreplaces++;
+			// reload the already preloaded music, but only if it is not playing
+			if (stricmp(S_MusicName(), name))
+				S_LoadMusicEx(name, 0, true);
 		}
 #if 0
 		//

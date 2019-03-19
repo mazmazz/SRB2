@@ -59,8 +59,6 @@ static void GameMIDIMusic_OnChange(void);
 static void GameSounds_OnChange(void);
 static void GameDigiMusic_OnChange(void);
 
-static void S_UnloadMusicEx(musicdef_t *def);
-
 // commands for music and sound servers
 #ifdef MUSSERV
 consvar_t musserver_cmd = {"musserver_cmd", "musserver", CV_SAVE, NULL, NULL, 0, NULL, NULL, 0, 0, NULL};
@@ -1242,6 +1240,26 @@ const char *compat_special_music_slots[16] =
 };
 #endif
 
+// List of music to always keep preloaded
+// See also p_user.c jingleinfo
+#define NUMPRELOADS 10
+const char *preload_mnames[NUMPRELOADS] = 
+{
+	// From p_user.c jingleinfo
+	"xtlife",
+	"shoes",
+	"invinc",
+	"minvnc",
+	"drown",
+	"supers",
+	"gmover",
+
+	// Non-jingles
+	"lclear",
+	"racent",
+	"contsc"
+};
+
 static char      music_name[7]; // up to 6-character name
 static UINT16    music_flags;
 static boolean   music_looping;
@@ -1527,7 +1545,7 @@ UINT32 S_GetMusicPosition(void)
 /// Music Playback
 /// ------------------------
 
-static boolean S_LoadMusic(const char *mname)
+boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only)
 {
 	lumpnum_t mlumpnum;
 	musicdef_t *def;
@@ -1576,8 +1594,12 @@ static boolean S_LoadMusic(const char *mname)
 	def = S_CreateMusicDefByName(mname);
 	def->data = mdata; // I_LoadSong changes this value, so set it now
 
-	CONS_Debug(DBG_AUDIO, "%s - MusicDef %#08X> Handle %#08X> ", 
-		def->name, (INT32)def, (INT32)def->handle);
+	// Only load this music if it's already preloaded
+	if (overload_only && !def->handle)
+		return true;
+
+	CONS_Debug(DBG_AUDIO, "%s - MusicDef %#08lX> Handle %#08lX> ", 
+		def->name, (long)def, (long)def->handle);
 
 	if (def->handle && def->datalength == mlumplength)
 	{
@@ -1597,13 +1619,40 @@ static boolean S_LoadMusic(const char *mname)
 		{
 			CONS_Debug(DBG_AUDIO, "Loading music...\n");
 			def->datalength = mlumplength; // dumb way to check if this lump is already loaded
+
+			if (purgetag) // force a certain purge tag
+				def->purgetag = purgetag; // When to unload the music handle; usually PU_LEVEL
+			else
+			{
+				size_t i;
+
+				// Determine the correct purge tag.
+				// Jingles and preload_mnames are PU_STATIC;
+				// Level-specific music is PU_LEVEL;
+				// Everyone else is PU_PURGELEVEL
+				def->purgetag = PU_PURGELEVEL;
+
+				for (i = 0; i < NUMPRELOADS; i++)
+				{
+					if (!stricmp(preload_mnames[i], mname))
+					{
+						def->purgetag = PU_STATIC;
+						break;
+					}
+				}
+
+				// Assign PU_LEVEL to level header music
+				if (def->purgetag != PU_STATIC && gamestate == GS_LEVEL && !stricmp(mapheaderinfo[gamemap-1]->musname, mname))
+					def->purgetag = PU_LEVEL;
+			}
+			
 			return true;
 		}
 		else
 		{
 			CONS_Debug(DBG_AUDIO, "Could not load music?\n");
 			def->data = def->handle = NULL;
-			def->datalength = def->looppoint = def->songlength = def->songtype = 0;
+			def->purgetag = def->datalength = def->looppoint = def->songlength = def->songtype = 0;
 			return false;
 		}
 	}
@@ -1628,7 +1677,7 @@ static void S_UnselectMusic(void)
 	music_def = NULL;
 }
 
-static void S_UnloadMusicEx(musicdef_t *def)
+void S_UnloadMusicEx(musicdef_t *def)
 {
 	if (!def)
 		return;
@@ -1639,13 +1688,56 @@ static void S_UnloadMusicEx(musicdef_t *def)
 	Z_ChangeTag(def->data, PU_CACHE);
 #endif
 	def->data = NULL;
+	def->datalength = 0;
+	//def->purgetag = 0; // recall this when re-preloading music (RESTARTAUDIO command)
 
-	S_UnselectMusic();
+	if (!stricmp(def->name, music_name))
+		S_UnselectMusic();
 }
 
 static void S_UnloadMusic(void)
 {
 	S_UnloadMusicEx(music_def);
+}
+
+void S_PreloadMusic(INT32 purgetag)
+{
+	musicdef_t *def = musicdefstart;
+	size_t i;
+
+	// Now preload all preload_mnames
+	if (!purgetag || purgetag == PU_STATIC)
+	{
+		for (i = 0; i < NUMPRELOADS; i++)
+			S_LoadMusicEx(preload_mnames[i], PU_STATIC, false);
+	}
+
+	// Next, go through the musicdef chain and preload
+	// music that has not already been loaded.
+	// E.g., RESTARTAUDIO command
+	while(def)
+	{
+		if ((!purgetag || purgetag == def->purgetag) && !def->handle)
+			S_LoadMusicEx(def->name, def->purgetag, false);
+		def = def->next;
+	}
+}
+
+void S_PurgePreloadedMusic(INT32 purgetag, boolean force)
+{
+	musicdef_t *def = musicdefstart;
+
+	while (def)
+	{
+		// Don't purge a music that is currently playing,
+		// or one we are about to play in a new level.
+		// (Unless we force all music to be purged)
+		if ((!purgetag || def->purgetag == purgetag) && (force || stricmp(def->name,
+			(gamestate == GS_LEVEL && (mapmusflags & MUSIC_RELOADRESET)) ? mapheaderinfo[gamemap-1]->musname : S_MusicName()))
+		)
+			S_UnloadMusicEx(def);
+		def = def->next;
+	}
 }
 
 static boolean S_PlayMusic(boolean looping, UINT32 fadeinms)
@@ -1958,10 +2050,13 @@ static void Command_RestartAudio_f(void)
 {
 	S_StopMusic();
 	S_StopSounds();
+	S_PurgePreloadedMusic(0, true);
 	I_ShutdownMusic();
 	I_ShutdownSound();
 	I_StartupSound();
 	I_InitMusic();
+	S_PreloadMusic(PU_STATIC);
+	S_PreloadMusic(PU_LEVEL);
 
 // These must be called or no sound and music until manually set.
 

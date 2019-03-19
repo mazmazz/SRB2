@@ -79,6 +79,9 @@ jingle_t jingleinfo[NUMJINGLES] = {
 	// {"contsc"  ,  true}
 };
 
+// Jingles should always be preloaded in memory.
+// See s_sound.c, preload_mnames
+
 //
 // Movement.
 //

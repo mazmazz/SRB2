@@ -41,8 +41,16 @@ typedef struct musicdef_s
 	//char usage[256];
 	char source[256];
 
+	// These are handled in s_sound.c
+	INT32 purgetag; 
+		// PU_STATIC to always keep
+		// PU_LEVEL to purge on level change, for level-specific music (level header, change music linedef)
+		// PU_PURGELEVEL to purge on level change, for non-specific music (TUNES command)
+		// DON'T use purgetag to detect whether a music is loaded! Check (handle == NULL) instead.
 	void *data; // used for non-SDL memory management
 	INT32 datalength; // dumb way to check if we're loading the same music lump
+
+	// These are handled in the interfaces (mixer_sound.c)
 	void *handle; // in-memory stream
 	musictype_t songtype; // used to specify GME or some other special stream handler
 	UINT32 looppoint;

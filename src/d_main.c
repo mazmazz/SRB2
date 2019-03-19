@@ -725,6 +725,11 @@ void D_StartTitle(void)
 	gametype = GT_COOP;
 	paused = false;
 	advancedemo = false;
+
+	// Unload all PU_LEVEL music -- even the currently playing one
+	S_PurgePreloadedMusic(PU_LEVEL, true);
+	S_PurgePreloadedMusic(PU_PURGELEVEL, true);
+
 	F_StartTitleScreen();
 	CON_ToggleOff();
 
@@ -1262,6 +1267,7 @@ void D_SRB2Main(void)
 	I_InitMusic();
 	S_InitSfxChannels(cv_soundvolume.value);
 	S_InitMusicDefs();
+	S_PreloadMusic(0);
 
 	CONS_Printf("ST_Init(): Init status bar.\n");
 	ST_Init();
