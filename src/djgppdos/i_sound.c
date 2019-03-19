@@ -473,36 +473,51 @@ UINT32 I_GetSongPosition(void)
 //  MUSIC PLAYBACK
 /// ------------------------
 
-boolean I_LoadSong(char *data, size_t len)
+boolean I_LoadSong(char *data, size_t len, musicdef_t *musicdef)
 {
 	int e = len; //Alam: For error
-	if (midi_disabled)
-		return 0;
 
 	if (memcmp(data,"MThd",4)==0) // support mid file in WAD !!!
 	{
-		currsong=load_midi_mem(data,&e);
+		musicdef->handle = load_midi_mem(data,&e);
+		musicdef->musictype = MU_MID;
+		musicdef->looppoint = musicdef->songlength = 0;
 	}
 	else
 	{
 		CONS_Printf("Music Lump is not a MIDI lump\n");
+		musicdef->handle = musicdef->musictype = musicdef->looppoint = musicdef->songlength = 0;
 		return 0;
 	}
 
-	if (currsong==NULL)
+	if (musicdef->handle==NULL)
 	{
 		CONS_Printf("Not a valid mid file : %d\n",e);
+		musicdef->handle = musicdef->musictype = musicdef->looppoint = musicdef->songlength = 0;
 		return 0;
 	}
 
 	return 1;
 }
 
-void I_UnloadSong(void)
+void I_SelectSong(musicdef_t *musicdef)
 {
-	handle = 0;
-	if (midi_disabled)
-		return;
+	currsong = musicdef->handle;
+}
+
+void I_UnselectSong(void)
+{
+	I_StopSong();
+	currsong = 0;
+}
+
+void I_UnloadSong(musicdef_t *musicdef)
+{
+	if (musicdef->handle && musicdef->handle == currsong)
+		I_UnselectSong();
+
+	musicdef->handle = 0;
+	musicdef->songtype = musicdef->looppoint = musicdef->songlength = 0;
 
 	//destroy_midi(currsong);
 }

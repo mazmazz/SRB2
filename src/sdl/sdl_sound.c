@@ -1429,12 +1429,23 @@ static void I_ResumeGME(void)
 }
 #endif
 
-boolean I_LoadSong(char *data, size_t len)
+boolean I_LoadSong(char *data, size_t len, musicdef_t *musicdef)
 {
+	(void)data;
+	(void)len;
+	(void)musicdef;
 	return false;
 }
 
-void I_UnloadSong(void) { }
+void I_SelectSong(musicdef_t *musicdef) {
+	(void)musicdef;
+}
+
+void I_UnselectSong(void) { }
+
+void I_UnloadSong(musicdef_t *musicdef) {
+	(void)musicdef;
+}
 
 boolean I_PlaySong(boolean looping)
 {

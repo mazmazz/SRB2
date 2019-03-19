@@ -642,30 +642,41 @@ void I_InitMusic(void)
 
 void I_ShutdownMusic(void)
 {
-	I_UnloadSong();
+	I_UnselectSong();
+	// do we also need to unload all loaded songs?
 }
 
 /// ------------------------
 /// Music Properties
 /// ------------------------
 
+static musictype_t I_SongTypeEx(void *handle, musictype_t songtype)
+{
+#ifdef HAVE_LIBGME
+	if (handle && songtype == MU_GME)
+		return MU_GME;
+	else
+#endif
+	if (!handle)
+		return MU_NONE;
+	else if (Mix_GetMusicType(handle) == MUS_MID)
+		return MU_MID;
+	else if (Mix_GetMusicType(handle) == MUS_MOD || Mix_GetMusicType(handle) == MUS_MODPLUG)
+		return MU_MOD;
+	else if (Mix_GetMusicType(handle) == MUS_MP3 || Mix_GetMusicType(handle) == MUS_MP3_MAD)
+		return MU_MP3;
+	else
+		return (musictype_t)Mix_GetMusicType(handle);
+}
+
 musictype_t I_SongType(void)
 {
 #ifdef HAVE_LIBGME
 	if (gme)
-		return MU_GME;
+		return I_SongTypeEx(gme, MU_GME);
 	else
 #endif
-	if (!music)
-		return MU_NONE;
-	else if (Mix_GetMusicType(music) == MUS_MID)
-		return MU_MID;
-	else if (Mix_GetMusicType(music) == MUS_MOD || Mix_GetMusicType(music) == MUS_MODPLUG)
-		return MU_MOD;
-	else if (Mix_GetMusicType(music) == MUS_MP3 || Mix_GetMusicType(music) == MUS_MP3_MAD)
-		return MU_MP3;
-	else
-		return (musictype_t)Mix_GetMusicType(music);
+		return I_SongTypeEx(music, MU_NONE);
 }
 
 boolean I_SongPlaying(void)
@@ -894,10 +905,10 @@ UINT32 I_GetSongPosition(void)
 }
 
 /// ------------------------
-/// Music Playback
+/// Music Loading
 /// ------------------------
 
-boolean I_LoadSong(char *data, size_t len)
+boolean I_LoadSong(char *data, size_t len, musicdef_t *musicdef)
 {
 	const char *key1 = "LOOP";
 	const char *key2 = "POINT=";
@@ -919,16 +930,9 @@ boolean I_LoadSong(char *data, size_t len)
 	size_t wstart, wp;
 	char *p = data;
 	SDL_RWops *rw;
-
-	if (music
 #ifdef HAVE_LIBGME
-		|| gme
+	Music_Emu *gme_handle;
 #endif
-	)
-		I_UnloadSong();
-
-	// always do this whether or not a music already exists
-	var_cleanup();
 
 #ifdef HAVE_LIBGME
 	if ((UINT8)data[0] == 0x1F
@@ -955,13 +959,12 @@ boolean I_LoadSong(char *data, size_t len)
 			zErr = inflate(&stream, Z_FINISH);
 			if (zErr == Z_STREAM_END) {
 				// Run GME on new data
-				if (!gme_open_data(inflatedData, inflatedLen, &gme, 44100))
+				if (!gme_open_data(inflatedData, inflatedLen, &gme_handle, 44100))
 				{
 					gme_equalizer_t eq = {GME_TREBLE, GME_BASS, 0,0,0,0,0,0,0,0};
-					gme_start_track(gme, 0);
-					current_track = 0;
-					gme_set_equalizer(gme, &eq);
-					Mix_HookMusic(mix_gme, gme);
+					gme_set_equalizer(gme_handle, &eq);
+					musicdef->handle = gme_handle;
+					musicdef->songtype = MU_GME;
 					Z_Free(inflatedData); // GME supposedly makes a copy for itself, so we don't need this lying around
 					return true;
 				}
@@ -1018,10 +1021,12 @@ boolean I_LoadSong(char *data, size_t len)
 		return true;
 #endif
 	}
-	else if (!gme_open_data(data, len, &gme, 44100))
+	else if (!gme_open_data(data, len, &gme_handle, 44100))
 	{
 		gme_equalizer_t eq = {GME_TREBLE, GME_BASS, 0,0,0,0,0,0,0,0};
-		gme_set_equalizer(gme, &eq);
+		gme_set_equalizer(gme_handle, &eq);
+		musicdef->handle = gme_handle;
+		musicdef->songtype = MU_GME;
 		return true;
 	}
 #endif
@@ -1029,27 +1034,27 @@ boolean I_LoadSong(char *data, size_t len)
 	rw = SDL_RWFromMem(data, len);
 	if (rw != NULL)
 	{
-		music = Mix_LoadMUS_RW(rw, 1);
+		musicdef->handle = Mix_LoadMUS_RW(rw, 1);
 	}
-	if (!music)
+	if (!musicdef->handle)
 	{
 		CONS_Alert(CONS_ERROR, "Mix_LoadMUS_RW: %s\n", Mix_GetError());
 		return false;
 	}
 
+	musicdef->songtype = I_SongTypeEx(musicdef->handle, MU_NONE);
 	// Find the OGG loop point.
-	loop_point = 0.0f;
-	song_length = 0.0f;
+	musicdef->looppoint = musicdef->songlength = 0;
 
 	while ((UINT32)(p - data) < len)
 	{
-		if (fpclassify(loop_point) == FP_ZERO && !strncmp(p, key1, key1len))
+		if (!musicdef->looppoint && !strncmp(p, key1, key1len))
 		{
 			p += key1len; // skip LOOP
 			if (!strncmp(p, key2, key2len)) // is it LOOPPOINT=?
 			{
 				p += key2len; // skip POINT=
-				loop_point = (float)((44.1L+atoi(p)) / 44100.0L); // LOOPPOINT works by sample count.
+				musicdef->looppoint = ((44.1L+atoi(p)) / 44100.0L)*1000.0L; // LOOPPOINT works by sample count.
 				// because SDL_Mixer is USELESS and can't even tell us
 				// something simple like the frequency of the streaming music,
 				// we are unfortunately forced to assume that ALL MUSIC is 44100hz.
@@ -1058,17 +1063,19 @@ boolean I_LoadSong(char *data, size_t len)
 			else if (!strncmp(p, key3, key3len)) // is it LOOPMS=?
 			{
 				p += key3len; // skip MS=
-				loop_point = (float)(atoi(p) / 1000.0L); // LOOPMS works by real time, as miliseconds.
+				musicdef->looppoint = atoi(p); // LOOPMS works by real time, as miliseconds.
 				// Everything that uses LOOPMS will work perfectly with SDL_Mixer.
 			}
 		}
-		else if (fpclassify(song_length) == FP_ZERO && !strncmp(p, key4, key4len)) // is it LENGTHMS=?
+		else if (!musicdef->songlength && !strncmp(p, key4, key4len)) // is it LENGTHMS=?
 		{
 			p += key4len; // skip LENGTHMS
-			song_length = (float)(atoi(p) / 1000.0L);
+			musicdef->songlength = atoi(p);
 		}
 		// below: search MP3 or other tags that use wide char encoding
-		else if (fpclassify(loop_point) == FP_ZERO && !memcmp(p, key1w, key1len*2)) // LOOP wide char
+		// NOTE: This is incorrect to the ID3 spec, but it works
+		// in practice if you tag your MP3s with foobar2000. fb2k writes tags in wide Unicode.
+		else if (!musicdef->looppoint && !memcmp(p, key1w, key1len*2)) // LOOP wide char
 		{
 			p += key1len*2;
 			if (!memcmp(p, key2w, (key2len+1)*2)) // POINT= wide char
@@ -1083,7 +1090,7 @@ boolean I_LoadSong(char *data, size_t len)
 					wp = ((size_t)(p-wstart))/2;
 				}
 				wval[min(wp, 9)] = 0;
-				loop_point = (float)((44.1L+atoi(wval) / 44100.0L));
+				musicdef->looppoint = ((44.1L+atoi(wval) / 44100.0L)*1000.0L);
 			}
 			else if (!memcmp(p, key3w, (key3len+1)*2)) // MS= wide char
 			{
@@ -1097,10 +1104,10 @@ boolean I_LoadSong(char *data, size_t len)
 					wp = ((size_t)(p-wstart))/2;
 				}
 				wval[min(wp, 9)] = 0;
-				loop_point = (float)(atoi(wval) / 1000.0L);
+				musicdef->looppoint = atoi(wval);
 			}
 		}
-		else if (fpclassify(song_length) == FP_ZERO && !memcmp(p, key4w, (key4len+1)*2)) // LENGTHMS= wide char
+		else if (!musicdef->songlength && !memcmp(p, key4w, (key4len+1)*2)) // LENGTHMS= wide char
 		{
 			p += (key4len+1)*2;
 			wstart = (size_t)p;
@@ -1112,10 +1119,10 @@ boolean I_LoadSong(char *data, size_t len)
 				wp = ((size_t)(p-wstart))/2;
 			}
 			wval[min(wp, 9)] = 0;
-			song_length = (float)(atoi(wval) / 1000.0L);
+			musicdef->songlength = atoi(wval);
 		}
 
-		if (fpclassify(loop_point) != FP_ZERO && fpclassify(song_length) != FP_ZERO && song_length > loop_point) // Got what we needed
+		if (musicdef->looppoint && musicdef->songlength && musicdef->songlength > musicdef->looppoint) // Got what we needed
 			// the last case is a sanity check, in case the wide char searches were false matches.
 			break;
 		else // continue searching
@@ -1124,23 +1131,67 @@ boolean I_LoadSong(char *data, size_t len)
 	return true;
 }
 
-void I_UnloadSong(void)
+void I_SelectSong(musicdef_t *musicdef)
 {
-	I_StopSong();
+	if (music
+#ifdef HAVE_LIBGME
+		|| gme
+#endif
+	)
+		I_UnselectSong();
+	else
+		// always do this whether or not a music already exists
+		// I_UnselectSong() already does this.
+		var_cleanup();
 
 #ifdef HAVE_LIBGME
-	if (gme)
-	{
-		gme_delete(gme);
-		gme = NULL;
-	}
+	if (musicdef->songtype == MU_GME)
+		gme = musicdef->handle;
+	else
 #endif
-	if (music)
-	{
-		Mix_FreeMusic(music);
-		music = NULL;
-	}
+		music = musicdef->handle;
+
+	loop_point = song_length = 0.0f;
+	if (musicdef->looppoint)
+		loop_point = (float)(musicdef->looppoint / 1000.0L);
+	if (musicdef->songlength)
+		song_length = (float)(musicdef->songlength / 1000.0L);
 }
+
+void I_UnselectSong(void)
+{
+	I_StopSong();
+	var_cleanup();
+	music = NULL;
+#ifdef HAVE_LIBGME
+	gme = NULL;
+#endif
+}
+
+void I_UnloadSong(musicdef_t *musicdef)
+{
+	if (musicdef->handle && (musicdef->handle == music
+#ifdef HAVE_LIBGME
+	|| musicdef->handle == gme
+#endif
+	))
+		I_UnselectSong();
+
+#ifdef HAVE_LIBGME
+	if (musicdef->handle && musicdef->songtype == MU_GME)
+		gme_delete(musicdef->handle);
+	else
+#endif
+	if (musicdef->handle)
+		Mix_FreeMusic(musicdef->handle);
+
+	musicdef->handle = NULL;
+	musicdef->songtype = musicdef->looppoint = musicdef->songlength = 0;
+}
+
+/// ------------------------
+/// Music Playback
+/// ------------------------
 
 boolean I_PlaySong(boolean looping)
 {

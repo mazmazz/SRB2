@@ -20,7 +20,7 @@
 
 // copied from SDL mixer, plus GME
 typedef enum {
-	MU_NONE,
+	MU_NONE = 0,
 	MU_CMD,
 	MU_WAV,
 	MU_MOD,
@@ -32,6 +32,21 @@ typedef enum {
 	MU_MODPLUG_UNUSED, // use MU_MOD instead
 	MU_GME
 } musictype_t;
+
+// See Music Credits in s_sound.h
+
+typedef struct musicdef_s
+{
+	char name[7];
+	//char usage[256];
+	char source[256];
+	struct musicdef_s *next;
+
+	void *handle; // in-memory stream
+	musictype_t songtype; // used to specify GME or some other special stream handler
+	UINT32 looppoint;
+	UINT32 songlength;
+} musicdef_t;
 
 /**	\brief Sound subsystem runing and waiting
 */
@@ -171,7 +186,10 @@ UINT32 I_GetSongPosition(void);
 
 	\todo Remove this
 */
-boolean I_LoadSong(char *data, size_t len);
+boolean I_LoadSong(char *data, size_t len, musicdef_t *musicdef);
+
+void I_SelectSong(musicdef_t *musicdef);
+void I_UnselectSong(void);
 
 /**	\brief	See ::I_LoadSong, then think backwards
 
@@ -180,7 +198,7 @@ boolean I_LoadSong(char *data, size_t len);
 	\sa I_LoadSong
 	\todo remove midi handle
 */
-void I_UnloadSong(void);
+void I_UnloadSong(musicdef_t *musicdef);
 
 /**	\brief	Called by anything that wishes to start music
 

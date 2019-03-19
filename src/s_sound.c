@@ -1244,6 +1244,7 @@ static char      music_name[7]; // up to 6-character name
 static void      *music_data;
 static UINT16    music_flags;
 static boolean   music_looping;
+static musicdef_t *music_def;
 
 static char      queue_name[7];
 static UINT16    queue_flags;
@@ -1281,7 +1282,7 @@ void S_LoadMusicDefs(UINT16 wadnum)
 	char *stoken;
 	char *value;
 	size_t size;
-	musicdef_t *def, *prev;
+	musicdef_t *def;
 	UINT16 line = 1; // for better error msgs
 
 	lump = W_CheckForMusicDefInPwad(wadnum);
@@ -1298,7 +1299,7 @@ void S_LoadMusicDefs(UINT16 wadnum)
 	M_Memcpy(buf2,buf,size);
 	buf2[size] = '\0';
 
-	def = prev = NULL;
+	def = NULL;
 
 	stoken = strtok (buf2, "\r\n ");
 	// Find music def
@@ -1325,44 +1326,8 @@ void S_LoadMusicDefs(UINT16 wadnum)
 				goto skip_lump;
 			}
 
-			// No existing musicdefs
-			if (!musicdefstart)
-			{
-				musicdefstart = Z_Calloc(sizeof (musicdef_t), PU_STATIC, NULL);
-				STRBUFCPY(musicdefstart->name, value);
-				strlwr(musicdefstart->name);
-				def = musicdefstart;
-				//CONS_Printf("S_LoadMusicDefs: Initialized musicdef w/ song '%s'\n", def->name);
-			}
-			else
-			{
-				def = musicdefstart;
-
-				// Search if this is a replacement
-				//CONS_Printf("S_LoadMusicDefs: Searching for song replacement...\n");
-				while (def)
-				{
-					if (!stricmp(def->name, value))
-					{
-						//CONS_Printf("S_LoadMusicDefs: Found song replacement '%s'\n", def->name);
-						break;
-					}
-
-					prev = def;
-					def = def->next;
-				}
-
-				// Nothing found, add to the end.
-				if (!def)
-				{
-					def = Z_Calloc(sizeof (musicdef_t), PU_STATIC, NULL);
-					STRBUFCPY(def->name, value);
-					strlwr(def->name);
-					if (prev != NULL)
-						prev->next = def;
-					//CONS_Printf("S_LoadMusicDefs: Added song '%s'\n", def->name);
-				}
-			}
+			// Get existing musicdef for lumpname -- or if it doesn't exist, then create it.
+			def = S_CreateMusicDefByName(value);
 
 skip_lump:
 			stoken = strtok(NULL, "\r\n ");
@@ -1422,6 +1387,37 @@ void S_InitMusicDefs(void)
 	UINT16 i;
 	for (i = 0; i < numwadfiles; i++)
 		S_LoadMusicDefs(i);
+}
+
+musicdef_t *S_GetCreateMusicDefByName(const char *mname, boolean create)
+{
+	musicdef_t *def = musicdefstart, *prev = NULL, *new_def = NULL;
+	
+	// Find existing def
+	while (def)
+	{
+		if (!stricmp(def->name, mname))
+			return def;
+		prev = def;
+		def = def->next;
+	}
+
+	// Will be NULL if not found
+	if (!create)
+		return def;
+
+	// Create new def
+	new_def = Z_Calloc(sizeof (musicdef_t), PU_STATIC, NULL);
+	STRBUFCPY(new_def->name, mname);
+	strlwr(new_def->name);
+
+	// Append new def to end of chain
+	def = prev;
+	if (def)
+		def->next = new_def;
+	else
+		def = new_def;
+	return new_def;
 }
 
 /// ------------------------
@@ -1529,6 +1525,7 @@ UINT32 S_GetMusicPosition(void)
 static boolean S_LoadMusic(const char *mname)
 {
 	lumpnum_t mlumpnum;
+	musicdef_t *def;
 	void *mdata;
 
 	if (S_MusicDisabled())
@@ -1569,11 +1566,15 @@ static boolean S_LoadMusic(const char *mname)
 	}
 #endif
 
-	if (I_LoadSong(mdata, W_LumpLength(mlumpnum)))
+	def = S_CreateMusicDefByName(mname);
+
+	if (I_LoadSong(mdata, W_LumpLength(mlumpnum), def))
 	{
+		I_SelectSong(def);
 		strncpy(music_name, mname, 7);
 		music_name[6] = 0;
 		music_data = mdata;
+		music_def = def;
 		return true;
 	}
 	else
@@ -1582,7 +1583,7 @@ static boolean S_LoadMusic(const char *mname)
 
 static void S_UnloadMusic(void)
 {
-	I_UnloadSong();
+	I_UnloadSong(music_def);
 
 #ifndef HAVE_SDL //SDL uses RWOPS
 	Z_ChangeTag(music_data, PU_CACHE);
@@ -1592,6 +1593,7 @@ static void S_UnloadMusic(void)
 	music_name[0] = 0;
 	music_flags = 0;
 	music_looping = false;
+	music_def = NULL;
 }
 
 static boolean S_PlayMusic(boolean looping, UINT32 fadeinms)

@@ -148,18 +148,15 @@ UINT32 S_GetMusicPosition(void);
 // Music credits
 //
 
-typedef struct musicdef_s
-{
-	char name[7];
-	//char usage[256];
-	char source[256];
-	struct musicdef_s *next;
-} musicdef_t;
+// musicdef_t is in s_sound.h
 
 extern musicdef_t *musicdefstart;
 
 void S_LoadMusicDefs(UINT16 wadnum);
 void S_InitMusicDefs(void);
+musicdef_t *S_GetCreateMusicDefByName(const char *mname, boolean create);
+#define S_GetMusicDefByName(mname) S_GetCreateMusicDefByName(mname, false)
+#define S_CreateMusicDefByName(mname) S_GetCreateMusicDefByName(mname, true)
 
 //
 // Music Playback
