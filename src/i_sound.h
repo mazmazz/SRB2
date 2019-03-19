@@ -40,12 +40,15 @@ typedef struct musicdef_s
 	char name[7];
 	//char usage[256];
 	char source[256];
-	struct musicdef_s *next;
 
+	void *data; // used for non-SDL memory management
+	INT32 datalength; // dumb way to check if we're loading the same music lump
 	void *handle; // in-memory stream
 	musictype_t songtype; // used to specify GME or some other special stream handler
 	UINT32 looppoint;
 	UINT32 songlength;
+
+	struct musicdef_s *next;
 } musicdef_t;
 
 /**	\brief Sound subsystem runing and waiting

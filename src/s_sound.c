@@ -59,6 +59,8 @@ static void GameMIDIMusic_OnChange(void);
 static void GameSounds_OnChange(void);
 static void GameDigiMusic_OnChange(void);
 
+static void S_UnloadMusicEx(musicdef_t *def);
+
 // commands for music and sound servers
 #ifdef MUSSERV
 consvar_t musserver_cmd = {"musserver_cmd", "musserver", CV_SAVE, NULL, NULL, 0, NULL, NULL, 0, 0, NULL};
@@ -1241,7 +1243,6 @@ const char *compat_special_music_slots[16] =
 #endif
 
 static char      music_name[7]; // up to 6-character name
-static void      *music_data;
 static UINT16    music_flags;
 static boolean   music_looping;
 static musicdef_t *music_def;
@@ -1417,6 +1418,10 @@ musicdef_t *S_GetCreateMusicDefByName(const char *mname, boolean create)
 		def->next = new_def;
 	else
 		def = new_def;
+
+	if (!musicdefstart)
+		musicdefstart = def;
+
 	return new_def;
 }
 
@@ -1527,6 +1532,7 @@ static boolean S_LoadMusic(const char *mname)
 	lumpnum_t mlumpnum;
 	musicdef_t *def;
 	void *mdata;
+	INT32 mlumplength = 0;
 
 	if (S_MusicDisabled())
 		return false;
@@ -1553,6 +1559,7 @@ static boolean S_LoadMusic(const char *mname)
 
 	// load & register it
 	mdata = W_CacheLumpNum(mlumpnum, PU_MUSIC);
+	mlumplength = W_LumpLength(mlumpnum);
 
 #ifdef MUSSERV
 	if (msg_id != -1)
@@ -1567,33 +1574,78 @@ static boolean S_LoadMusic(const char *mname)
 #endif
 
 	def = S_CreateMusicDefByName(mname);
+	def->data = mdata; // I_LoadSong changes this value, so set it now
 
-	if (I_LoadSong(mdata, W_LumpLength(mlumpnum), def))
+	CONS_Debug(DBG_AUDIO, "%s - MusicDef %#08X> Handle %#08X> ", 
+		def->name, (INT32)def, (INT32)def->handle);
+
+	if (def->handle && def->datalength == mlumplength)
 	{
-		I_SelectSong(def);
-		strncpy(music_name, mname, 7);
-		music_name[6] = 0;
-		music_data = mdata;
-		music_def = def;
+		// same lump already loaded
+		CONS_Debug(DBG_AUDIO, "Music was preloaded!\n");
 		return true;
 	}
 	else
-		return false;
+	{
+		if (def->handle)
+			CONS_Debug(DBG_AUDIO, "Unloading... ");
+
+		// Unload the old data first, if applicable
+		S_UnloadMusicEx(def);
+
+		if (I_LoadSong(mdata, mlumplength, def))
+		{
+			CONS_Debug(DBG_AUDIO, "Loading music...\n");
+			def->datalength = mlumplength; // dumb way to check if this lump is already loaded
+			return true;
+		}
+		else
+		{
+			CONS_Debug(DBG_AUDIO, "Could not load music?\n");
+			def->data = def->handle = NULL;
+			def->datalength = def->looppoint = def->songlength = def->songtype = 0;
+			return false;
+		}
+	}
 }
 
-static void S_UnloadMusic(void)
+static void S_SelectMusic(musicdef_t *def, UINT16 mflags, boolean looping)
 {
-	I_UnloadSong(music_def);
+	I_SelectSong(def);
+	strncpy(music_name, def->name, 7);
+	music_name[6] = 0;
+	music_flags = mflags;
+	music_looping = looping;
+	music_def = def;
+}
 
-#ifndef HAVE_SDL //SDL uses RWOPS
-	Z_ChangeTag(music_data, PU_CACHE);
-#endif
-	music_data = NULL;
-
+static void S_UnselectMusic(void)
+{
+	I_UnselectSong();
 	music_name[0] = 0;
 	music_flags = 0;
 	music_looping = false;
 	music_def = NULL;
+}
+
+static void S_UnloadMusicEx(musicdef_t *def)
+{
+	if (!def)
+		return;
+
+	I_UnloadSong(def);
+
+#ifndef HAVE_SDL //SDL uses RWOPS
+	Z_ChangeTag(def->data, PU_CACHE);
+#endif
+	def->data = NULL;
+
+	S_UnselectMusic();
+}
+
+static void S_UnloadMusic(void)
+{
+	S_UnloadMusicEx(music_def);
 }
 
 static boolean S_PlayMusic(boolean looping, UINT32 fadeinms)
@@ -1635,6 +1687,7 @@ static void S_ChangeMusicToQueue(void)
 void S_ChangeMusicEx(const char *mmusic, UINT16 mflags, boolean looping, UINT32 position, UINT32 prefadems, UINT32 fadeinms)
 {
 	char newmusic[7];
+	musicdef_t *def;
 
 #if defined (DC) || defined (_WIN32_WCE) || defined (PSP) || defined(GP2X)
 	S_ClearSfx();
@@ -1662,25 +1715,24 @@ void S_ChangeMusicEx(const char *mmusic, UINT16 mflags, boolean looping, UINT32 
 
 	if (prefadems && S_MusicPlaying()) // queue music change for after fade // allow even if the music is the same
 	{
-		CONS_Debug(DBG_DETAILED, "Now fading out song %s\n", music_name);
+		CONS_Debug(DBG_AUDIO, "Now fading out song %s\n", music_name);
 		S_QueueMusic(newmusic, mflags, looping, position, fadeinms);
 		I_FadeSong(0, prefadems, S_ChangeMusicToQueue);
 		return;
 	}
 	else if (strnicmp(music_name, newmusic, 6) || (mflags & MUSIC_FORCERESET))
  	{
-		CONS_Debug(DBG_DETAILED, "Now playing song %s\n", newmusic);
+		CONS_Debug(DBG_AUDIO, "Now playing song %s\n", newmusic);
 
 		S_StopMusic();
 
-		if (!S_LoadMusic(newmusic))
+		if (!S_LoadMusic(newmusic) || !(def = S_GetMusicDefByName(newmusic)))
 		{
 			CONS_Alert(CONS_ERROR, "Music %.6s could not be loaded!\n", newmusic);
 			return;
 		}
 
-		music_flags = mflags;
-		music_looping = looping;
+		S_SelectMusic(def, mflags, looping);
 
 		if (!S_PlayMusic(looping, fadeinms))
  		{
@@ -1715,7 +1767,7 @@ void S_StopMusic(void)
 
 	S_SpeedMusic(1.0f);
 	I_StopSong();
-	S_UnloadMusic(); // for now, stopping also means you unload the song
+	S_UnselectMusic(); // make the current track inactive, but don't unload it
 }
 
 //

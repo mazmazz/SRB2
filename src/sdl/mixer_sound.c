@@ -127,7 +127,7 @@ void I_StartupSound(void)
 	// EE inits audio first so we're following along.
 	if (SDL_WasInit(SDL_INIT_AUDIO) == SDL_INIT_AUDIO)
 	{
-		CONS_Debug(DBG_DETAILED, "SDL Audio already started\n");
+		CONS_Debug(DBG_AUDIO, "SDL Audio already started\n");
 		return;
 	}
 	else if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
@@ -761,7 +761,7 @@ UINT32 I_GetSongLength(void)
 		// SDL mixer can't read music length itself.
 		length = (UINT32)(song_length*1000);
 		if (!length)
-			CONS_Debug(DBG_DETAILED, "Getting music length: music is missing LENGTHMS= tag. Needed for seeking.\n");
+			CONS_Debug(DBG_AUDIO, "Getting music length: music is missing LENGTHMS= tag. Needed for seeking.\n");
 		return length;
 	}
 }
@@ -1209,7 +1209,7 @@ boolean I_PlaySong(boolean looping)
 		return false;
 
 	if (fpclassify(song_length) == FP_ZERO && (I_SongType() == MU_OGG || I_SongType() == MU_MP3 || I_SongType() == MU_FLAC))
-		CONS_Debug(DBG_DETAILED, "This song is missing a LENGTHMS= tag! Required to make seeking work properly.\n");
+		CONS_Debug(DBG_AUDIO, "This song is missing a LENGTHMS= tag! Required to make seeking work properly.\n");
 
 	if (I_SongType() != MU_MOD && I_SongType() != MU_MID && Mix_PlayMusic(music, 0) == -1)
 	{
