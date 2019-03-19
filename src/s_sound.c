@@ -1623,7 +1623,7 @@ boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overloadOnly, b
 		return true;
 
 	CONS_Debug(DBG_AUDIO, "%s - MusicDef %#08lX> Handle %#08lX> %d> ", 
-		def->name, (long)def, (long)def->handle, def->purgetag);
+		def->name, (long)(uintptr_t)def, (long)(uintptr_t)def->handle, def->purgetag);
 
 	if (def->handle && def->datalength == mlumplength)
 	{
