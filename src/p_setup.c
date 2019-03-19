@@ -2788,8 +2788,12 @@ boolean P_SetupLevel(boolean skipprecip)
 	// Unload the previously loaded level music.
 	// But don't unload the currently playing music if we're using the same one
 	// for the new map.
-	S_PurgePreloadedMusic(PU_LEVEL, false);
-	S_PurgePreloadedMusic(PU_PURGELEVEL, false);
+	S_PurgePreloadedMusic(PU_LEVEL, false, true);
+	S_PurgePreloadedMusic(PU_PURGELEVEL, false, true);
+
+	// Let's preload the level music now
+	S_LoadMusicEx(mapheaderinfo[gamemap-1]->musname, PU_LEVEL, false);
+	S_LoadMusicEx(mapheaderinfo[gamemap-1]->musintername, PU_LEVEL, false);
 
 	// As oddly named as this is, this handles music only.
 	// We should be fine starting it here.

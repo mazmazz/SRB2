@@ -727,8 +727,8 @@ void D_StartTitle(void)
 	advancedemo = false;
 
 	// Unload all PU_LEVEL music -- even the currently playing one
-	S_PurgePreloadedMusic(PU_LEVEL, true);
-	S_PurgePreloadedMusic(PU_PURGELEVEL, true);
+	S_PurgePreloadedMusic(PU_LEVEL, true, true);
+	S_PurgePreloadedMusic(PU_PURGELEVEL, true, true);
 
 	F_StartTitleScreen();
 	CON_ToggleOff();

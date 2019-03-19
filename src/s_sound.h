@@ -162,7 +162,7 @@ boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only);
 #define S_LoadMusic(mname) S_LoadMusicEx(mname, 0, false)
 void S_UnloadMusicEx(musicdef_t *def);
 void S_PreloadMusic(INT32 purgetag);
-void S_PurgePreloadedMusic(INT32 purgetag, boolean skipPlaying);
+void S_PurgePreloadedMusic(INT32 purgetag, boolean forcePlaying, boolean clearTag);
 
 //
 // Music Playback

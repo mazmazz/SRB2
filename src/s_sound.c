@@ -1497,6 +1497,8 @@ boolean S_MusicInfo(char *mname, UINT16 *mflags, boolean *looping)
 
 boolean S_MusicExists(const char *mname, boolean checkMIDI, boolean checkDigi)
 {
+	if (!mname || !mname[0])
+		return false;
 	return (
 		(checkDigi ? W_CheckNumForName(va("O_%s", mname)) != LUMPERROR : false)
 		|| (checkMIDI ? W_CheckNumForName(va("D_%s", mname)) != LUMPERROR : false)
@@ -1553,6 +1555,9 @@ boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only)
 	INT32 mlumplength = 0;
 
 	if (S_MusicDisabled())
+		return false;
+
+	if (!mname || !mname[0])
 		return false;
 
 	if (!S_DigMusicDisabled() && S_DigExists(mname))
@@ -1723,7 +1728,7 @@ void S_PreloadMusic(INT32 purgetag)
 	}
 }
 
-void S_PurgePreloadedMusic(INT32 purgetag, boolean force)
+void S_PurgePreloadedMusic(INT32 purgetag, boolean purgePlaying, boolean clearTag)
 {
 	musicdef_t *def = musicdefstart;
 
@@ -1732,10 +1737,13 @@ void S_PurgePreloadedMusic(INT32 purgetag, boolean force)
 		// Don't purge a music that is currently playing,
 		// or one we are about to play in a new level.
 		// (Unless we force all music to be purged)
-		if ((!purgetag || def->purgetag == purgetag) && (force || stricmp(def->name,
-			(gamestate == GS_LEVEL && (mapmusflags & MUSIC_RELOADRESET)) ? mapheaderinfo[gamemap-1]->musname : S_MusicName()))
-		)
+		if ((!purgetag || def->purgetag == purgetag) && (purgePlaying || stricmp(def->name,
+			(gamestate == GS_LEVEL && (mapmusflags & MUSIC_RELOADRESET)) ? mapheaderinfo[gamemap-1]->musname : S_MusicName())))
+		{
 			S_UnloadMusicEx(def);
+			if (clearTag)
+				def->purgetag = 0;
+		}
 		def = def->next;
 	}
 }
@@ -2050,7 +2058,7 @@ static void Command_RestartAudio_f(void)
 {
 	S_StopMusic();
 	S_StopSounds();
-	S_PurgePreloadedMusic(0, true);
+	S_PurgePreloadedMusic(0, true, false);
 	I_ShutdownMusic();
 	I_ShutdownSound();
 	I_StartupSound();
