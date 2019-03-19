@@ -1559,7 +1559,7 @@ static void P_LoadRawSideDefs2(void *data)
 					sd->text[6] = 0;
 
 					// Preload this music
-					S_LoadMusicEx(sd->text, PU_LEVEL, false);
+					S_LoadMusicEx(sd->text, PU_LEVEL, false, false);
 				}
 				else
 					sd->text[0] = 0;
@@ -2792,8 +2792,8 @@ boolean P_SetupLevel(boolean skipprecip)
 	S_PurgePreloadedMusic(PU_PURGELEVEL, false, true);
 
 	// Let's preload the level music now
-	S_LoadMusicEx(mapheaderinfo[gamemap-1]->musname, PU_LEVEL, false);
-	S_LoadMusicEx(mapheaderinfo[gamemap-1]->musintername, PU_LEVEL, false);
+	S_LoadMusicEx(mapheaderinfo[gamemap-1]->musname, PU_LEVEL, false, false);
+	S_LoadMusicEx(mapheaderinfo[gamemap-1]->musintername, PU_LEVEL, false, false);
 
 	// As oddly named as this is, this handles music only.
 	// We should be fine starting it here.
@@ -3266,7 +3266,7 @@ boolean P_AddWadFile(const char *wadfilename)
 				mreplaces++;
 				// reload the already preloaded music, but only if it is not playing
 				if (stricmp(S_MusicName(), name))
-					S_LoadMusicEx(name, 0, true);
+					S_LoadMusicEx(name, 0, true, false);
 			}
 		}
 		else if (name[0] == 'O' && name[1] == '_')
@@ -3275,7 +3275,7 @@ boolean P_AddWadFile(const char *wadfilename)
 			digmreplaces++;
 			// reload the already preloaded music, but only if it is not playing
 			if (stricmp(S_MusicName(), name))
-				S_LoadMusicEx(name, 0, true);
+				S_LoadMusicEx(name, 0, true, false);
 		}
 #if 0
 		//

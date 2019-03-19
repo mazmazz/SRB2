@@ -30,6 +30,7 @@ extern consvar_t cv_resetmusic;
 extern consvar_t cv_gamedigimusic;
 extern consvar_t cv_gamemidimusic;
 extern consvar_t cv_gamesounds;
+extern consvar_t cv_preloadmusic;
 
 #ifdef SNDSERV
 extern consvar_t sndserver_cmd, sndserver_arg;
@@ -158,11 +159,11 @@ musicdef_t *S_GetCreateMusicDefByName(const char *mname, boolean create);
 #define S_GetMusicDefByName(mname) S_GetCreateMusicDefByName(mname, false)
 #define S_CreateMusicDefByName(mname) S_GetCreateMusicDefByName(mname, true)
 
-boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only);
-#define S_LoadMusic(mname) S_LoadMusicEx(mname, 0, false)
+boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overloadOnly, boolean forceLoad);
+#define S_LoadMusic(mname) S_LoadMusicEx(mname, 0, false, true)
 void S_UnloadMusicEx(musicdef_t *def);
 void S_PreloadMusic(INT32 purgetag);
-void S_PurgePreloadedMusic(INT32 purgetag, boolean forcePlaying, boolean clearTag);
+void S_PurgePreloadedMusic(INT32 purgetag, boolean purgePlaying, boolean clearTag);
 
 //
 // Music Playback

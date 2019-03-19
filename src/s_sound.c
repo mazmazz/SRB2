@@ -58,6 +58,7 @@ static void Command_RestartAudio_f(void);
 static void GameMIDIMusic_OnChange(void);
 static void GameSounds_OnChange(void);
 static void GameDigiMusic_OnChange(void);
+static void PreloadMusic_OnChange(void);
 
 // commands for music and sound servers
 #ifdef MUSSERV
@@ -107,6 +108,8 @@ consvar_t cv_resetmusic = {"resetmusic", "No", CV_SAVE, CV_YesNo, NULL, 0, NULL,
 consvar_t cv_gamedigimusic = {"digimusic", "On", CV_SAVE|CV_CALL|CV_NOINIT, CV_OnOff, GameDigiMusic_OnChange, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_gamemidimusic = {"midimusic", "On", CV_SAVE|CV_CALL|CV_NOINIT, CV_OnOff, GameMIDIMusic_OnChange, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_gamesounds = {"sounds", "On", CV_SAVE|CV_CALL|CV_NOINIT, CV_OnOff, GameSounds_OnChange, 0, NULL, NULL, 0, 0, NULL};
+
+consvar_t cv_preloadmusic = {"preloadmusic", "On", CV_SAVE|CV_CALL|CV_NOINIT, CV_OnOff, PreloadMusic_OnChange, 0, NULL, NULL, 0, 0, NULL};
 
 #define S_MAX_VOLUME 127
 
@@ -265,6 +268,7 @@ void S_RegisterSoundStuff(void)
 	CV_RegisterVar(&cv_gamesounds);
 	CV_RegisterVar(&cv_gamedigimusic);
 	CV_RegisterVar(&cv_gamemidimusic);
+	CV_RegisterVar(&cv_preloadmusic);
 
 	COM_AddCommand("tunes", Command_Tunes_f);
 	COM_AddCommand("restartaudio", Command_RestartAudio_f);
@@ -1547,7 +1551,7 @@ UINT32 S_GetMusicPosition(void)
 /// Music Playback
 /// ------------------------
 
-boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only)
+boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overloadOnly, boolean forceLoad)
 {
 	lumpnum_t mlumpnum;
 	musicdef_t *def;
@@ -1559,6 +1563,21 @@ boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only)
 
 	if (!mname || !mname[0])
 		return false;
+
+	// If not preloading music, just reject the call.
+	// Unless you're actually going to play the music -- forceLoad is true when called from S_ChangeMusicEx.
+	// In most other cases, forceLoad is false. This allows for the cv_preloadmusic toggle behavior.
+	if (!forceLoad && !cv_preloadmusic.value)
+	{
+		// HACK: Set the purgetag now so we know which music to preload later,
+		// if cv_preloadmusic is toggled
+		if (purgetag)
+		{
+			def = S_CreateMusicDefByName(mname);
+			def->purgetag = purgetag;
+		}
+		return false;
+	}
 
 	if (!S_DigMusicDisabled() && S_DigExists(mname))
 		mlumpnum = W_GetNumForName(va("o_%s", mname));
@@ -1600,11 +1619,11 @@ boolean S_LoadMusicEx(const char *mname, INT32 purgetag, boolean overload_only)
 	def->data = mdata; // I_LoadSong changes this value, so set it now
 
 	// Only load this music if it's already preloaded
-	if (overload_only && !def->handle)
+	if (overloadOnly && !def->handle)
 		return true;
 
-	CONS_Debug(DBG_AUDIO, "%s - MusicDef %#08lX> Handle %#08lX> ", 
-		def->name, (long)def, (long)def->handle);
+	CONS_Debug(DBG_AUDIO, "%s - MusicDef %#08lX> Handle %#08lX> %d> ", 
+		def->name, (long)def, (long)def->handle, def->purgetag);
 
 	if (def->handle && def->datalength == mlumplength)
 	{
@@ -1676,9 +1695,16 @@ static void S_SelectMusic(musicdef_t *def, UINT16 mflags, boolean looping)
 static void S_UnselectMusic(void)
 {
 	I_UnselectSong();
+
 	music_name[0] = 0;
 	music_flags = 0;
 	music_looping = false;
+
+	// This is stupid, but S_UnloadMusicEx calls back to S_UnselectMusic.
+	// To avoid an infinite loop, call this AFTER music_name is blanked.
+	if (!cv_preloadmusic.value)
+		S_UnloadMusicEx(music_def);
+
 	music_def = NULL;
 }
 
@@ -1694,9 +1720,12 @@ void S_UnloadMusicEx(musicdef_t *def)
 #endif
 	def->data = NULL;
 	def->datalength = 0;
-	//def->purgetag = 0; // recall this when re-preloading music (RESTARTAUDIO command)
 
-	if (!stricmp(def->name, music_name))
+	if (!cv_preloadmusic.value && def->purgetag == PU_PURGELEVEL)
+		def->purgetag = 0;
+		// in other cases, we want to recall purgetag so that we know which music to preload (RESTARTAUDIO command)
+
+	if (def->name[0] && !stricmp(def->name, music_name))
 		S_UnselectMusic();
 }
 
@@ -1710,11 +1739,16 @@ void S_PreloadMusic(INT32 purgetag)
 	musicdef_t *def = musicdefstart;
 	size_t i;
 
+	// If music preloading is disabled, we can load tracks individually.
+	// This is a bulk-loading function.
+	if (!cv_preloadmusic.value)
+		return;
+
 	// Now preload all preload_mnames
 	if (!purgetag || purgetag == PU_STATIC)
 	{
 		for (i = 0; i < NUMPRELOADS; i++)
-			S_LoadMusicEx(preload_mnames[i], PU_STATIC, false);
+			S_LoadMusicEx(preload_mnames[i], PU_STATIC, false, false);
 	}
 
 	// Next, go through the musicdef chain and preload
@@ -1722,8 +1756,8 @@ void S_PreloadMusic(INT32 purgetag)
 	// E.g., RESTARTAUDIO command
 	while(def)
 	{
-		if ((!purgetag || purgetag == def->purgetag) && !def->handle)
-			S_LoadMusicEx(def->name, def->purgetag, false);
+		if (((!purgetag && def->purgetag) || (purgetag && purgetag == def->purgetag)) && !def->handle)
+			S_LoadMusicEx(def->name, def->purgetag, false, false);
 		def = def->next;
 	}
 }
@@ -1744,6 +1778,7 @@ void S_PurgePreloadedMusic(INT32 purgetag, boolean purgePlaying, boolean clearTa
 			if (clearTag)
 				def->purgetag = 0;
 		}
+
 		def = def->next;
 	}
 }
@@ -1867,7 +1902,7 @@ void S_StopMusic(void)
 
 	S_SpeedMusic(1.0f);
 	I_StopSong();
-	S_UnselectMusic(); // make the current track inactive, but don't unload it
+	S_UnselectMusic(); // make the current track inactive
 }
 
 //
@@ -2173,4 +2208,12 @@ void GameMIDIMusic_OnChange(void)
 			}
 		}
 	}
+}
+
+void PreloadMusic_OnChange(void)
+{
+	if (!cv_preloadmusic.value)
+		S_PurgePreloadedMusic(0, false, false);
+	else
+		S_PreloadMusic(0);
 }
