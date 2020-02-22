@@ -263,8 +263,8 @@ int main(int argc, char **argv)
 								"."PATHSEP"crash-report.rpt");
 					}
 					CONS_Printf("REPORT FILENAME: %s\n", rptfilename);
-					exchndl.ExcHndlInit();
 					exchndl.ExcHndlSetLogFileNameA(rptfilename);
+					exchndl.ExcHndlInit();
 				} else
 					I_Error("Couldn't load stuff");
 			}
