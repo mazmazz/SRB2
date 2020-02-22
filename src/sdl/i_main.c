@@ -247,7 +247,10 @@ int main(int argc, char **argv)
 				exchndl.ExcHndlInit = (void (*) (void))SDL_LoadFunction(exchndl.handle, "ExcHndlInit");
 				if (exchndl.ExcHndlInit)
 					exchndl.ExcHndlInit();
-			}
+				else
+					CONS_Printf("Couldn't load the function\n");
+			} else
+				CONS_Printf("Couldn't load the DLL\n");
 #else
 			LoadLibraryA("exchndl.dll");
 #endif
