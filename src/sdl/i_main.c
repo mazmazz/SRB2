@@ -70,6 +70,10 @@ char logfilename[1024];
 typedef BOOL (WINAPI *p_IsDebuggerPresent)(VOID);
 #endif
 
+#if defined(_WIN64)
+#include "exchndl.h"
+#endif
+
 #if defined (_WIN32)
 static inline VOID MakeCodeWritable(VOID)
 {
@@ -232,7 +236,11 @@ int main(int argc, char **argv)
 			)
 #endif
 		{
+#if defined (_WIN64)
+			ExcHndlInit();
+#else
 			LoadLibraryA("exchndl.dll");
+#endif
 		}
 	}
 #ifndef __MINGW32__
