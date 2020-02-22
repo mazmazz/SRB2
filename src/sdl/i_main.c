@@ -70,6 +70,15 @@ char logfilename[1024];
 typedef BOOL (WINAPI *p_IsDebuggerPresent)(VOID);
 #endif
 
+// 64-bit exchndl dynamic loading
+#if defined (_WIN64)
+typedef struct {
+	void *handle;
+	void (*ExcHndlInit) ( void );
+} exchndl_loader;
+static exchndl_loader exchndl = { NULL, NULL };
+#endif
+
 #if defined (_WIN32)
 static inline VOID MakeCodeWritable(VOID)
 {
@@ -232,7 +241,16 @@ int main(int argc, char **argv)
 			)
 #endif
 		{
+#if defined (_WIN64)
+			exchndl.handle = SDL_LoadObject("exchndl.dll")
+			if (exchndl.handle) {
+				exchndl.ExcHndlInit = (void (*) (void))SDL_LoadFunction(exchndl.handle, "ExcHndlInit");
+				if (exchndl.ExcHndlInit)
+					exchndl.ExcHndlInit();
+			}
+#else
 			LoadLibraryA("exchndl.dll");
+#endif
 		}
 	}
 #ifndef __MINGW32__
