@@ -248,9 +248,9 @@ int main(int argc, char **argv)
 				if (exchndl.ExcHndlInit)
 					exchndl.ExcHndlInit();
 				else
-					CONS_Printf("Couldn't load the function\n");
+					I_Error("Couldn't load the function\n");
 			} else
-				CONS_Printf("Couldn't load the DLL\n");
+				I_Error("Couldn't load the DLL\n");
 #else
 			LoadLibraryA("exchndl.dll");
 #endif
