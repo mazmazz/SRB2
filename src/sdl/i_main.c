@@ -70,7 +70,7 @@ char logfilename[1024];
 typedef BOOL (WINAPI *p_IsDebuggerPresent)(VOID);
 #endif
 
-#if defined(_WIN64)
+#if 1
 #include "exchndl.h"
 #endif
 
@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 			)
 #endif
 		{
-#if defined (_WIN64)
+#if 1
 			char rptfilename[1024];
 #ifdef DEFAULTDIR
 			if (D_Home())
