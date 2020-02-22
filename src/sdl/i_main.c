@@ -243,7 +243,7 @@ int main(int argc, char **argv)
 #endif
 		{
 #if 1
-			exchndl.handle = GetModuleHandleA("exchndl.dll");
+			exchndl.handle = LoadLibraryA("exchndl.dll");
 			if (exchndl.handle) {
 				exchndl.ExcHndlInit = (void (*) (void))GetProcAddress(exchndl.handle, "ExcHndlInit");
 				exchndl.ExcHndlSetLogFileNameA = (boolean (*) ( const char * szLogFileName ))GetProcAddress(exchndl.handle, "ExcHndlSetLogFileNameA");
