@@ -246,12 +246,12 @@ int main(int argc, char **argv)
 			exchndl.handle = SDL_LoadObject("exchndl.dll");
 			if (exchndl.handle) {
 				exchndl.ExcHndlInit = (void (*) (void))SDL_LoadFunction(exchndl.handle, "ExcHndlInit");
-				exchndl.ExcHndlSetLogFileNameA = (boolean (*) ( const char * szLogFileName )SDL_LoadFunction(exchndl.handle, "ExcHndlSetLogFileNameA");
+				exchndl.ExcHndlSetLogFileNameA = (boolean (*) ( const char * szLogFileName ))SDL_LoadFunction(exchndl.handle, "ExcHndlSetLogFileNameA");
 				if (exchndl.ExcHndlInit && exchndl.ExcHndlSetLogFileNameA)
 				{
 					char rptfilename[1024];
 #ifdef DEFAULTDIR
-					if (logdir)
+					if (D_Home())
 					{
 						snprintf(rptfilename, sizeof rptfilename,
 								"%s"PATHSEP DEFAULTDIR PATHSEP"crash-report.rpt", D_Home());
