@@ -237,6 +237,21 @@ int main(int argc, char **argv)
 #endif
 		{
 #if defined (_WIN64)
+			char rptfilename[1024];
+#ifdef DEFAULTDIR
+			if (D_Home())
+			{
+				snprintf(rptfilename, sizeof rptfilename,
+						"%s"PATHSEP DEFAULTDIR PATHSEP"crash-report.rpt", D_Home());
+			}
+			else
+#endif
+			{
+				snprintf(rptfilename, sizeof rptfilename,
+						"."PATHSEP"crash-report.rpt");
+			}
+			CONS_Printf("REPORT FILENAME: %s\n", rptfilename);
+			ExcHndlSetLogFileNameA(rptfilename);
 			ExcHndlInit();
 #else
 			LoadLibraryA("exchndl.dll");
