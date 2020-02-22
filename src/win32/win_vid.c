@@ -239,6 +239,11 @@ void I_StartupGraphics(void)
 	if (!dedicated) graphics_started = true;
 }
 
+void I_StartupHardwareGraphics(void)
+{
+	// oh yeah woo yeah oh yeah woo yeah oh yeah woo yeah oh yeah woo yeah oh yeah woo yeah oh yeah woo yeah oh yeah woo y
+}
+
 // ------------------
 // I_ShutdownGraphics
 // Close the screen, restore previous video mode.
@@ -322,9 +327,9 @@ static inline boolean I_SkipFrame(void)
 		case GS_LEVEL:
 			if (!paused)
 				return false;
-			/* FALLTHRU */
-		case GS_TIMEATTACK:
+		//case GS_TIMEATTACK: -- sorry optimisation but now we have a cool level platter and that being laggardly looks terrible
 #ifndef CLIENT_LOADINGSCREEN
+		/* FALLTHRU */
 		case GS_WAITINGPLAYERS:
 #endif
 			return skip; // Skip odd frames
@@ -363,9 +368,16 @@ void I_FinishUpdate(void)
 	if (I_SkipFrame())
 		return;
 
+	// draw captions if enabled
+	if (cv_closedcaptioning.value)
+		SCR_ClosedCaptions();
+
 	// display a graph of ticrate
 	if (cv_ticrate.value)
 		SCR_DisplayTicRate();
+
+	if (cv_showping.value && netgame && consoleplayer != serverplayer)
+		SCR_DisplayLocalPing();
 
 	//
 	if (bDIBMode)
@@ -939,6 +951,11 @@ INT32 VID_SetMode(INT32 modenum)
 	return 1;
 }
 
+void VID_CheckRenderer(void)
+{
+	// ..............
+}
+
 // ========================================================================
 // Free the video buffer of the last video mode,
 // allocate a new buffer for the video mode to set.
@@ -996,7 +1013,7 @@ static INT32 WINAPI VID_SetDirectDrawMode(viddef_t *lvid, vmode_t *currentmode)
 	// but rather render to memory bitmap buffer
 	lvid->direct = NULL;
 
-	if (!cv_stretch.value && (float)vid.width/vid.height != ((float)BASEVIDWIDTH/BASEVIDHEIGHT))
+	if (!cv_stretch.value && fabsf((float)vid.width/vid.height - ((float)BASEVIDWIDTH/BASEVIDHEIGHT)) > 1.0E-36f)
 		vid.height = (int)(vid.width * ((float)BASEVIDHEIGHT/BASEVIDWIDTH));// Adjust the height to match
 
 	return 1;

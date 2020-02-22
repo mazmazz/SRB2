@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2016 by Sonic Team Junior.
+// Copyright (C) 1999-2020 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -27,6 +27,7 @@
 #include "d_clisrv.h"
 #include "z_zone.h"
 #include "i_tcp.h"
+#include "d_main.h" // srb2home
 
 //
 // NETWORKING
@@ -49,7 +50,9 @@ doomcom_t *doomcom = NULL;
 /// \brief network packet data, points inside doomcom
 doomdata_t *netbuffer = NULL;
 
+#ifdef DEBUGFILE
 FILE *debugfile = NULL; // put some net info in a file during the game
+#endif
 
 #define MAXREBOUND 8
 static doomdata_t reboundstore[MAXREBOUND];
@@ -182,22 +185,10 @@ typedef struct
 	UINT8 nextacknum;
 
 	UINT8 flags;
-#ifndef NEWPING
-	// jacobson tcp timeout evaluation algorithm (Karn variation)
-	fixed_t ping;
-	fixed_t varping;
-	INT32 timeout; // computed with ping and varping
-#endif
 } node_t;
 
 static node_t nodes[MAXNETNODES];
-#ifndef NEWPING
-#define PINGDEFAULT ((200*TICRATE*FRACUNIT)/1000)
-#define VARPINGDEFAULT ((50*TICRATE*FRACUNIT)/1000)
-#define TIMEOUT(p,v) (p+4*v+FRACUNIT/2)>>FRACBITS;
-#else
-#define NODETIMEOUT 14 //What the above boiled down to...
-#endif
+#define NODETIMEOUT 14
 
 #ifndef NONET
 // return <0 if a < b (mod 256)
@@ -317,19 +308,7 @@ static UINT8 GetAcktosend(INT32 node)
 static void RemoveAck(INT32 i)
 {
 	INT32 node = ackpak[i].destinationnode;
-#ifndef NEWPING
-	fixed_t trueping = (I_GetTime() - ackpak[i].senttime)<<FRACBITS;
-	if (ackpak[i].resentnum)
-	{
-		// +FRACUNIT/2 for round
-		nodes[node].ping = (nodes[node].ping*7 + trueping)/8;
-		nodes[node].varping = (nodes[node].varping*7 + abs(nodes[node].ping-trueping))/8;
-		nodes[node].timeout = TIMEOUT(nodes[node].ping,nodes[node].varping);
-	}
-	DEBFILE(va("Remove ack %d trueping %d ping %f var %f timeout %d\n",ackpak[i].acknum,trueping>>FRACBITS,(double)FIXED_TO_FLOAT(nodes[node].ping),(double)FIXED_TO_FLOAT(nodes[node].varping),nodes[node].timeout));
-#else
 	DEBFILE(va("Remove ack %d\n",ackpak[i].acknum));
-#endif
 	ackpak[i].acknum = 0;
 	if (nodes[node].flags & NF_CLOSE)
 		Net_CloseConnection(node);
@@ -516,28 +495,19 @@ void Net_AckTicker(void)
 	{
 		const INT32 nodei = ackpak[i].destinationnode;
 		node_t *node = &nodes[nodei];
-#ifdef NEWPING
 		if (ackpak[i].acknum && ackpak[i].senttime + NODETIMEOUT < I_GetTime())
-#else
-		if (ackpak[i].acknum && ackpak[i].senttime + node->timeout < I_GetTime())
-#endif
 		{
-			if (ackpak[i].resentnum > 10 && (node->flags & NF_CLOSE))
+			if (ackpak[i].resentnum > 20 && (node->flags & NF_CLOSE))
 			{
-				DEBFILE(va("ack %d sent 10 times so connection is supposed lost: node %d\n",
+				DEBFILE(va("ack %d sent 20 times so connection is supposed lost: node %d\n",
 					i, nodei));
 				Net_CloseConnection(nodei | FORCECLOSE);
 
 				ackpak[i].acknum = 0;
 				continue;
 			}
-#ifdef NEWPING
 			DEBFILE(va("Resend ack %d, %u<%d at %u\n", ackpak[i].acknum, ackpak[i].senttime,
 				NODETIMEOUT, I_GetTime()));
-#else
-			DEBFILE(va("Resend ack %d, %u<%d at %u\n", ackpak[i].acknum, ackpak[i].senttime,
-				node->timeout, I_GetTime()));
-#endif
 			M_Memcpy(netbuffer, ackpak[i].pak.raw, ackpak[i].length);
 			ackpak[i].senttime = I_GetTime();
 			ackpak[i].resentnum++;
@@ -655,11 +625,6 @@ void Net_WaitAllAckReceived(UINT32 timeout)
 static void InitNode(node_t *node)
 {
 	node->acktosend_head = node->acktosend_tail = 0;
-#ifndef NEWPING
-	node->ping = PINGDEFAULT;
-	node->varping = VARPINGDEFAULT;
-	node->timeout = TIMEOUT(node->ping, node->varping);
-#endif
 	node->firstacktosend = 0;
 	node->nextacknum = 1;
 	node->remotefirstack = 0;
@@ -840,9 +805,7 @@ static const char *packettypename[NUMPACKETTYPE] =
 	"CLIENTJOIN",
 	"NODETIMEOUT",
 	"RESYNCHING",
-#ifdef NEWPING
 	"PING"
-#endif
 };
 
 static void DebugPrintpacket(const char *header)
@@ -1357,11 +1320,6 @@ boolean D_CheckNetGame(void)
 	netbuffer = (doomdata_t *)(void *)&doomcom->data;
 
 #ifdef DEBUGFILE
-#ifdef _arch_dreamcast
-	//debugfile = stderr;
-	if (debugfile)
-			CONS_Printf(M_GetText("debug output to: %s\n"), "STDERR");
-#else
 	if (M_CheckParm("-debugfile"))
 	{
 		char filename[21];
@@ -1372,14 +1330,13 @@ boolean D_CheckNetGame(void)
 		{
 			k++;
 			sprintf(filename, "debug%d.txt", k);
-			debugfile = fopen(filename, "w");
+			debugfile = fopen(va("%s" PATHSEP "%s", srb2home, filename), "w");
 		}
 		if (debugfile)
-			CONS_Printf(M_GetText("debug output to: %s\n"), filename);
+			CONS_Printf(M_GetText("debug output to: %s\n"), va("%s" PATHSEP "%s", srb2home, filename));
 		else
-			CONS_Alert(CONS_WARNING, M_GetText("cannot debug output to file %s!\n"), filename);
+			CONS_Alert(CONS_WARNING, M_GetText("cannot debug output to file %s!\n"), va("%s" PATHSEP "%s", srb2home, filename));
 	}
-#endif
 #endif
 
 	D_ClientServerInit();
@@ -1387,30 +1344,73 @@ boolean D_CheckNetGame(void)
 	return ret;
 }
 
+struct pingcell
+{
+	INT32 num;
+	INT32 ms;
+};
+
+static int pingcellcmp(const void *va, const void *vb)
+{
+	const struct pingcell *a, *b;
+	a = va;
+	b = vb;
+	return ( a->ms - b->ms );
+}
+
+/*
+New ping command formatted nicely to present ping in
+ascending order. And with equally spaced columns.
+The caller's ping is presented at the bottom too, for
+convenience.
+*/
+
 void Command_Ping_f(void)
 {
-#ifndef NEWPING
-	if(server)
+	struct pingcell pingv[MAXPLAYERS];
+	INT32           pingc;
+
+	int name_width = 0;
+	int   ms_width = 0;
+
+	int n;
+	INT32 i;
+
+	pingc = 0;
+	for (i = 1; i < MAXPLAYERS; ++i)
+		if (playeringame[i])
 	{
-#endif
-		INT32 i;
-		for (i = 0; i < MAXPLAYERS;i++)
-		{
-#ifndef NEWPING
-			const INT32 node = playernode[i];
-			if (playeringame[i] && node != 0)
-				CONS_Printf(M_GetText("%.2d : %s\n %d tics, %d ms.\n"), i, player_names[i],
-				GetLag(node), G_TicsToMilliseconds(GetLag(node)));
-#else
-			if (playeringame[i] && i != 0)
-				CONS_Printf(M_GetText("%.2d : %s\n %d ms\n"), i, player_names[i], playerpingtable[i]);
-#endif
-		}
-#ifndef NEWPING
+		n = strlen(player_names[i]);
+		if (n > name_width)
+			name_width = n;
+
+		n = playerpingtable[i];
+		if (n > ms_width)
+			ms_width = n;
+
+		pingv[pingc].num = i;
+		pingv[pingc].ms  = playerpingtable[i];
+		pingc++;
 	}
-	else
-		CONS_Printf(M_GetText("Only the server can use this.\n"));
-#endif
+
+	     if (ms_width < 10)  ms_width = 1;
+	else if (ms_width < 100) ms_width = 2;
+	else                     ms_width = 3;
+
+	qsort(pingv, pingc, sizeof (struct pingcell), &pingcellcmp);
+
+	for (i = 0; i < pingc; ++i)
+	{
+		CONS_Printf("%02d : %-*s %*d ms\n",
+				pingv[i].num,
+				name_width, player_names[pingv[i].num],
+				ms_width,   pingv[i].ms);
+	}
+
+	if (!server && playeringame[consoleplayer])
+	{
+		CONS_Printf("\nYour ping is %d ms\n", playerpingtable[consoleplayer]);
+	}
 }
 
 void D_CloseConnection(void)
