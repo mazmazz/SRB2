@@ -71,7 +71,7 @@ typedef BOOL (WINAPI *p_IsDebuggerPresent)(VOID);
 #endif
 
 // 64-bit exchndl dynamic loading
-#if defined (_WIN64)
+#if 1
 typedef struct {
 	void *handle;
 	void (*ExcHndlInit) ( void );
