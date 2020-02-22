@@ -242,7 +242,7 @@ int main(int argc, char **argv)
 			)
 #endif
 		{
-#if defined (_WIN64)
+#if 1
 			exchndl.handle = SDL_LoadObject("exchndl.dll");
 			if (exchndl.handle) {
 				exchndl.ExcHndlInit = (void (*) (void))SDL_LoadFunction(exchndl.handle, "ExcHndlInit");
