@@ -34,9 +34,9 @@
 #include "time.h" // For log timestamps
 
 #ifdef HAVE_SDL
+#include "SDL.h"
 
 #ifdef HAVE_TTF
-#include "SDL.h"
 #include "i_ttf.h"
 #endif
 
