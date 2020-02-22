@@ -243,10 +243,10 @@ int main(int argc, char **argv)
 #endif
 		{
 #if 1
-			exchndl.handle = SDL_LoadObject("exchndl.dll");
+			exchndl.handle = GetModuleHandleA("exchndl.dll");
 			if (exchndl.handle) {
-				exchndl.ExcHndlInit = (void (*) (void))SDL_LoadFunction(exchndl.handle, "ExcHndlInit");
-				exchndl.ExcHndlSetLogFileNameA = (boolean (*) ( const char * szLogFileName ))SDL_LoadFunction(exchndl.handle, "ExcHndlSetLogFileNameA");
+				exchndl.ExcHndlInit = (void (*) (void))GetProcAddress(exchndl.handle, "ExcHndlInit");
+				exchndl.ExcHndlSetLogFileNameA = (boolean (*) ( const char * szLogFileName ))GetProcAddress(exchndl.handle, "ExcHndlSetLogFileNameA");
 				if (exchndl.ExcHndlInit && exchndl.ExcHndlSetLogFileNameA)
 				{
 					char rptfilename[1024];
