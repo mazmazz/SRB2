@@ -75,8 +75,9 @@ typedef BOOL (WINAPI *p_IsDebuggerPresent)(VOID);
 typedef struct {
 	void *handle;
 	void (*ExcHndlInit) ( void );
+	boolean (*ExcHndlSetLogFileNameA) ( const char * szLogFileName );
 } exchndl_loader;
-static exchndl_loader exchndl = { NULL, NULL };
+static exchndl_loader exchndl = { NULL, NULL, NULL };
 #endif
 
 #if defined (_WIN32)
@@ -245,12 +246,26 @@ int main(int argc, char **argv)
 			exchndl.handle = SDL_LoadObject("exchndl.dll");
 			if (exchndl.handle) {
 				exchndl.ExcHndlInit = (void (*) (void))SDL_LoadFunction(exchndl.handle, "ExcHndlInit");
-				if (exchndl.ExcHndlInit)
+				exchndl.ExcHndlSetLogFileNameA = (boolean (*) ( const char * szLogFileName )SDL_LoadFunction(exchndl.handle, "ExcHndlSetLogFileNameA");
+				if (exchndl.ExcHndlInit && exchndl.ExcHndlSetLogFileNameA)
+				{
+					char rptfilename[1024];
+#ifdef DEFAULTDIR
+					if (logdir)
+					{
+						snprintf(rptfilename, sizeof rptfilename,
+								"%s"PATHSEP DEFAULTDIR PATHSEP"crash-report.rpt", D_Home());
+					}
+					else
+#endif
+					{
+						snprintf(rptfilename, sizeof rptfilename,
+								"."PATHSEP"crash-report.rpt");
+					}
 					exchndl.ExcHndlInit();
-				else
-					I_Error("Couldn't load the function\n");
-			} else
-				I_Error("Couldn't load the DLL\n");
+					exchndl.ExcHndlSetLogFileNameA(rptfilename);
+				}
+			}
 #else
 			LoadLibraryA("exchndl.dll");
 #endif
