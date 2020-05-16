@@ -28,7 +28,8 @@
 // I am leaving the prefixes solely for clarity to programmers,
 // because sadly no one remembers this place while searching for full state names.
 const char *const STATE_LIST[] = {
-// ENUMTABLES STATE_LIST
+// ENUMTABLES SET STATE_LIST
+
 #ifdef SEENAMES
     "S_NAMECHECK",
 #endif
@@ -38,7 +39,8 @@ const char *const STATE_LIST[] = {
 // I am leaving the prefixes solely for clarity to programmers,
 // because sadly no one remembers this place while searching for full state names.
 const char *const MOBJTYPE_LIST[] = {
-// ENUMTABLES MOBJTYPE_LIST
+// ENUMTABLES SET MOBJTYPE_LIST
+
 #ifdef SEENAMES
     "MT_NAMECHECK",
 #endif
@@ -49,7 +51,7 @@ const char *const MOBJTYPE_LIST[] = {
   */
 actionpointer_t actionpointers[] =
 {
-// ENUMTABLES actionpointers
+// ENUMTABLES SET actionpointers
     {{NULL}, "NONE"},
 
 	// This NULL entry must be the last in the list

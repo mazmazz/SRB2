@@ -16,66 +16,61 @@ if ($args.Count -gt 0)
     $path = $args[0]
 }
 
+$enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
+
 $enumgen_line = '^\s*// ENUMTABLES '
 
 $do_generic = $false
-$prefix = ""
+$prefix_in = ""
+$prefix_out = ""
 
 $do_actions = $false
 
 $entry_line = ""
 $entries = $null
-$states = $null
-$mobjtypes = $null
-$actions = $null
 
 [System.IO.File]::ReadLines("$path\info.h") | ForEach-Object {
     if ($_ -match $enumgen_line)
     {
-        # States
-        if ($_ -match "STATE_LIST")
+        if ($_ -match "BEGIN")
         {
-            if ($_ -match "BEGIN")
+            if ($_ -match "STATE_LIST")
             {
                 $do_generic = $true
-                $prefix = "S_"
+                $prefix_in = "S_"
+                $prefix_out = "S_"
             }
-            elseif ($_ -match "END")
-            {
-                $do_generic = $false
-                $prefix = ""
-                $states = $entries
-            }
-        }
-
-        # MOBJ Types
-        if ($_ -match "MOBJTYPE_LIST")
-        {
-            if ($_ -match "BEGIN")
+            elseif ($_ -match "MOBJTYPE_LIST")
             {
                 $do_generic = $true
-                $prefix = "MT_"
+                $prefix_in = "MT_"
+                $prefix_out = "MT_"
             }
-            elseif ($_ -match "END")
-            {
-                $do_generic = $false
-                $prefix = ""
-                $mobjtypes = $entries
-            }
-        }
-
-        # Actions
-        if ($_ -match "actionpointers")
-        {
-            if ($_ -match "BEGIN")
+            elseif ($_ -match "actionpointers")
             {
                 $do_actions = $true
             }
-            elseif ($_ -match "END")
+        }
+        elseif ($_ -match "END")
+        {
+            # Use TrimEnd on strings to achieve consistency with bash
+            if ($_ -match "STATE_LIST")
             {
-                $do_actions = $false
-                $actions = $entries
+                $enumtables = $enumtables -replace "// ENUMTABLES SET STATE_LIST", ($entries -join "`n").TrimEnd()
             }
+            elseif ($_ -match "MOBJTYPE_LIST")
+            {
+                $enumtables = $enumtables -replace "// ENUMTABLES SET MOBJTYPE_LIST", ($entries -join "`n").TrimEnd()
+            }
+            elseif ($_ -match "actionpointers")
+            {
+                $enumtables = $enumtables -replace "// ENUMTABLES SET actionpointers", ($entries -join "`n").TrimEnd()
+            }
+
+            $do_generic = $false
+            $do_actions = $false
+            $prefix_in = ""
+            $prefix_out = ""
         }
 
         $entries = New-Object System.Collections.Generic.List[System.String]
@@ -86,7 +81,7 @@ $actions = $null
         # (replace S_ with $prefix)
         # which will quote names, or otherwise copy the line.
 
-        $entry_line = ($_ -replace "^\t$prefix([^,]+)", "`t`"$prefix`$1`"")
+        $entry_line = ($_ -replace "^\t$prefix_in([^,]+)", "`t`"$prefix_out`$1`"")
         $entries.Add($entry_line)
     }
     elseif ($do_actions)
@@ -109,10 +104,6 @@ $actions = $null
 }
 
 # Use TrimEnd on strings to achieve consistency with bash
-$enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
-$enumtables = $enumtables -replace "// ENUMTABLES STATE_LIST", ($states -join "`n").TrimEnd()
-$enumtables = $enumtables -replace "// ENUMTABLES MOBJTYPE_LIST", ($mobjtypes -join "`n").TrimEnd()
-$enumtables = $enumtables -replace "// ENUMTABLES actionpointers", ($actions -join "`n").TrimEnd()
 Set-Content "$path\enumtables.c" $enumtables.TrimEnd()
 
 # Change working directory back to original

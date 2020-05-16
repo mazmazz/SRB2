@@ -20,64 +20,55 @@ fi
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 
+enumtables=`cat $SCRIPTPATH/enumtables.txt`
+
 enumgen_line="^\s*// ENUMTABLES "
 action_match="^\s*void A_(.*)\(\);"
 
 do_generic=0
-prefix=""
+prefix_in=""
+prefix_out=""
 
 do_actions=0
 
 entry_line=""
 entries=""
-states=""
-mobjtypes=""
-actions=""
 
 while IFS= read -r line; do
     if [[ "$line" =~ $enumgen_line ]]; then
-        # Perform regex after all entries are collected
-        # during the generic run.
-        if [[ "$do_generic" == "1" ]]; then
-            if [[ "$line" == *"END"* ]]; then
-                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix([^,]+),/\t\\\"$prefix\1\\\",/\"`"
-            fi
-        fi
-
-        # States
-        if [[ "$line" == *"STATE_LIST"* ]]; then
-            if [[ "$line" == *"BEGIN"* ]]; then
+        if [[ "$line" == *"BEGIN"* ]]; then
+            if [[ "$line" == *"STATE_LIST"* ]]; then
                 do_generic=1
-                prefix="S_"
-            elif [[ "$line" == *"END"* ]]; then
-                do_generic=0
-                prefix=""
-                states=$entries
-            fi
-        fi
-
-        # Mobj Types
-        if [[ "$line" == *"MOBJTYPE_LIST"* ]]; then
-            if [[ "$line" == *"BEGIN"* ]]; then
+                prefix_in="S_"
+                prefix_out="S_"
+            elif [[ "$line" == *"MOBJTYPE_LIST"* ]]; then
                 do_generic=1
-                prefix="MT_"
-            elif [[ "$line" == *"END"* ]]; then
-                do_generic=0
-                prefix=""
-                mobjtypes=$entries
-            fi
-        fi
-
-        # Actions
-        if [[ "$line" == *"actionpointers"* ]]; then
-            if [[ "$line" == *"BEGIN"* ]]; then
+                prefix_in="MT_"
+                prefix_out="MT_"
+            elif [[ "$line" == *"actionpointers"* ]]; then
                 do_actions=1
-            elif [[ "$line" == *"END"* ]]; then
-                do_actions=0
-                actions="`echo -e \"$entries\"`"
             fi
-        fi
+        elif [[ "$line" == *"END"* ]]; then
+            # Perform regex after all entries are collected
+            # during the generic run.
+            if [[ "$do_generic" == "1" ]]; then
+                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^,]+),/\t\\\"$prefix_out\1\\\",/\"`"
+            fi
 
+            if [[ "$line" == *"STATE_LIST"* ]]; then
+                enumtables="${enumtables/\/\/ ENUMTABLES STATE_LIST/$entries}"
+            elif [[ "$line" == *"MOBJTYPE_LIST"* ]]; then
+                enumtables="${enumtables/\/\/ ENUMTABLES MOBJTYPE_LIST/$entries}"
+            elif [[ "$line" == *"actionpointers"* ]]; then
+                entries="`echo -e \"$entries\"`"
+                enumtables="${enumtables/\/\/ ENUMTABLES actionpointers/$entries}"
+            fi
+
+            do_generic=0
+            do_actions=0
+            prefix_in=""
+            prefix_out=""
+        fi
         entry_line=""
         entries=""
     elif [[ "$do_generic" == "1" ]]; then
@@ -106,8 +97,4 @@ while IFS= read -r line; do
     fi
 done < "$path/info.h"
 
-enumtables=`cat $SCRIPTPATH/enumtables.txt`
-enumtables="${enumtables/\/\/ ENUMTABLES STATE_LIST/$states}"
-enumtables="${enumtables/\/\/ ENUMTABLES MOBJTYPE_LIST/$mobjtypes}"
-enumtables="${enumtables/\/\/ ENUMTABLES actionpointers/$actions}"
 echo "$enumtables" > "$path/enumtables.c"
