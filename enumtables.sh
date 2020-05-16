@@ -17,6 +17,9 @@ if [ x"$1" != x ]; then
 	path="$1"
 fi
 
+SCRIPT=`realpath $0`
+SCRIPTPATH=`dirname $SCRIPT`
+
 enumgen_line="^\s*// ENUMTABLES "
 action_match="^\s*void A_(.*)\(\);"
 
@@ -103,7 +106,7 @@ while IFS= read -r line; do
     fi
 done < "$path/info.h"
 
-enumtables=`cat ${0%/*}/enumtables.txt`
+enumtables=`cat $SCRIPTPATH/enumtables.txt`
 enumtables="${enumtables/\/\/ ENUMTABLES STATE_LIST/$states}"
 enumtables="${enumtables/\/\/ ENUMTABLES MOBJTYPE_LIST/$mobjtypes}"
 enumtables="${enumtables/\/\/ ENUMTABLES actionpointers/$actions}"
