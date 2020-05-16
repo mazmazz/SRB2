@@ -97,7 +97,7 @@
 //
 typedef enum
 {
-// ENUMTABLES BEGIN MOBJFLAG_LIST
+// ENUMTABLES BEGIN MOBJFLAG_LIST do_generic MF_
 	// Call P_TouchSpecialThing when touched.
 	MF_SPECIAL          = 1,
 	// Blocks.

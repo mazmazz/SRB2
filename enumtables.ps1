@@ -18,7 +18,7 @@ if ($args.Count -gt 0)
 
 # bash can't match whitespaces, so each // ENUMTABLES
 # directive cannot be indented.
-$enumgen_line = '^\s*// ENUMTABLES '
+$enumtables_line = '^\s*// ENUMTABLES '
 
 $global:state = [PSCustomObject]@{
     enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
@@ -35,40 +35,29 @@ $global:state = [PSCustomObject]@{
 
 function Read-Line {
     param( [string]$line )
-    if ($line -match $enumgen_line)
+    if ($line -match $enumtables_line)
     {
-        if ($line -match "BEGIN")
+        # // ENUMTABLES BEGIN TABLE_NAME ACTION_NAME ARG1 ARG2
+        # [0][1]        [2]   [3]        [4]         [5]  [6]
+        $tokens = $line.Trim().Split(" ")
+
+        if ($tokens[2] -match "BEGIN")
         {
-            if ($line -match "MOBJFLAG_LIST")
+            if ($tokens[4] -match "do_generic")
             {
                 $global:state.do_generic = $true
-                $global:state.prefix_in = "MF_"
-                $global:state.prefix_out = ""
+                $global:state.prefix_in = If ($tokens.Count -gt 5) { $tokens[5] } Else { "" }
+                $global:state.prefix_out = If ($tokens.Count -gt 6) { $tokens[6] } Else { "" }
             }
-            elseif ($line -match "STATE_LIST")
-            {
-                $global:state.do_generic = $true
-                $global:state.prefix_in = "S_"
-                $global:state.prefix_out = "S_"
-            }
-            elseif ($line -match "MOBJTYPE_LIST")
-            {
-                $global:state.do_generic = $true
-                $global:state.prefix_in = "MT_"
-                $global:state.prefix_out = "MT_"
-            }
-            elseif ($line -match "actionpointers")
+            elseif ($tokens[4] -match "do_actions")
             {
                 $global:state.do_actions = $true
             }
         }
-        elseif ($line -match "END")
+        elseif ($tokens[2] -match "END")
         {
             # Use TrimEnd on strings to achieve consistency with bash
-            if ($line -match "END (?<Name>.*)\s*")
-            {
-                $global:state.enumtables = $global:state.enumtables -replace "// ENUMTABLES SET $($Matches.Name)", ($global:state.entries -join "`n").TrimEnd()
-            }
+            $global:state.enumtables = $global:state.enumtables -replace "// ENUMTABLES SET $($tokens[3])", ($global:state.entries -join "`n").TrimEnd()
 
             $global:state.do_generic = $false
             $global:state.do_actions = $false
@@ -80,9 +69,9 @@ function Read-Line {
     }
     elseif ($global:state.do_generic)
     {
-        # Generic behavior: Apply regex ^\tS_([^ \=,]+)[ \=,] --> \t"S_\1",
+        # Generic behavior: Apply regex ^\tS_([^ \=,]+?)[ \=,] --> \t"S_\1",
         # which will quote names, or otherwise copy the line.
-        # In PowerShell, this discards inline comments on the same line.
+        # This discards inline comments on the same line.
         #
         # Works:
         #   S_SAMPLENAME,

@@ -19,7 +19,7 @@
 #include "sounds.h"
 #include "m_fixed.h"
 
-// ENUMTABLES BEGIN actionpointers
+// ENUMTABLES BEGIN actionpointers do_actions
 void A_Explode();
 void A_Pain();
 void A_Fall();
@@ -874,7 +874,7 @@ typedef enum playersprite
 
 typedef enum state
 {
-// ENUMTABLES BEGIN STATE_LIST
+// ENUMTABLES BEGIN STATE_LIST do_generic S_ S_
 	S_NULL,
 	S_UNKNOWN,
 	S_INVISIBLE, // state for invisible sprite
@@ -4028,7 +4028,7 @@ extern playersprite_t free_spr2;
 
 typedef enum mobj_type
 {
-// ENUMTABLES BEGIN MOBJTYPE_LIST
+// ENUMTABLES BEGIN MOBJTYPE_LIST do_generic MT_ MT_
 	MT_NULL,
 	MT_UNKNOWN,
 

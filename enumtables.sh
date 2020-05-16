@@ -24,9 +24,8 @@ enumtables=`cat $SCRIPTPATH/enumtables.txt`
 
 # bash can't match whitespaces, so each // ENUMTABLES
 # directive cannot be indented.
-enumgen_line="^\s*// ENUMTABLES "
+enumtables_line="^\s*// ENUMTABLES "
 action_match="^\s*void A_(.*)\(\);"
-set_match="^\s*// ENUMTABLES END (.*).*"
 
 do_generic=0
 prefix_in=""
@@ -39,34 +38,32 @@ entries=""
 
 function process_line () {
     line=$1
-    if [[ "$line" =~ $enumgen_line ]]; then
-        if [[ "$line" == *"BEGIN"* ]]; then
-            if [[ "$line" == *"MOBJFLAG_LIST"* ]]; then
+    if [[ "$line" =~ $enumtables_line ]]; then
+        # // ENUMTABLES BEGIN TABLE_NAME ACTION_NAME ARG1 ARG2
+        # [0][1]        [2]   [3]        [4]         [5]  [6]
+        # Trim trailing newlines to prevent match bugs
+        tokens=($line)
+        verb_name="`echo ${tokens[2]} | tr -d '\r'`"
+        table_name="`echo ${tokens[3]} | tr -d '\r'`"
+        behavior_name="`echo ${tokens[4]} | tr -d '\r'`"
+
+        if [[ "$verb_name" == "BEGIN" ]]; then
+            if [[ "$behavior_name" == "do_generic" ]]; then
                 do_generic=1
-                prefix_in="MF_"
-                prefix_out=""
-            elif [[ "$line" == *"STATE_LIST"* ]]; then
-                do_generic=1
-                prefix_in="S_"
-                prefix_out="S_"
-            elif [[ "$line" == *"MOBJTYPE_LIST"* ]]; then
-                do_generic=1
-                prefix_in="MT_"
-                prefix_out="MT_"
-            elif [[ "$line" == *"actionpointers"* ]]; then
+                # if arg is empty, should default to blank string
+                prefix_in="`echo ${tokens[5]} | tr -d '\r'`"
+                prefix_out="`echo ${tokens[6]} | tr -d '\r'`"
+            elif [[ "$behavior_name" == "do_actions" ]]; then
                 do_actions=1
             fi
-        elif [[ "$line" == *"END"* ]]; then
+        elif [[ "$verb_name" == "END" ]]; then
             if [[ "$do_generic" == "1" ]]; then
-                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^ \=,]*?).*,/\t\\\"$prefix_out\1\\\",/\"`"
+                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^ \=,]*?).*[ \=\/,].*/\t\\\"$prefix_out\1\\\",/\"`"
             elif [[ "$do_actions" == "1" ]]; then
                 entries="`echo -e \"$entries\"`"
             fi
 
-            if [[ "$line" =~ $set_match ]]; then
-                name=${BASH_REMATCH[1]}
-                enumtables="${enumtables/\/\/ ENUMTABLES SET $name/$entries}"
-            fi
+            enumtables="${enumtables/\/\/ ENUMTABLES SET $table_name/$entries}"
 
             do_generic=0
             do_actions=0
@@ -76,9 +73,9 @@ function process_line () {
         entry_line=""
         entries=""
     elif [[ "$do_generic" == "1" ]]; then
-        # Generic behavior: Apply regex ^\tS_([^ \=,]*?).*, --> \t"S_\1",
+        # Generic behavior: Apply regex ^\tS_([^ \=,]*?).*[ \=\/,].*, --> \t"S_\1",
         # which will quote names, or otherwise copy the line.
-        # In PowerShell, this discards inline comments on the same line.
+        # This discards inline comments on the same line.
         #
         # Works:
         #   S_SAMPLENAME,
