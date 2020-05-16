@@ -21,6 +21,11 @@
 #include "enumtables.h"
 #include "info.h"
 
+const char *const MOBJFLAG_LIST[] = {
+// ENUMTABLES SET MOBJFLAG_LIST
+    NULL
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // CRAZY LIST OF STATE NAMES AND ALL FROM HERE DOWN
 

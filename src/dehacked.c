@@ -4597,40 +4597,6 @@ void DEH_LoadDehackedLump(lumpnum_t lumpnum)
 	DEH_LoadDehackedLumpPwad(WADFILENUM(lumpnum),LUMPNUM(lumpnum), false);
 }
 
-static const char *const MOBJFLAG_LIST[] = {
-	"SPECIAL",
-	"SOLID",
-	"SHOOTABLE",
-	"NOSECTOR",
-	"NOBLOCKMAP",
-	"PAPERCOLLISION",
-	"PUSHABLE",
-	"BOSS",
-	"SPAWNCEILING",
-	"NOGRAVITY",
-	"AMBIENT",
-	"SLIDEME",
-	"NOCLIP",
-	"FLOAT",
-	"BOXICON",
-	"MISSILE",
-	"SPRING",
-	"BOUNCE",
-	"MONITOR",
-	"NOTHINK",
-	"FIRE",
-	"NOCLIPHEIGHT",
-	"ENEMY",
-	"SCENERY",
-	"PAIN",
-	"STICKY",
-	"NIGHTSITEM",
-	"NOCLIPTHING",
-	"GRENADEBOUNCE",
-	"RUNSPAWNFUNC",
-	NULL
-};
-
 // \tMF2_(\S+).*// (.+) --> \t"\1", // \2
 static const char *const MOBJFLAG2_LIST[] = {
 	"AXIS",			  // It's a NiGHTS axis! (For faster checking)

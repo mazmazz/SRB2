@@ -26,6 +26,7 @@ enumtables=`cat $SCRIPTPATH/enumtables.txt`
 # directive cannot be indented.
 enumgen_line="^\s*// ENUMTABLES "
 action_match="^\s*void A_(.*)\(\);"
+set_match="^\s*// ENUMTABLES END (.*).*"
 
 do_generic=0
 prefix_in=""
@@ -36,11 +37,15 @@ do_actions=0
 entry_line=""
 entries=""
 
-while IFS= read -r line; do
+function process_line () {
+    line=$1
     if [[ "$line" =~ $enumgen_line ]]; then
         if [[ "$line" == *"BEGIN"* ]]; then
-            echo Begin $line
-            if [[ "$line" == *"STATE_LIST"* ]]; then
+            if [[ "$line" == *"MOBJFLAG_LIST"* ]]; then
+                do_generic=1
+                prefix_in="MF_"
+                prefix_out=""
+            elif [[ "$line" == *"STATE_LIST"* ]]; then
                 do_generic=1
                 prefix_in="S_"
                 prefix_out="S_"
@@ -52,20 +57,15 @@ while IFS= read -r line; do
                 do_actions=1
             fi
         elif [[ "$line" == *"END"* ]]; then
-            echo End $line
-            # Perform regex after all entries are collected
-            # during the generic run.
             if [[ "$do_generic" == "1" ]]; then
-                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^,]+),/\t\\\"$prefix_out\1\\\",/\"`"
+                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^ \=,]*?).*,/\t\\\"$prefix_out\1\\\",/\"`"
+            elif [[ "$do_actions" == "1" ]]; then
+                entries="`echo -e \"$entries\"`"
             fi
 
-            if [[ "$line" == *"STATE_LIST"* ]]; then
-                enumtables="${enumtables/\/\/ ENUMTABLES SET STATE_LIST/$entries}"
-            elif [[ "$line" == *"MOBJTYPE_LIST"* ]]; then
-                enumtables="${enumtables/\/\/ ENUMTABLES SET MOBJTYPE_LIST/$entries}"
-            elif [[ "$line" == *"actionpointers"* ]]; then
-                entries="`echo -e \"$entries\"`"
-                enumtables="${enumtables/\/\/ ENUMTABLES SET actionpointers/$entries}"
+            if [[ "$line" =~ $set_match ]]; then
+                name=${BASH_REMATCH[1]}
+                enumtables="${enumtables/\/\/ ENUMTABLES SET $name/$entries}"
             fi
 
             do_generic=0
@@ -76,9 +76,18 @@ while IFS= read -r line; do
         entry_line=""
         entries=""
     elif [[ "$do_generic" == "1" ]]; then
-        # Generic behavior: Apply regex ^\tS_([^,]+), --> \t"S_\1",
-        # (replace S_ with $prefix)
+        # Generic behavior: Apply regex ^\tS_([^ \=,]*?).*, --> \t"S_\1",
         # which will quote names, or otherwise copy the line.
+        # In PowerShell, this discards inline comments on the same line.
+        #
+        # Works:
+        #   S_SAMPLENAME,
+        #   S_SAMPLENAME ,
+        #   S_SAMPLENAME=VALUE,
+        #   S_SAMPLENAME = VALUE,
+        # Does not work: lines which do not have a comma, or have tabs
+        #   S_SAMPLENAME
+        #   S_SAMPLENAME\t,
         #
         # Apply the regex at the END instruction (see above), due to
         # performance reasons.
@@ -99,6 +108,14 @@ while IFS= read -r line; do
             entries="${entries}${line}\n"
         fi
     fi
+}
+
+while IFS= read -r line; do
+    process_line "$line"
 done < "$path/info.h"
+
+while IFS= read -r line; do
+    process_line "$line"
+done < "$path/p_mobj.h"
 
 echo "$enumtables" > "$path/enumtables.c"

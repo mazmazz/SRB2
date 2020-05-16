@@ -16,97 +16,121 @@ if ($args.Count -gt 0)
     $path = $args[0]
 }
 
-$enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
-
 # bash can't match whitespaces, so each // ENUMTABLES
 # directive cannot be indented.
 $enumgen_line = '^\s*// ENUMTABLES '
 
-$do_generic = $false
-$prefix_in = ""
-$prefix_out = ""
+$global:state = [PSCustomObject]@{
+    enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
 
-$do_actions = $false
+    do_generic = $false
+    prefix_in = ""
+    prefix_out = ""
 
-$entry_line = ""
-$entries = $null
+    do_actions = $false
 
-[System.IO.File]::ReadLines("$path\info.h") | ForEach-Object {
-    if ($_ -match $enumgen_line)
+    entry_line = ""
+    entries = $null
+}
+
+function Read-Line {
+    param( [string]$line )
+    if ($line -match $enumgen_line)
     {
-        if ($_ -match "BEGIN")
+        if ($line -match "BEGIN")
         {
-            if ($_ -match "STATE_LIST")
+            if ($line -match "MOBJFLAG_LIST")
             {
-                $do_generic = $true
-                $prefix_in = "S_"
-                $prefix_out = "S_"
+                $global:state.do_generic = $true
+                $global:state.prefix_in = "MF_"
+                $global:state.prefix_out = ""
             }
-            elseif ($_ -match "MOBJTYPE_LIST")
+            elseif ($line -match "STATE_LIST")
             {
-                $do_generic = $true
-                $prefix_in = "MT_"
-                $prefix_out = "MT_"
+                $global:state.do_generic = $true
+                $global:state.prefix_in = "S_"
+                $global:state.prefix_out = "S_"
             }
-            elseif ($_ -match "actionpointers")
+            elseif ($line -match "MOBJTYPE_LIST")
             {
-                $do_actions = $true
+                $global:state.do_generic = $true
+                $global:state.prefix_in = "MT_"
+                $global:state.prefix_out = "MT_"
+            }
+            elseif ($line -match "actionpointers")
+            {
+                $global:state.do_actions = $true
             }
         }
-        elseif ($_ -match "END")
+        elseif ($line -match "END")
         {
             # Use TrimEnd on strings to achieve consistency with bash
-            if ($_ -match "STATE_LIST")
+            if ($line -match "END (?<Name>.*)\s*")
             {
-                $enumtables = $enumtables -replace "// ENUMTABLES SET STATE_LIST", ($entries -join "`n").TrimEnd()
-            }
-            elseif ($_ -match "MOBJTYPE_LIST")
-            {
-                $enumtables = $enumtables -replace "// ENUMTABLES SET MOBJTYPE_LIST", ($entries -join "`n").TrimEnd()
-            }
-            elseif ($_ -match "actionpointers")
-            {
-                $enumtables = $enumtables -replace "// ENUMTABLES SET actionpointers", ($entries -join "`n").TrimEnd()
+                $global:state.enumtables = $global:state.enumtables -replace "// ENUMTABLES SET $($Matches.Name)", ($global:state.entries -join "`n").TrimEnd()
             }
 
-            $do_generic = $false
-            $do_actions = $false
-            $prefix_in = ""
-            $prefix_out = ""
+            $global:state.do_generic = $false
+            $global:state.do_actions = $false
+            $global:state.prefix_in = ""
+            $global:state.prefix_out = ""
         }
 
-        $entries = New-Object System.Collections.Generic.List[System.String]
+        $global:state.entries = New-Object System.Collections.Generic.List[System.String]
     }
-    elseif ($do_generic) 
+    elseif ($global:state.do_generic)
     {
-        # Generic behavior: Apply regex ^\tS_([^,]+), --> \t"S_\1",
-        # (replace S_ with $prefix)
+        # Generic behavior: Apply regex ^\tS_([^ \=,]+)[ \=,] --> \t"S_\1",
         # which will quote names, or otherwise copy the line.
+        # In PowerShell, this discards inline comments on the same line.
+        #
+        # Works:
+        #   S_SAMPLENAME,
+        #   S_SAMPLENAME ,
+        #   S_SAMPLENAME=VALUE,
+        #   S_SAMPLENAME = VALUE,
+        # Does not work: lines which do not have a comma, or have tabs
+        #   S_SAMPLENAME
+        #   S_SAMPLENAME\t,
 
-        $entry_line = ($_ -replace "^\t$prefix_in([^,]+)", "`t`"$prefix_out`$1`"")
-        $entries.Add($entry_line)
+        if ($line -match "^\t$($global:state.prefix_in)(?<Name>[^ \=,]+?)[ \=,]")
+        {
+            $global:state.entry_line = "`t`"{0}{1}`"," -f $global:state.prefix_out, $Matches.Name
+            $global:state.entries.Add($global:state.entry_line)
+        }
+        else
+        {
+            $global:state.entries.Add($line)
+        }
     }
-    elseif ($do_actions)
+    elseif ($global:state.do_actions)
     {
         # Action behavior: Extract action name from
         #   void A_SampleName();
         # then format as:
         #   {{A_SampleName},             "A_SAMPLENAME"},
 
-        if ($_ -match "void A_(?<Name>.+)\(\);")
+        if ($line -match "void A_(?<Name>.+)\(\);")
         {
-            $entry_line = "`t{{{{A_{0}}}, `"A_{1}`"}}," -f $Matches.Name, $Matches.Name.ToUpper()
-            $entries.Add($entry_line)
+            $global:state.entry_line = "`t{{{{A_{0}}}, `"A_{1}`"}}," -f $Matches.Name, $Matches.Name.ToUpper()
+            $global:state.entries.Add($global:state.entry_line)
         }
         else
         {
-            $entries.Add($_)
+            $global:state.entries.Add($line)
         }
     }
 }
 
+[System.IO.File]::ReadLines("$path\info.h") | ForEach-Object {
+    Read-Line -line $_
+}
+[System.IO.File]::ReadLines("$path\p_mobj.h") | ForEach-Object {
+    Read-Line -line $_
+}
+
 # Use TrimEnd on strings to achieve consistency with bash
-Set-Content "$path\enumtables.c" $enumtables.TrimEnd()
+Set-Content "$path\enumtables.c" $global:state.enumtables.TrimEnd()
 
 # Change working directory back to original
 Pop-Location

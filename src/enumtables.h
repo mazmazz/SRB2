@@ -12,6 +12,8 @@
 
 #include "d_think.h"
 
+extern const char *const MOBJFLAG_LIST[];
+
 extern const char *const STATE_LIST[];
 
 extern const char *const MOBJTYPE_LIST[];

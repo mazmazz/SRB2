@@ -97,6 +97,7 @@
 //
 typedef enum
 {
+// ENUMTABLES BEGIN MOBJFLAG_LIST
 	// Call P_TouchSpecialThing when touched.
 	MF_SPECIAL          = 1,
 	// Blocks.
@@ -160,6 +161,7 @@ typedef enum
 	// Run the action thinker on spawn.
 	MF_RUNSPAWNFUNC     = 1<<29,
 	// free: 1<<30 and 1<<31
+// ENUMTABLES END MOBJFLAG_LIST
 } mobjflag_t;
 
 typedef enum
