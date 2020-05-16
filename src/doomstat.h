@@ -402,6 +402,7 @@ enum GameType
 // Gametype rules
 enum GameTypeRules
 {
+// ENUMTABLE BEGIN GAMETYPERULE_LIST do_generic GTR_
 	GTR_CAMPAIGN         = 1,     // Linear Co-op map progression, don't allow random maps
 	GTR_RINGSLINGER      = 1<<1,  // Outside of Co-op, Competition, and Race (overriden by cv_ringslinger)
 	GTR_SPECTATORS       = 1<<2,  // Outside of Co-op, Competition, and Race
@@ -434,6 +435,7 @@ enum GameTypeRules
 	GTR_ALLOWEXIT        = 1<<29, // Allow exit sectors
 	GTR_NOTITLECARD      = 1<<30, // Don't show the title card
 	GTR_CUTSCENES        = 1<<31, // Play cutscenes, ending, credits, and evaluation
+// ENUMTABLE END GAMETYPERULE_LIST
 };
 
 // String names for gametypes

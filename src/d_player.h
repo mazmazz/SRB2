@@ -100,6 +100,7 @@ typedef enum
 //
 typedef enum
 {
+// ENUMTABLE BEGIN PLAYERFLAG_LIST do_generic PF_
 	// Cvars
 	PF_FLIPCAM       = 1, // Flip camera angle with gravity flip prefrence.
 	PF_ANALOGMODE    = 1<<1, // Analog mode?
@@ -155,6 +156,7 @@ typedef enum
 	PF_FINISHED    = 1<<30, // The player finished the level. NOT the same as exiting
 
 	// up to 1<<31 is free
+// ENUMTABLE END PLAYERFLAG_LIST
 } pflags_t;
 
 typedef enum
@@ -245,6 +247,7 @@ typedef enum
 // Player powers. (don't edit this comment)
 typedef enum
 {
+// ENUMTABLE BEGIN POWERS_LIST do_generic pw_
 	pw_invulnerability,
 	pw_sneakers,
 	pw_flashing,
@@ -283,6 +286,8 @@ typedef enum
 	pw_dye, // for dyes
 
 	pw_justlaunched, // Launched off a slope this tic (0=none, 1=standard launch, 2=half-pipe launch)
+
+// ENUMTABLE END POWERS_LIST
 
 	NUMPOWERS
 } powertype_t;

@@ -91,6 +91,7 @@ typedef struct
 
 typedef enum
 {
+// ENUMTABLE BEGIN HUDITEMS_LIST do_generic HUD_
 	HUD_LIVES,
 
 	HUD_RINGS,
@@ -116,6 +117,8 @@ typedef enum
 	HUD_TIMEUP,
 	HUD_HUNTPICS,
 	HUD_POWERUPS,
+
+// ENUMTABLE END HUDITEMS_LIST
 
 	NUMHUDITEMS
 } hudnum_t;

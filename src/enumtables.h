@@ -14,6 +14,20 @@
 
 extern const char *const MOBJFLAG_LIST[];
 
+extern const char *const MOBJFLAG2_LIST[];
+
+extern const char *const MOBJEFLAG_LIST[];
+
+extern const char *const PLAYERFLAG_LIST[];
+
+extern const char *const GAMETYPERULE_LIST[];
+
+extern const char *const POWERS_LIST[];
+
+extern const char *const HUDITEMS_LIST[];
+
+extern const char *const MENUTYPES_LIST[];
+
 extern const char *const STATE_LIST[];
 
 extern const char *const MOBJTYPE_LIST[];

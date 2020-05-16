@@ -19,7 +19,7 @@
 #include "sounds.h"
 #include "m_fixed.h"
 
-// ENUMTABLES BEGIN actionpointers do_actions
+// ENUMTABLE BEGIN actionpointers do_actions
 void A_Explode();
 void A_Pain();
 void A_Fall();
@@ -281,7 +281,7 @@ void A_DragonbomberSpawn();
 void A_DragonWing();
 void A_DragonSegment();
 void A_ChangeHeight();
-// ENUMTABLES END actionpointers
+// ENUMTABLE END actionpointers
 
 // ratio of states to sprites to mobj types is roughly 6 : 1 : 1
 #define NUMMOBJFREESLOTS 512
@@ -874,7 +874,7 @@ typedef enum playersprite
 
 typedef enum state
 {
-// ENUMTABLES BEGIN STATE_LIST do_generic S_ S_
+// ENUMTABLE BEGIN STATE_LIST do_generic S_ S_
 	S_NULL,
 	S_UNKNOWN,
 	S_INVISIBLE, // state for invisible sprite
@@ -3997,7 +3997,7 @@ typedef enum state
 	S_BRICKDEBRIS,
 	S_WOODDEBRIS,
 
-// ENUMTABLES END STATE_LIST
+// ENUMTABLE END STATE_LIST
 
 #ifdef SEENAMES
 	S_NAMECHECK,
@@ -4028,7 +4028,7 @@ extern playersprite_t free_spr2;
 
 typedef enum mobj_type
 {
-// ENUMTABLES BEGIN MOBJTYPE_LIST do_generic MT_ MT_
+// ENUMTABLE BEGIN MOBJTYPE_LIST do_generic MT_ MT_
 	MT_NULL,
 	MT_UNKNOWN,
 
@@ -4800,7 +4800,7 @@ typedef enum mobj_type
 	MT_BRICKDEBRIS,
 	MT_WOODDEBRIS,
 
-// ENUMTABLES END MOBJTYPE_LIST
+// ENUMTABLE END MOBJTYPE_LIST
 
 #ifdef SEENAMES
 	MT_NAMECHECK,

@@ -22,8 +22,40 @@
 #include "info.h"
 
 const char *const MOBJFLAG_LIST[] = {
-// ENUMTABLES SET MOBJFLAG_LIST
+// ENUMTABLE SET MOBJFLAG_LIST
     NULL
+};
+
+const char *const MOBJFLAG2_LIST[] = {
+// ENUMTABLE SET MOBJFLAG2_LIST
+    NULL
+};
+
+const char *const MOBJEFLAG_LIST[] = {
+// ENUMTABLE SET MOBJEFLAG_LIST
+    NULL
+};
+
+const char *const PLAYERFLAG_LIST[] = {
+// ENUMTABLE SET PLAYERFLAG_LIST
+    NULL
+};
+
+const char *const GAMETYPERULE_LIST[] = {
+// ENUMTABLE SET GAMETYPERULE_LIST
+    NULL
+};
+
+const char *const POWERS_LIST[] = {
+// ENUMTABLE SET POWERS_LIST
+};
+
+const char *const HUDITEMS_LIST[] = {
+// ENUMTABLE SET HUDITEMS_LIST
+};
+
+const char *const MENUTYPES_LIST[] = {
+// ENUMTABLE SET MENUTYPES_LIST
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +65,7 @@ const char *const MOBJFLAG_LIST[] = {
 // I am leaving the prefixes solely for clarity to programmers,
 // because sadly no one remembers this place while searching for full state names.
 const char *const STATE_LIST[] = {
-// ENUMTABLES SET STATE_LIST
+// ENUMTABLE SET STATE_LIST
 
 #ifdef SEENAMES
     "S_NAMECHECK",
@@ -44,7 +76,7 @@ const char *const STATE_LIST[] = {
 // I am leaving the prefixes solely for clarity to programmers,
 // because sadly no one remembers this place while searching for full state names.
 const char *const MOBJTYPE_LIST[] = {
-// ENUMTABLES SET MOBJTYPE_LIST
+// ENUMTABLE SET MOBJTYPE_LIST
 
 #ifdef SEENAMES
     "MT_NAMECHECK",
@@ -56,7 +88,7 @@ const char *const MOBJTYPE_LIST[] = {
   */
 actionpointer_t actionpointers[] =
 {
-// ENUMTABLES SET actionpointers
+// ENUMTABLE SET actionpointers
     {{NULL}, "NONE"},
 
 	// This NULL entry must be the last in the list

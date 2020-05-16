@@ -36,6 +36,7 @@
  */
 typedef enum
 {
+// ENUMTABLE BEGIN MENUTYPES_LIST do_generic MN_
 	MN_NONE,
 
 	MN_MAIN,
@@ -130,6 +131,9 @@ typedef enum
 	// MN_HELP,
 
 	MN_SPECIAL,
+
+// ENUMTABLE END MENUTYPES_LIST
+
 	NUMMENUTYPES,
 } menutype_t; // up to 63; MN_SPECIAL = 53
 #define MTREE2(a,b) (a | (b<<MENUBITS))

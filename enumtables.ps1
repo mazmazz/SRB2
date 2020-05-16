@@ -16,9 +16,9 @@ if ($args.Count -gt 0)
     $path = $args[0]
 }
 
-# bash can't match whitespaces, so each // ENUMTABLES
+# bash can't match whitespaces, so each // ENUMTABLE
 # directive cannot be indented.
-$enumtables_line = '^\s*// ENUMTABLES '
+$enumtables_line = '^\s*// ENUMTABLE '
 
 $global:state = [PSCustomObject]@{
     enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
@@ -37,8 +37,8 @@ function Read-Line {
     param( [string]$line )
     if ($line -match $enumtables_line)
     {
-        # // ENUMTABLES BEGIN TABLE_NAME ACTION_NAME ARG1 ARG2
-        # [0][1]        [2]   [3]        [4]         [5]  [6]
+        # // ENUMTABLE BEGIN TABLE_NAME ACTION_NAME ARG1 ARG2
+        # [0][1]       [2]   [3]        [4]         [5]  [6]
         $tokens = $line.Trim().Split(" ")
 
         if ($tokens[2] -match "BEGIN")
@@ -57,7 +57,7 @@ function Read-Line {
         elseif ($tokens[2] -match "END")
         {
             # Use TrimEnd on strings to achieve consistency with bash
-            $global:state.enumtables = $global:state.enumtables -replace "// ENUMTABLES SET $($tokens[3])", ($global:state.entries -join "`n").TrimEnd()
+            $global:state.enumtables = $global:state.enumtables -replace "// ENUMTABLE SET $($tokens[3])", ($global:state.entries -join "`n").TrimEnd()
 
             $global:state.do_generic = $false
             $global:state.do_actions = $false
@@ -84,7 +84,7 @@ function Read-Line {
 
         if ($line -match "^\t$($global:state.prefix_in)(?<Name>[^ \=,]+?)[ \=,]")
         {
-            $global:state.entry_line = "`t`"{0}{1}`"," -f $global:state.prefix_out, $Matches.Name
+            $global:state.entry_line = "`t`"{0}{1}`"," -f $global:state.prefix_out, $Matches.Name.ToUpper()
             $global:state.entries.Add($global:state.entry_line)
         }
         else
@@ -115,6 +115,18 @@ function Read-Line {
     Read-Line -line $_
 }
 [System.IO.File]::ReadLines("$path\p_mobj.h") | ForEach-Object {
+    Read-Line -line $_
+}
+[System.IO.File]::ReadLines("$path\doomstat.h") | ForEach-Object {
+    Read-Line -line $_
+}
+[System.IO.File]::ReadLines("$path\d_player.h") | ForEach-Object {
+    Read-Line -line $_
+}
+[System.IO.File]::ReadLines("$path\m_menu.h") | ForEach-Object {
+    Read-Line -line $_
+}
+[System.IO.File]::ReadLines("$path\st_stuff.h") | ForEach-Object {
     Read-Line -line $_
 }
 

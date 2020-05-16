@@ -22,9 +22,9 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 enumtables=`cat $SCRIPTPATH/enumtables.txt`
 
-# bash can't match whitespaces, so each // ENUMTABLES
+# bash can't match whitespaces, so each // ENUMTABLE
 # directive cannot be indented.
-enumtables_line="^\s*// ENUMTABLES "
+enumtables_line="^\s*// ENUMTABLE "
 action_match="^\s*void A_(.*)\(\);"
 
 do_generic=0
@@ -39,8 +39,8 @@ entries=""
 function process_line () {
     line=$1
     if [[ "$line" =~ $enumtables_line ]]; then
-        # // ENUMTABLES BEGIN TABLE_NAME ACTION_NAME ARG1 ARG2
-        # [0][1]        [2]   [3]        [4]         [5]  [6]
+        # // ENUMTABLE BEGIN TABLE_NAME ACTION_NAME ARG1 ARG2
+        # [0][1]       [2]   [3]        [4]         [5]  [6]
         # Trim trailing newlines to prevent match bugs
         tokens=($line)
         verb_name="`echo ${tokens[2]} | tr -d '\r'`"
@@ -58,12 +58,12 @@ function process_line () {
             fi
         elif [[ "$verb_name" == "END" ]]; then
             if [[ "$do_generic" == "1" ]]; then
-                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^ \=,]*?).*[ \=\/,].*/\t\\\"$prefix_out\1\\\",/\"`"
+                entries="`echo -e \"$entries\" | sed -r \"s/^\t$prefix_in([^ \=,]*?).*[ \=\/,].*/\t\\\"$prefix_out\U\1\\\",/\"`"
             elif [[ "$do_actions" == "1" ]]; then
                 entries="`echo -e \"$entries\"`"
             fi
 
-            enumtables="${enumtables/\/\/ ENUMTABLES SET $table_name/$entries}"
+            enumtables="${enumtables/\/\/ ENUMTABLE SET $table_name/$entries}"
 
             do_generic=0
             do_actions=0
@@ -114,5 +114,21 @@ done < "$path/info.h"
 while IFS= read -r line; do
     process_line "$line"
 done < "$path/p_mobj.h"
+
+while IFS= read -r line; do
+    process_line "$line"
+done < "$path/doomstat.h"
+
+while IFS= read -r line; do
+    process_line "$line"
+done < "$path/d_player.h"
+
+while IFS= read -r line; do
+    process_line "$line"
+done < "$path/m_menu.h"
+
+while IFS= read -r line; do
+    process_line "$line"
+done < "$path/st_stuff.h"
 
 echo "$enumtables" > "$path/enumtables.c"

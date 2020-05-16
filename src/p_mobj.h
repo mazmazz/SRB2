@@ -97,7 +97,7 @@
 //
 typedef enum
 {
-// ENUMTABLES BEGIN MOBJFLAG_LIST do_generic MF_
+// ENUMTABLE BEGIN MOBJFLAG_LIST do_generic MF_
 	// Call P_TouchSpecialThing when touched.
 	MF_SPECIAL          = 1,
 	// Blocks.
@@ -161,11 +161,12 @@ typedef enum
 	// Run the action thinker on spawn.
 	MF_RUNSPAWNFUNC     = 1<<29,
 	// free: 1<<30 and 1<<31
-// ENUMTABLES END MOBJFLAG_LIST
+// ENUMTABLE END MOBJFLAG_LIST
 } mobjflag_t;
 
 typedef enum
 {
+// ENUMTABLE BEGIN MOBJFLAG2_LIST do_generic MF2_
 	MF2_AXIS           = 1,     // It's a NiGHTS axis! (For faster checking)
 	MF2_TWOD           = 1<<1,  // Moves like it's in a 2D level
 	MF2_DONTRESPAWN    = 1<<2,  // Don't respawn this object!
@@ -197,6 +198,7 @@ typedef enum
 	MF2_LINKDRAW       = 1<<28, // Draw vissprite of mobj immediately before/after tracer's vissprite (dependent on dispoffset and position)
 	MF2_SHIELD         = 1<<29, // Thinker calls P_AddShield/P_ShieldLook (must be partnered with MF_SCENERY to use)
 	// free: to and including 1<<31
+// ENUMTABLE END MOBJFLAG2_LIST
 } mobjflag2_t;
 
 typedef enum
@@ -218,6 +220,7 @@ typedef enum
 //
 typedef enum
 {
+// ENUMTABLE BEGIN MOBJEFLAG_LIST do_generic MFE_
 	// The mobj stands on solid floor (not on another mobj or in air)
 	MFE_ONGROUND          = 1,
 	// The mobj just hit the floor while falling, this is cleared on next frame
@@ -247,6 +250,7 @@ typedef enum
 	// See Linedef Exec 457 (Track mobj angle to point)
 	MFE_TRACERANGLE       = 1<<11,
 	// free: to and including 1<<15
+// ENUMTABLE END MOBJEFLAG_LIST
 } mobjeflag_t;
 
 //
