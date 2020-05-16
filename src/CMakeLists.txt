@@ -1,5 +1,15 @@
 # SRB2 Core
 
+if (WIN32)
+	add_custom_command ( OUTPUT enumtables.c
+    	                 COMMAND powershell ${CMAKE_CURRENT_SOURCE_DIR}/../enumtables.sh
+        	             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+else()
+	add_custom_command ( OUTPUT enumtables.c
+    	                 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../enumtables.sh
+        	             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+endif()
+
 # Core sources
 set(SRB2_CORE_SOURCES
 	am_map.c
