@@ -445,6 +445,7 @@ OBJS:=$(i_main_o) \
 		$(OBJDIR)/info.o     \
 		$(OBJDIR)/p_ceilng.o \
 		$(OBJDIR)/p_enemy.o  \
+		$(OBJDIR)/enumtables.o \
 		$(OBJDIR)/p_floor.o  \
 		$(OBJDIR)/p_inter.o  \
 		$(OBJDIR)/p_lights.o \
@@ -530,8 +531,10 @@ cleandep:
 pre-build:
 ifdef WINDOWSHELL
 	-..\comptime.bat .
+	-powershell ..\enumtables.ps1 .
 else
 	-@../comptime.sh .
+	-@../enumtables.sh .
 endif
 
 clean:
@@ -693,6 +696,9 @@ $(OBJDIR)/z_zone.o: z_zone.c
 endif
 
 $(OBJDIR)/comptime.o: comptime.c pre-build
+	$(CC) $(CFLAGS) $(WFLAGS) -c $< -o $@
+
+$(OBJDIR)/enumtables.o: enumtables.c pre-build
 	$(CC) $(CFLAGS) $(WFLAGS) -c $< -o $@
 
 $(BIN)/%.mo: locale/%.po

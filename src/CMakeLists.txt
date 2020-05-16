@@ -13,6 +13,7 @@ set(SRB2_CORE_SOURCES
 	d_netcmd.c
 	d_netfil.c
 	dehacked.c
+	enumtables.c
 	f_finale.c
 	f_wipe.c
 	filesrch.c
@@ -69,6 +70,7 @@ set(SRB2_CORE_HEADERS
 	doomstat.h
 	doomtype.h
 	endian.h
+	enumtables.h
 	f_finale.h
 	fastcmp.h
 	filesrch.h

@@ -19,11 +19,7 @@
 #include "sounds.h"
 #include "m_fixed.h"
 
-// dehacked.c now has lists for the more named enums! PLEASE keep them up to date!
-// For great modding!!
-
-// IMPORTANT NOTE: If you add/remove from this list of action
-// functions, don't forget to update them in dehacked.c!
+// ENUMTABLES actionpointers BEGIN
 void A_Explode();
 void A_Pain();
 void A_Fall();
@@ -285,6 +281,7 @@ void A_DragonbomberSpawn();
 void A_DragonWing();
 void A_DragonSegment();
 void A_ChangeHeight();
+// ENUMTABLES actionpointers END
 
 // ratio of states to sprites to mobj types is roughly 6 : 1 : 1
 #define NUMMOBJFREESLOTS 512
@@ -877,6 +874,7 @@ typedef enum playersprite
 
 typedef enum state
 {
+// ENUMTABLES STATE_LIST BEGIN
 	S_NULL,
 	S_UNKNOWN,
 	S_INVISIBLE, // state for invisible sprite
@@ -3999,6 +3997,8 @@ typedef enum state
 	S_BRICKDEBRIS,
 	S_WOODDEBRIS,
 
+// ENUMTABLES STATE_LIST END
+
 #ifdef SEENAMES
 	S_NAMECHECK,
 #endif
@@ -4028,6 +4028,7 @@ extern playersprite_t free_spr2;
 
 typedef enum mobj_type
 {
+// ENUMTABLES MOBJTYPE_LIST BEGIN
 	MT_NULL,
 	MT_UNKNOWN,
 
@@ -4798,6 +4799,8 @@ typedef enum mobj_type
 	MT_GFZDEBRIS,
 	MT_BRICKDEBRIS,
 	MT_WOODDEBRIS,
+
+// ENUMTABLES MOBJTYPE_LIST END
 
 #ifdef SEENAMES
 	MT_NAMECHECK,
