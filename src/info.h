@@ -874,7 +874,7 @@ typedef enum playersprite
 
 typedef enum state
 {
-	// ENUMTABLES BEGIN STATE_LIST
+// ENUMTABLES BEGIN STATE_LIST
 	S_NULL,
 	S_UNKNOWN,
 	S_INVISIBLE, // state for invisible sprite
@@ -3997,7 +3997,7 @@ typedef enum state
 	S_BRICKDEBRIS,
 	S_WOODDEBRIS,
 
-	// ENUMTABLES END STATE_LIST
+// ENUMTABLES END STATE_LIST
 
 #ifdef SEENAMES
 	S_NAMECHECK,
@@ -4028,7 +4028,7 @@ extern playersprite_t free_spr2;
 
 typedef enum mobj_type
 {
-	// ENUMTABLES BEGIN MOBJTYPE_LIST
+// ENUMTABLES BEGIN MOBJTYPE_LIST
 	MT_NULL,
 	MT_UNKNOWN,
 
@@ -4800,7 +4800,7 @@ typedef enum mobj_type
 	MT_BRICKDEBRIS,
 	MT_WOODDEBRIS,
 
-	// ENUMTABLES END MOBJTYPE_LIST
+// ENUMTABLES END MOBJTYPE_LIST
 
 #ifdef SEENAMES
 	MT_NAMECHECK,

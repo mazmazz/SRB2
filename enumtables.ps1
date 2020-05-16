@@ -18,6 +18,8 @@ if ($args.Count -gt 0)
 
 $enumtables = [IO.File]::ReadAllText("$PSScriptRoot\enumtables.txt")
 
+# bash can't match whitespaces, so each // ENUMTABLES
+# directive cannot be indented.
 $enumgen_line = '^\s*// ENUMTABLES '
 
 $do_generic = $false

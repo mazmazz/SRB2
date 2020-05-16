@@ -22,6 +22,8 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 enumtables=`cat $SCRIPTPATH/enumtables.txt`
 
+# bash can't match whitespaces, so each // ENUMTABLES
+# directive cannot be indented.
 enumgen_line="^\s*// ENUMTABLES "
 action_match="^\s*void A_(.*)\(\);"
 
@@ -37,6 +39,7 @@ entries=""
 while IFS= read -r line; do
     if [[ "$line" =~ $enumgen_line ]]; then
         if [[ "$line" == *"BEGIN"* ]]; then
+            echo Begin $line
             if [[ "$line" == *"STATE_LIST"* ]]; then
                 do_generic=1
                 prefix_in="S_"
@@ -49,6 +52,7 @@ while IFS= read -r line; do
                 do_actions=1
             fi
         elif [[ "$line" == *"END"* ]]; then
+            echo End $line
             # Perform regex after all entries are collected
             # during the generic run.
             if [[ "$do_generic" == "1" ]]; then
@@ -56,12 +60,12 @@ while IFS= read -r line; do
             fi
 
             if [[ "$line" == *"STATE_LIST"* ]]; then
-                enumtables="${enumtables/\/\/ ENUMTABLES STATE_LIST/$entries}"
+                enumtables="${enumtables/\/\/ ENUMTABLES SET STATE_LIST/$entries}"
             elif [[ "$line" == *"MOBJTYPE_LIST"* ]]; then
-                enumtables="${enumtables/\/\/ ENUMTABLES MOBJTYPE_LIST/$entries}"
+                enumtables="${enumtables/\/\/ ENUMTABLES SET MOBJTYPE_LIST/$entries}"
             elif [[ "$line" == *"actionpointers"* ]]; then
                 entries="`echo -e \"$entries\"`"
-                enumtables="${enumtables/\/\/ ENUMTABLES actionpointers/$entries}"
+                enumtables="${enumtables/\/\/ ENUMTABLES SET actionpointers/$entries}"
             fi
 
             do_generic=0
