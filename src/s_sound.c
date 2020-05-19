@@ -51,6 +51,13 @@ extern INT32 msg_id;
 static INT32 S_AdjustSoundParams(const mobj_t *listener, const mobj_t *source, INT32 *vol, INT32 *sep, INT32 *pitch, sfxinfo_t *sfxinfo);
 #endif
 
+char music_stack_nextmusname[7];
+boolean music_stack_noposition;
+UINT32 music_stack_fadeout;
+UINT32 music_stack_fadein;
+
+const char *compat_special_music_slots[16];
+
 CV_PossibleValue_t soundvolume_cons_t[] = {{0, "MIN"}, {31, "MAX"}, {0, NULL}};
 static void SetChannelsNum(void);
 static void Command_Tunes_f(void);
@@ -551,6 +558,7 @@ void S_StartCaption(sfxenum_t sfx_id, INT32 cnum, UINT16 lifespan)
 
 void S_StartSoundAtVolume(const void *origin_p, sfxenum_t sfx_id, INT32 volume)
 {
+	return;
 	INT32 sep, pitch, priority, cnum;
 	const sfxenum_t actual_id = sfx_id;
 	sfxinfo_t *sfx;

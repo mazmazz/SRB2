@@ -518,18 +518,86 @@ boolean F_TryColormapFade(UINT8 wipecolor)
 	}
 }
 
+tic_t nowtime;
+UINT8 wipeframe;
+fademask_t *fmask;
+UINT8 wipetype;
+boolean drawMenu;
+
+void F_UpdateWipe() {
+	// get fademask first so we can tell if it exists or not
+	fmask = F_GetFadeMask(wipetype, wipeframe++);
+	if (!fmask) {
+		WipeInAction = false;
+		WipeStageTitle = false;
+		return;
+	}
+
+	// wait loop
+	while (!((nowtime = I_GetTime()) - lastwipetic))
+		I_Sleep();
+	lastwipetic = nowtime;
+
+	// Wipe styles
+	if (wipestyle == WIPESTYLE_COLORMAP)
+	{
+#ifdef HWRENDER
+		if (rendermode == render_opengl)
+		{
+			// send in the wipe type and wipe frame because we need to cache the graphic
+			HWR_DoTintedWipe(wipetype, wipeframe-1);
+		}
+		else
+#endif
+		{
+			UINT8 *colormap = fadecolormap;
+			if (wipestyleflags & WSF_TOWHITE)
+				colormap += (FADECOLORMAPROWS * 256);
+			F_DoColormapWipe(fmask, colormap);
+		}
+
+		// Draw the title card above the wipe
+		F_WipeStageTitle();
+	}
+	else
+	{
+#ifdef HWRENDER
+		if (rendermode == render_opengl)
+		{
+			// send in the wipe type and wipe frame because we need to cache the graphic
+			HWR_DoWipe(wipetype, wipeframe-1);
+		}
+		else
+#endif
+			F_DoWipe(fmask);
+	}
+
+	I_OsPolling();
+	I_UpdateNoBlit();
+
+	if (drawMenu)
+		M_Drawer(); // menu is drawn even on top of wipes
+
+	I_FinishUpdate(); // page flip or blit buffer
+
+	if (moviemode)
+		M_SaveFrame();
+}
+
 /** After setting up the screens you want to wipe,
   * calling this will do a 'typical' wipe.
   */
-void F_RunWipe(UINT8 wipetype, boolean drawMenu)
+void F_RunWipe(UINT8 tmp_wipetype, boolean tmp_drawMenu)
 {
 #ifdef NOWIPE
 	(void)wipetype;
 	(void)drawMenu;
 #else
-	tic_t nowtime;
-	UINT8 wipeframe = 0;
-	fademask_t *fmask;
+	wipetype = tmp_wipetype;
+	drawMenu = tmp_drawMenu;
+	nowtime = NULL;
+	wipeframe = 0;
+	fmask = NULL;
 
 	if (!paldiv)
 		paldiv = FixedDiv(257<<FRACBITS, 11<<FRACBITS);
@@ -541,66 +609,10 @@ void F_RunWipe(UINT8 wipetype, boolean drawMenu)
 
 	// lastwipetic should either be 0 or the tic we last wiped
 	// on for fade-to-black
-	for (;;)
-	{
-		// get fademask first so we can tell if it exists or not
-		fmask = F_GetFadeMask(wipetype, wipeframe++);
-		if (!fmask)
-			break;
+	// for (;;) F_UpdateWipe();
 
-		// wait loop
-		while (!((nowtime = I_GetTime()) - lastwipetic))
-			I_Sleep();
-		lastwipetic = nowtime;
-
-		// Wipe styles
-		if (wipestyle == WIPESTYLE_COLORMAP)
-		{
-#ifdef HWRENDER
-			if (rendermode == render_opengl)
-			{
-				// send in the wipe type and wipe frame because we need to cache the graphic
-				HWR_DoTintedWipe(wipetype, wipeframe-1);
-			}
-			else
-#endif
-			{
-				UINT8 *colormap = fadecolormap;
-				if (wipestyleflags & WSF_TOWHITE)
-					colormap += (FADECOLORMAPROWS * 256);
-				F_DoColormapWipe(fmask, colormap);
-			}
-
-			// Draw the title card above the wipe
-			F_WipeStageTitle();
-		}
-		else
-		{
-#ifdef HWRENDER
-			if (rendermode == render_opengl)
-			{
-				// send in the wipe type and wipe frame because we need to cache the graphic
-				HWR_DoWipe(wipetype, wipeframe-1);
-			}
-			else
-#endif
-				F_DoWipe(fmask);
-		}
-
-		I_OsPolling();
-		I_UpdateNoBlit();
-
-		if (drawMenu)
-			M_Drawer(); // menu is drawn even on top of wipes
-
-		I_FinishUpdate(); // page flip or blit buffer
-
-		if (moviemode)
-			M_SaveFrame();
-	}
-
-	WipeInAction = false;
-	WipeStageTitle = false;
+	// WipeInAction = false;
+	// WipeStageTitle = false;
 #endif
 }
 

@@ -91,6 +91,17 @@ D_FILES=$(D_DIR)/srb2.pk3 \
 
 PKG_CONFIG?=pkg-config
 
+ifdef EMSCRIPTEN
+EXENAME=srb2.js
+NONET=1
+NOOPENMPT=1
+NOASM=1
+NONX86=1
+NOHW=1
+NOHS=1
+include emscripten/Makefile.cfg
+endif
+
 ifdef PANDORA
 LINUX=1
 endif
@@ -381,7 +392,10 @@ else
 	WINDRESFLAGS = -DNDEBUG
 	CFLAGS+=-O3
 endif
-	CFLAGS+=-g $(OPTS) $(ARCHOPTS) $(WINDRESFLAGS)
+	CFLAGS+=$(OPTS) $(ARCHOPTS) $(WINDRESFLAGS)
+ifndef EMSCRIPTEN
+	CFLAGS+=-g
+endif
 
 ifdef YASM
 ifdef STABS

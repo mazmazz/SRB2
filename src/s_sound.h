@@ -259,10 +259,10 @@ typedef struct musicstack_s
     struct musicstack_s *next;
 } musicstack_t;
 
-char music_stack_nextmusname[7];
-boolean music_stack_noposition;
-UINT32 music_stack_fadeout;
-UINT32 music_stack_fadein;
+extern char music_stack_nextmusname[7];
+extern boolean music_stack_noposition;
+extern UINT32 music_stack_fadeout;
+extern UINT32 music_stack_fadein;
 
 void S_SetStackAdjustmentStart(void);
 void S_AdjustMusicStackTics(void);
@@ -330,7 +330,7 @@ void S_StopSoundByNum(sfxenum_t sfxnum);
 #ifdef MUSICSLOT_COMPATIBILITY
 // For compatibility with code/scripts relying on older versions
 // This is a list of all the "special" slot names and their associated numbers
-const char *compat_special_music_slots[16];
+extern const char *compat_special_music_slots[16];
 #endif
 
 #endif

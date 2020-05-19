@@ -1905,30 +1905,42 @@ void G_StartTitleCard(void)
 //
 // Run the title card before fading in to the level.
 //
+tic_t TitleCard_starttime;
+tic_t TitleCard_endtime;
+tic_t TitleCard_nowtime;
+tic_t TitleCard_lasttime;
+
+boolean G_RunPreLevelTitleCard() {
+	TitleCard_nowtime = I_GetTime();
+	if (!(TitleCard_nowtime - TitleCard_lasttime)) {
+		return true;
+	}
+
+	if (TitleCard_nowtime >= TitleCard_endtime) {
+		if (!cv_showhud.value)
+			wipestyleflags = WSF_CROSSFADE;
+		return false;
+	}
+	TitleCard_lasttime = TitleCard_nowtime;
+
+	ST_runTitleCard();
+	ST_preLevelTitleCardDrawer();
+	I_FinishUpdate(); // page flip or blit buffer
+
+	if (moviemode)
+		M_SaveFrame();
+	if (takescreenshot) // Only take screenshots after drawing.
+		M_DoScreenShot();
+
+	return true;
+}
+
 void G_PreLevelTitleCard(void)
 {
-	tic_t starttime = I_GetTime();
-	tic_t endtime = starttime + (PRELEVELTIME*NEWTICRATERATIO);
-	tic_t nowtime = starttime;
-	tic_t lasttime = starttime;
-	while (nowtime < endtime)
-	{
-		// draw loop
-		while (!((nowtime = I_GetTime()) - lasttime))
-			I_Sleep();
-		lasttime = nowtime;
-
-		ST_runTitleCard();
-		ST_preLevelTitleCardDrawer();
-		I_FinishUpdate(); // page flip or blit buffer
-
-		if (moviemode)
-			M_SaveFrame();
-		if (takescreenshot) // Only take screenshots after drawing.
-			M_DoScreenShot();
-	}
-	if (!cv_showhud.value)
-		wipestyleflags = WSF_CROSSFADE;
+	tic_t TitleCard_starttime = I_GetTime();
+	tic_t TitleCard_endtime = TitleCard_starttime + (PRELEVELTIME*NEWTICRATERATIO);
+	tic_t TitleCard_nowtime = TitleCard_starttime;
+	tic_t TitleCard_lasttime = TitleCard_starttime;
 }
 
 INT32 pausedelay = 0;

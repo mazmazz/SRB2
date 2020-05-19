@@ -30,6 +30,10 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 //int	vsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #ifdef _WIN32
 #include <direct.h>
 #include <malloc.h>
@@ -94,6 +98,8 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 #ifdef HAVE_BLUA
 #include "lua_script.h"
 #endif
+
+char savegamename[256];
 
 // platform independant focus loss
 UINT8 window_notinfocus = false;
@@ -313,6 +319,7 @@ static void D_Display(void)
 					wipetypepost = -1; // Don't run the fade below this one
 				F_WipeEndScreen();
 				F_RunWipe(wipetypepre, gamestate != GS_TIMEATTACK && gamestate != GS_TITLESCREEN);
+				return;
 			}
 
 			F_WipeStartScreen();
@@ -616,11 +623,103 @@ void D_CheckRendererState(void)
 // =========================================================================
 
 tic_t rendergametic;
+tic_t oldentertics = 0, entertic = 0, realtics = 0, rendertimeout = INFTICS;
+
+void D_SRB2LoopIter(void) {
+	if (G_RunPreLevelTitleCard()) return;
+
+	if (WipeInAction || WipeStageTitle) {
+		F_UpdateWipe();
+		return;
+	}
+
+	if (lastwipetic)
+	{
+		oldentertics = lastwipetic;
+		lastwipetic = 0;
+	}
+
+	// get real tics
+	entertic = I_GetTime();
+	realtics = entertic - oldentertics;
+	oldentertics = entertic;
+
+	refreshdirmenu = 0; // not sure where to put this, here as good as any?
+
+#ifdef DEBUGFILE
+	if (!realtics)
+		if (debugload)
+			debugload--;
+#endif
+
+	if (!realtics && !singletics)
+	{
+		I_Sleep();
+		return;
+	}
+
+#ifdef HW3SOUND
+	HW3S_BeginFrameUpdate();
+#endif
+
+	// don't skip more than 10 frames at a time
+	// (fadein / fadeout cause massive frame skip!)
+	if (realtics > 8)
+		realtics = 1;
+
+	// process tics (but maybe not if realtic == 0)
+	TryRunTics(realtics);
+
+	if (lastdraw || singletics || gametic > rendergametic)
+	{
+		rendergametic = gametic;
+		rendertimeout = entertic+TICRATE/17;
+
+		// Update display, next frame, with current state.
+		D_Display();
+
+		if (moviemode)
+			M_SaveFrame();
+		if (takescreenshot) // Only take screenshots after drawing.
+			M_DoScreenShot();
+	}
+	else if (rendertimeout < entertic) // in case the server hang or netsplit
+	{
+		// Lagless camera! Yay!
+		if (gamestate == GS_LEVEL && netgame)
+		{
+			if (splitscreen && camera2.chase)
+				P_MoveChaseCamera(&players[secondarydisplayplayer], &camera2, false);
+			if (camera.chase)
+				P_MoveChaseCamera(&players[displayplayer], &camera, false);
+		}
+		D_Display();
+
+		if (moviemode)
+			M_SaveFrame();
+		if (takescreenshot) // Only take screenshots after drawing.
+			M_DoScreenShot();
+	}
+
+	// consoleplayer -> displayplayer (hear sounds from viewpoint)
+	S_UpdateSounds(); // move positional sounds
+	S_UpdateClosedCaptions();
+
+	// check for media change, loop music..
+	I_UpdateCD();
+
+#ifdef HW3SOUND
+	HW3S_EndFrameUpdate();
+#endif
+
+#ifdef HAVE_BLUA
+	LUA_Step();
+#endif
+
+}
 
 void D_SRB2Loop(void)
 {
-	tic_t oldentertics = 0, entertic = 0, realtics = 0, rendertimeout = INFTICS;
-
 	if (dedicated)
 		server = true;
 
@@ -655,91 +754,14 @@ void D_SRB2Loop(void)
 	V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(W_GetNumForName("CONSBACK"), PU_CACHE));
 	I_FinishUpdate(); // page flip or blit buffer
 
+	#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(D_SRB2LoopIter, 35, 0);
+	#else
 	for (;;)
 	{
-		if (lastwipetic)
-		{
-			oldentertics = lastwipetic;
-			lastwipetic = 0;
-		}
-
-		// get real tics
-		entertic = I_GetTime();
-		realtics = entertic - oldentertics;
-		oldentertics = entertic;
-
-		refreshdirmenu = 0; // not sure where to put this, here as good as any?
-
-#ifdef DEBUGFILE
-		if (!realtics)
-			if (debugload)
-				debugload--;
-#endif
-
-		if (!realtics && !singletics)
-		{
-			I_Sleep();
-			continue;
-		}
-
-#ifdef HW3SOUND
-		HW3S_BeginFrameUpdate();
-#endif
-
-		// don't skip more than 10 frames at a time
-		// (fadein / fadeout cause massive frame skip!)
-		if (realtics > 8)
-			realtics = 1;
-
-		// process tics (but maybe not if realtic == 0)
-		TryRunTics(realtics);
-
-		if (lastdraw || singletics || gametic > rendergametic)
-		{
-			rendergametic = gametic;
-			rendertimeout = entertic+TICRATE/17;
-
-			// Update display, next frame, with current state.
-			D_Display();
-
-			if (moviemode)
-				M_SaveFrame();
-			if (takescreenshot) // Only take screenshots after drawing.
-				M_DoScreenShot();
-		}
-		else if (rendertimeout < entertic) // in case the server hang or netsplit
-		{
-			// Lagless camera! Yay!
-			if (gamestate == GS_LEVEL && netgame)
-			{
-				if (splitscreen && camera2.chase)
-					P_MoveChaseCamera(&players[secondarydisplayplayer], &camera2, false);
-				if (camera.chase)
-					P_MoveChaseCamera(&players[displayplayer], &camera, false);
-			}
-			D_Display();
-
-			if (moviemode)
-				M_SaveFrame();
-			if (takescreenshot) // Only take screenshots after drawing.
-				M_DoScreenShot();
-		}
-
-		// consoleplayer -> displayplayer (hear sounds from viewpoint)
-		S_UpdateSounds(); // move positional sounds
-		S_UpdateClosedCaptions();
-
-		// check for media change, loop music..
-		I_UpdateCD();
-
-#ifdef HW3SOUND
-		HW3S_EndFrameUpdate();
-#endif
-
-#ifdef HAVE_BLUA
-		LUA_Step();
-#endif
+		D_SRB2LoopIter();
 	}
+	#endif
 }
 
 //
