@@ -165,7 +165,7 @@ boolean G_DoViewpointSwitch(void);
 #define NUMTOUCHFINGERS 20
 typedef struct
 {
-	INT32 x, y;
+	INT32 x, y, id;
 	float pressure;
 	union {
 		INT32 gamecontrol;

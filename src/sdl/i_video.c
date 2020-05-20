@@ -914,10 +914,50 @@ static void Impl_HandleJoystickButtonEvent(SDL_JoyButtonEvent evt, Uint32 type)
 
 // Lactozilla: Android touch inputs
 #ifdef TOUCHINPUTS
+
+// In Android, fingerId is a sequential finger index.
+// In non-Android, fingerId is an ID to an internal SDL structure!
+// So we need to work out its index by "hand" :V
+#ifdef __ANDROID__
+#define Impl_GetTouchFingerIndex(evt) ((INT32)evt.fingerId)
+#else
+static INT32 fingerIdList[NUMTOUCHFINGERS];
+
+static INT32 Impl_GetTouchFingerIndex(SDL_TouchFingerEvent evt)
+{
+	INT32 i;
+	SDL_Finger *finger = NULL;
+
+	for (i = 0; i < NUMTOUCHFINGERS; i++)
+	{
+		if (evt.type == SDL_FINGERUP)
+		{
+			if (fingerIdList[i] == (INT32)evt.fingerId)
+			{
+				fingerIdList[i] = 0;
+				return i;
+			}
+		}
+		else if (i < SDL_GetNumTouchFingers(evt.touchId))
+		{
+			finger = SDL_GetTouchFinger(evt.touchId, i);
+			if (finger && finger->id == evt.fingerId)
+			{
+				fingerIdList[i] = (INT32)evt.fingerId;
+				return i;
+			}
+		}
+		else
+			break;
+	}
+	return NUMTOUCHFINGERS;
+}
+#endif
+
 static void Impl_HandleTouchEvent(SDL_TouchFingerEvent evt)
 {
 	event_t event;
-	INT32 finger = (INT32)evt.fingerId;
+	INT32 finger = Impl_GetTouchFingerIndex(evt);
 
 	INT32 screenx = evt.x * vid.width;
 	INT32 screeny = evt.y * vid.height;
