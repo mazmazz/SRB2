@@ -1834,7 +1834,7 @@ INT32 VID_SetResolution(INT32 width, INT32 height)
 #ifdef HWRENDER
 	else if (rendermode == render_opengl)
 	{
-		I_StartupHardwareGraphics();
+		VID_StartupOpenGL();
 		R_InitHardwareMode();
 	}
 #endif
