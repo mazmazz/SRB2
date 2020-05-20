@@ -666,7 +666,7 @@ void D_SRB2LoopIter(void) {
 	if (!realtics && !singletics)
 	{
 		I_Sleep();
-		continue;
+		return;
 	}
 
 #ifdef HW3SOUND

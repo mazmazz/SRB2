@@ -92,7 +92,7 @@ D_FILES=$(D_DIR)/srb2.pk3 \
 PKG_CONFIG?=pkg-config
 
 ifdef EMSCRIPTEN
-EXENAME=srb2.js
+EXENAME=srb2.html
 NONET=1
 NOOPENMPT=1
 NOASM=1

@@ -176,11 +176,7 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen);
 //static void Impl_SetWindowName(const char *title);
 static void Impl_SetWindowIcon(void);
 
-<<<<<<< HEAD
-static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool centerscreen)
-=======
 static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool reposition)
->>>>>>> 9d06cb4be459e3ef12f0083a3f21669de3adf8b2
 {
 	static SDL_bool wasfullscreen = SDL_FALSE;
 	Uint32 rmask;
@@ -209,11 +205,7 @@ static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool 
 			}
 			// Reposition window only in windowed mode
 			SDL_SetWindowSize(window, width, height);
-<<<<<<< HEAD
-			if (centerscreen)
-=======
 			if (reposition)
->>>>>>> 9d06cb4be459e3ef12f0083a3f21669de3adf8b2
 			{
 				SDL_SetWindowPosition(window,
 					SDL_WINDOWPOS_CENTERED_DISPLAY(SDL_GetWindowDisplayIndex(window)),
@@ -603,7 +595,12 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			kbfocus = SDL_FALSE;
 			mousefocus = SDL_FALSE;
 			break;
-		case SDL_WINDOWEVENT_RESIZED:
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+			if (
+				(setresneeded[0] == evt.data1) &&
+				(setresneeded[1] == evt.data2)
+			) break;
+			
 			setresneeded[0] = evt.data1;
 			setresneeded[1] = evt.data2;
 			setresneeded[2] = 1;
@@ -1601,6 +1598,42 @@ void VID_CheckRenderer(void)
 	}
 #else
 	(void)oldrenderer;
+#endif
+}
+
+// VID_SetMode but no video modes
+INT32 VID_SetResolution(INT32 width, INT32 height)
+{
+	SDLdoUngrabMouse();
+
+	vid.recalc = 1;
+	vid.bpp = 1;
+
+	vid.width = (width < BASEVIDWIDTH) ? BASEVIDWIDTH : ((width > MAXVIDWIDTH) ? MAXVIDWIDTH : width);
+	vid.height = (height < BASEVIDHEIGHT) ? BASEVIDHEIGHT : ((height > MAXVIDHEIGHT) ? MAXVIDHEIGHT : height);
+	vid.modenum = VID_GetModeForSize(width, height);
+
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (setresneeded[2] == 2));
+	Impl_VideoSetupBuffer();
+
+	if (rendermode == render_soft)
+	{
+		if (bufSurface)
+		{
+			SDL_FreeSurface(bufSurface);
+			bufSurface = NULL;
+		}
+#ifdef HWRENDER
+		HWR_FreeTextureCache();
+#endif
+		SCR_SetDrawFuncs();
+	}
+#ifdef HWRENDER
+	else if (rendermode == render_opengl)
+	{
+		I_StartupHardwareGraphics();
+		R_InitHardwareMode();
+	}
 #endif
 }
 
