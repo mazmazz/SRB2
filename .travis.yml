@@ -9,6 +9,18 @@ dist: trusty
 
 matrix:
     include:
+        - os: linux
+          sudo: required
+          services:
+            - docker
+          before_install:
+            - docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-incoming-64bit bash
+          install: ~
+          before_script: ~
+          script:
+            - docker exec -it emscripten emmake make -C src/
+            - find . -name "*.js" -print
+          
 ################################
 # Test Buildbots
 # Deployer does not operate on these. See Deployer Buildbots, below.
