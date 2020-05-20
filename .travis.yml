@@ -676,9 +676,9 @@ install:
   #     * `brew postinstall` runs post-install scripts after building a bottle
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       if [[ "$__DPL_ACTIVE" == "1" ]]; then
-        brew install --build-bottle sdl2 game-music-emu;
+        brew install --build-bottle sdl2 mazmazz/srb2/game-music-emu;
         brew install --build-bottle mazmazz/srb2/sdl2_mixer --with-flac --with-mpg123;
-        brew postinstall sdl2 game-music-emu mazmazz/srb2/sdl2_mixer;
+        brew postinstall sdl2 mazmazz/srb2/game-music-emu mazmazz/srb2/sdl2_mixer;
       fi;
     fi
   - mkdir -p $HOME/srb2_cache
