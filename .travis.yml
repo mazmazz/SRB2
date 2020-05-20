@@ -306,6 +306,18 @@ matrix:
           - _DPL_JOB_NAME=osx
           - _DPL_FTP_TARGET=1
           - _DPL_PACKAGE_BINARY=1
+          deploy:
+            provider: releases
+            api_key: $GITHUB_TOKEN
+            file_glob: true
+            file: ../build/package/*/** # relative to [repo]/src, per `skip_cleanup`
+            skip_cleanup: true
+            draft: true
+            on:
+              all_branches: true
+          after_success:
+            - sudo rm -r package/_CPack_Packages
+
           #Apple LLVM version 7.3.0 (clang-703.0.31)
 
 
