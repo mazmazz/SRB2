@@ -11,16 +11,47 @@ matrix:
     include:
         - os: linux
           dist: bionic
-          sudo: required
-          services:
-            - docker
           before_install:
-            - docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-incoming-64bit bash
+            # Save PWD to a file; for some reason, this var gets obliterated
+            - echo "$PWD" > ~/oldpwd.txt
+            # Install latest emscripten
+            - git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+            - cd ~/emsdk
+            - ./emsdk install latest
+            - ./emsdk activate latest
+            - source ./emsdk_env.sh
+            # Install llvm 10 (current latest version)
+            - wget https://apt.llvm.org/llvm.sh
+            - chmod +x llvm.sh
+            - sudo ./llvm.sh 10
+            - export PATH="/usr/lib/llvm-10/bin:$PATH"
           install: ~
           before_script: ~
           script:
-            - docker exec -it emscripten emmake make -C src/
-            - find . -name "*.js" -print
+            - cd "$(<~/oldpwd.txt)"
+            - emmake make -C src/
+          ################################
+          # This job deploys to GitHub Releases as a draft post.
+          # It is not visible to the public.
+          # 
+          # Setup your GitHub API token by going to your:
+          #   User Settings > Developer Settings > Personal Access Token
+          # Enable all Repo permissions; clear all other permissions.
+          # In your Travis environment variables, set GITHUB_TOKEN= to your token.
+          #
+          # When deploying new builds, make sure your previous
+          # draft release is published or deleted.
+          # New build drafts will NOT overwrite old build drafts.
+          ################################
+          deploy:
+            provider: releases
+            api_key: $GITHUB_TOKEN
+            file_glob: true
+            file: bin/Emscripten/Release/** # relative to [repo]
+            skip_cleanup: true
+            draft: true
+            on:
+              all_branches: true
           
 ################################
 # Test Buildbots
