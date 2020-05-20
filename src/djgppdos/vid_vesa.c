@@ -92,8 +92,8 @@ static vmode_t *pcurrentmode; // the current active videomode.
 
 
 // table des modes videos.
-// seul le mode 320x200x256c standard VGA est support‚ sans le VESA.
-// ce mode est le mode num‚ro 0 dans la liste.
+// seul le mode 320x200x256c standard VGA est supportï¿½ sans le VESA.
+// ce mode est le mode numï¿½ro 0 dans la liste.
 typedef struct
 {
 	int modenum;            // vesa vbe2.0 modenum
@@ -378,17 +378,8 @@ INT32 VID_SetMode (INT32 modenum)  //, UINT8 *palette)
 	return 1;
 }
 
-INT32 VID_SetResolution(INT32 width, INT32 height)
-{
-	(void)width;
-	(void)height;
-	return 1;
-}
-
-void VID_CheckRenderer(void)
-{
-	// ..............
-}
+void VID_CheckRenderer(void) {}
+void VID_CheckGLLoaded(rendermode_t oldrender) {}
 
 
 

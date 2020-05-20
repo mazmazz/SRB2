@@ -93,7 +93,8 @@ static INT32 numVidModes = -1;
 */
 static char vidModeName[33][32]; // allow 33 different modes
 
-rendermode_t rendermode=render_soft;
+rendermode_t rendermode = render_soft;
+static rendermode_t chosenrendermode = render_soft; // set by command line arguments
 
 boolean highcolor = false;
 
@@ -103,6 +104,7 @@ static consvar_t cv_stretch = {"stretch", "Off", CV_SAVE|CV_NOSHOWHELP, CV_OnOff
 static consvar_t cv_alwaysgrabmouse = {"alwaysgrabmouse", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 
 UINT8 graphics_started = 0; // Is used in console.c and screen.c
+INT32 vid_opengl_state = 0;
 
 // To disable fullscreen at startup; is set in VID_PrepareModeList
 boolean allow_fullscreen = false;
@@ -174,7 +176,11 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen);
 //static void Impl_SetWindowName(const char *title);
 static void Impl_SetWindowIcon(void);
 
+<<<<<<< HEAD
 static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool centerscreen)
+=======
+static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool reposition)
+>>>>>>> 9d06cb4be459e3ef12f0083a3f21669de3adf8b2
 {
 	static SDL_bool wasfullscreen = SDL_FALSE;
 	Uint32 rmask;
@@ -203,7 +209,11 @@ static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool 
 			}
 			// Reposition window only in windowed mode
 			SDL_SetWindowSize(window, width, height);
+<<<<<<< HEAD
 			if (centerscreen)
+=======
+			if (reposition)
+>>>>>>> 9d06cb4be459e3ef12f0083a3f21669de3adf8b2
 			{
 				SDL_SetWindowPosition(window,
 					SDL_WINDOWPOS_CENTERED_DISPLAY(SDL_GetWindowDisplayIndex(window)),
@@ -215,7 +225,6 @@ static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool 
 	else
 	{
 		Impl_CreateWindow(fullscreen);
-		Impl_SetWindowIcon();
 		wasfullscreen = fullscreen;
 		SDL_SetWindowSize(window, width, height);
 		if (fullscreen)
@@ -370,7 +379,9 @@ static boolean IgnoreMouse(void)
 		return false;
 	if (menuactive)
 		return !M_MouseNeeded();
-	if (paused || con_destlines || chat_on || gamestate != GS_LEVEL)
+	if (paused || con_destlines || chat_on)
+		return true;
+	if (gamestate != GS_LEVEL && gamestate != GS_INTERMISSION && gamestate != GS_CUTSCENE)
 		return true;
 	return false;
 }
@@ -1449,7 +1460,7 @@ static SDL_bool Impl_CreateContext(void)
 {
 	// Renderer-specific stuff
 #ifdef HWRENDER
-	if (rendermode == render_opengl)
+	if ((rendermode == render_opengl) && (vid_opengl_state != -1))
 	{
 		if (!sdlglcontext)
 			sdlglcontext = SDL_GL_CreateContext(window);
@@ -1482,18 +1493,84 @@ static SDL_bool Impl_CreateContext(void)
 	return SDL_TRUE;
 }
 
+void VID_CheckGLLoaded(rendermode_t oldrender)
+{
+#ifdef HWRENDER
+	if (vid_opengl_state == -1) // Well, it didn't work the first time anyway.
+	{
+		rendermode = oldrender;
+		if (chosenrendermode == render_opengl) // fallback to software
+			rendermode = render_soft;
+		if (setrenderneeded)
+		{
+			CV_StealthSetValue(&cv_renderer, oldrender);
+			CV_StealthSetValue(&cv_newrenderer, oldrender);
+			setrenderneeded = 0;
+		}
+	}
+#endif
+}
+
 void VID_CheckRenderer(void)
 {
+	boolean rendererchanged = false;
+	boolean contextcreated = false;
+	rendermode_t oldrenderer = rendermode;
+
 	if (dedicated)
 		return;
 
 	if (setrenderneeded)
 	{
 		rendermode = setrenderneeded;
-		Impl_CreateContext();
+		rendererchanged = true;
+
+#ifdef HWRENDER
+		if (rendermode == render_opengl)
+		{
+			VID_CheckGLLoaded(oldrenderer);
+
+			// Initialise OpenGL before calling SDLSetMode!!!
+			// This is because SDLSetMode calls OglSdlSurface.
+			if (vid_opengl_state == 0)
+			{
+				VID_StartupOpenGL();
+				// Loaded successfully!
+				if (vid_opengl_state == 1)
+				{
+					// Destroy the current window, if it exists.
+					if (window)
+					{
+						SDL_DestroyWindow(window);
+						window = NULL;
+					}
+
+					// Destroy the current window rendering context, if that also exists.
+					if (renderer)
+					{
+						SDL_DestroyRenderer(renderer);
+						renderer = NULL;
+					}
+
+					// Create a new window.
+					Impl_CreateWindow(USE_FULLSCREEN);
+
+					// From there, the OpenGL context was already created.
+					contextcreated = true;
+				}
+			}
+			else if (vid_opengl_state == -1)
+				rendererchanged = false;
+		}
+#endif
+
+		if (!contextcreated)
+			Impl_CreateContext();
+
+		setrenderneeded = 0;
 	}
 
-	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, SDL_TRUE);
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (rendererchanged ? SDL_FALSE : SDL_TRUE));
 	Impl_VideoSetupBuffer();
 
 	if (rendermode == render_soft)
@@ -1503,55 +1580,27 @@ void VID_CheckRenderer(void)
 			SDL_FreeSurface(bufSurface);
 			bufSurface = NULL;
 		}
-#ifdef HWRENDER
-		HWR_FreeTextureCache();
-#endif
-		SCR_SetDrawFuncs();
-	}
-#ifdef HWRENDER
-	else if (rendermode == render_opengl)
-	{
-		I_StartupHardwareGraphics();
-		R_InitHardwareMode();
-	}
-#endif
 
-	return SDL_TRUE;
-}
-
-// VID_SetMode but no video modes
-INT32 VID_SetResolution(INT32 width, INT32 height)
-{
-	SDLdoUngrabMouse();
-
-	vid.recalc = 1;
-	vid.bpp = 1;
-
-	vid.width = (width < BASEVIDWIDTH) ? BASEVIDWIDTH : ((width > MAXVIDWIDTH) ? MAXVIDWIDTH : width);
-	vid.height = (height < BASEVIDHEIGHT) ? BASEVIDHEIGHT : ((height > MAXVIDHEIGHT) ? MAXVIDHEIGHT : height);
-	vid.modenum = VID_GetModeForSize(width, height);
-
-	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (setresneeded[2] == 2));
-	Impl_VideoSetupBuffer();
-
-	if (rendermode == render_soft)
-	{
-		if (bufSurface)
+		if (rendererchanged)
 		{
-			SDL_FreeSurface(bufSurface);
-			bufSurface = NULL;
-		}
 #ifdef HWRENDER
-		HWR_FreeTextureCache();
+			if (vid_opengl_state == 1) // Only if OpenGL ever loaded!
+				HWR_FreeTextureCache();
 #endif
-		SCR_SetDrawFuncs();
+			SCR_SetDrawFuncs();
+		}
 	}
 #ifdef HWRENDER
 	else if (rendermode == render_opengl)
 	{
-		I_StartupHardwareGraphics();
-		R_InitHardwareMode();
+		if (rendererchanged)
+		{
+			R_InitHardwareMode();
+			V_SetPalette(0);
+		}
 	}
+#else
+	(void)oldrenderer;
 #endif
 }
 
@@ -1593,7 +1642,8 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen)
 		flags |= SDL_WINDOW_BORDERLESS;
 
 #ifdef HWRENDER
-	flags |= SDL_WINDOW_OPENGL;
+	if (vid_opengl_state == 1)
+		flags |= SDL_WINDOW_OPENGL;
 #endif
 
 	flags |= SDL_WINDOW_RESIZABLE;
@@ -1602,11 +1652,14 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen)
 	window = SDL_CreateWindow("SRB2 "VERSIONSTRING, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			realwidth, realheight, flags);
 
+
 	if (window == NULL)
 	{
 		CONS_Printf(M_GetText("Couldn't create window: %s\n"), SDL_GetError());
 		return SDL_FALSE;
 	}
+
+	Impl_SetWindowIcon();
 
 	return Impl_CreateContext();
 }
@@ -1624,12 +1677,8 @@ static void Impl_SetWindowName(const char *title)
 
 static void Impl_SetWindowIcon(void)
 {
-	if (window == NULL || icoSurface == NULL)
-	{
-		return;
-	}
-	//SDL2STUB(); // Monster Iestyn: why is this stubbed?
-	SDL_SetWindowIcon(window, icoSurface);
+	if (window && icoSurface)
+		SDL_SetWindowIcon(window, icoSurface);	
 }
 
 static void Impl_VideoSetupSDLBuffer(void)
@@ -1718,19 +1767,28 @@ void I_StartupGraphics(void)
 
 #ifdef HWRENDER
 	if (M_CheckParm("-opengl"))
-		rendermode = render_opengl;
+		chosenrendermode = rendermode = render_opengl;
 	else if (M_CheckParm("-software"))
 #endif
-		rendermode = render_soft;
+		chosenrendermode = rendermode = render_soft;
 
 	usesdl2soft = M_CheckParm("-softblit");
 	borderlesswindow = M_CheckParm("-borderless");
 
 	//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY>>1,SDL_DEFAULT_REPEAT_INTERVAL<<2);
 	VID_Command_ModeList_f();
+
 #ifdef HWRENDER
-	I_StartupHardwareGraphics();
+	if (M_CheckParm("-nogl"))
+		vid_opengl_state = -1; // Don't startup OpenGL
+	else if (chosenrendermode == render_opengl)
+		VID_StartupOpenGL();
 #endif
+
+	// Window icon
+#ifdef HAVE_IMAGE
+	icoSurface = IMG_ReadXPMFromArray(SDL_icon_xpm);
+#endif	
 
 	// Fury: we do window initialization after GL setup to allow
 	// SDL_GL_LoadLibrary to work well on Windows
@@ -1750,11 +1808,6 @@ void I_StartupGraphics(void)
 #ifdef HAVE_TTF
 	I_ShutdownTTF();
 #endif
-	// Window icon
-#ifdef HAVE_IMAGE
-	icoSurface = IMG_ReadXPMFromArray(SDL_icon_xpm);
-#endif
-	Impl_SetWindowIcon();
 
 	VID_SetMode(VID_GetModeForSize(BASEVIDWIDTH, BASEVIDHEIGHT));
 
@@ -1784,12 +1837,13 @@ void I_StartupGraphics(void)
 	graphics_started = true;
 }
 
-void I_StartupHardwareGraphics(void)
+void VID_StartupOpenGL(void)
 {
 #ifdef HWRENDER
 	static boolean glstartup = false;
 	if (!glstartup)
 	{
+		CONS_Printf("VID_StartupOpenGL()...\n");
 		HWD.pfnInit             = hwSym("Init",NULL);
 		HWD.pfnFinishUpdate     = NULL;
 		HWD.pfnDraw2DLine       = hwSym("Draw2DLine",NULL);
@@ -1817,13 +1871,22 @@ void I_StartupHardwareGraphics(void)
 		HWD.pfnMakeScreenTexture= hwSym("MakeScreenTexture",NULL);
 		HWD.pfnMakeScreenFinalTexture=hwSym("MakeScreenFinalTexture",NULL);
 		HWD.pfnDrawScreenFinalTexture=hwSym("DrawScreenFinalTexture",NULL);
+
 		// check gl renderer lib
 		if (HWD.pfnGetRenderVersion() != VERSION)
-			I_Error("%s", M_GetText("The version of the renderer doesn't match the version of the executable\nBe sure you have installed SRB2 properly.\n"));
-		if (!HWD.pfnInit(I_Error)) // let load the OpenGL library
-			rendermode = render_soft;
+		{
+			CONS_Alert(CONS_ERROR, M_GetText("The version of the renderer doesn't match the version of the executable!\nBe sure you have installed SRB2 properly.\n"));
+			vid_opengl_state = -1;
+		}
 		else
-			glstartup = true;
+			vid_opengl_state = HWD.pfnInit(I_Error) ? 1 : -1; // let load the OpenGL library
+
+		if (vid_opengl_state == -1)
+		{
+			rendermode = render_soft;
+			setrenderneeded = 0;
+		}
+		glstartup = true;
 	}
 #endif
 }
