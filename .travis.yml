@@ -310,13 +310,15 @@ matrix:
             provider: releases
             api_key: $GITHUB_TOKEN
             file_glob: true
-            file: ../build/package/*/** # relative to [repo]/src, per `skip_cleanup`
+            file: package/** # relative to [repo]/build
             skip_cleanup: true
             draft: true
             on:
               all_branches: true
           after_success:
             - sudo rm -r package/_CPack_Packages
+            - echo "$PWD"
+            - ls -R 
 
           #Apple LLVM version 7.3.0 (clang-703.0.31)
 
