@@ -99,6 +99,7 @@ NOASM=1
 NONX86=1
 NOHW=1
 NOHS=1
+NOOBJDUMP=1
 include emscripten/Makefile.cfg
 endif
 
@@ -585,9 +586,11 @@ endif
 
 # mac os x lsdlsrb2 does not like objcopy
 ifndef MACOSX
+ifndef EMSCRIPTEN
 	$(OBJCOPY) $(BIN)/$(EXENAME) $(BIN)/$(DBGNAME)
 	$(OBJCOPY) --strip-debug $(BIN)/$(EXENAME)
 	-$(OBJCOPY) --add-gnu-debuglink=$(BIN)/$(DBGNAME) $(BIN)/$(EXENAME)
+endif
 endif
 ifndef NOUPX
 	-$(UPX) $(UPX_OPTS) $(BIN)/$(EXENAME)
