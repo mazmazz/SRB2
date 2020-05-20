@@ -31,6 +31,8 @@ matrix:
             - cd "$(<~/oldpwd.txt)"
           script:
             - emmake make -C src/
+          after_success:
+            - echo "<html><head></head><body><p>Test</p></body></html>" > bin/Emscripten/Release/index.html
           ################################
           # This job deploys to GitHub Releases as a draft post.
           # It is not visible to the public.
@@ -45,15 +47,23 @@ matrix:
           # New build drafts will NOT overwrite old build drafts.
           ################################
           deploy:
-            provider: releases
-            api_key: $GITHUB_TOKEN
-            file_glob: true
-            file: bin/Emscripten/Release/** # relative to [repo]
-            skip_cleanup: true
-            draft: true
-            on:
-              all_branches: true
-          
+            - provider: releases
+              api_key: $GITHUB_TOKEN
+              file_glob: true
+              file: bin/Emscripten/Release/** # relative to [repo]
+              skip_cleanup: true
+              draft: true
+              on:
+                all_branches: true
+            - provider: netlify
+              edge: true # opt into dpl v2
+              site: $NETLIFY_SITE
+              auth: $NETLIFY_TOKEN
+              dir: bin/Emscripten/Release
+              skip_cleanup: true
+              on:
+                all_branches: true
+
 ################################
 # Test Buildbots
 # Deployer does not operate on these. See Deployer Buildbots, below.
