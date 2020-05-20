@@ -636,10 +636,7 @@ addons:
     taps:
     - mazmazz/srb2
     packages:
-    - sdl2_mixer
-    - game-music-emu
     - p7zip
-    - libopenmpt
     - cmake
     update: true
 
