@@ -1,7 +1,7 @@
 // SONIC ROBO BLAST 2
 //-----------------------------------------------------------------------------
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2019 by Sonic Team Junior.
+// Copyright (C) 1999-2020 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -54,7 +54,7 @@ static void COM_Add_f(void);
 static void CV_EnforceExecVersion(void);
 static boolean CV_FilterVarByVersion(consvar_t *v, const char *valstr);
 static boolean CV_Command(void);
-static consvar_t *CV_FindVar(const char *name);
+consvar_t *CV_FindVar(const char *name);
 static const char *CV_StringValue(const char *var_name);
 static consvar_t *consvar_vars; // list of registered console variables
 
@@ -823,8 +823,13 @@ static void COM_Help_f(void)
 					if (!stricmp(cvar->PossibleValue[MINVAL].strvalue, "MIN"))
 					{
 						if (floatmode)
-							CONS_Printf("  range from %f to %f\n", FIXED_TO_FLOAT(cvar->PossibleValue[MINVAL].value),
-								FIXED_TO_FLOAT(cvar->PossibleValue[MAXVAL].value));
+						{
+							float fu = FIXED_TO_FLOAT(cvar->PossibleValue[MINVAL].value);
+							float ck = FIXED_TO_FLOAT(cvar->PossibleValue[MAXVAL].value);
+							CONS_Printf("  range from %ld%s to %ld%s\n",
+									(long)fu, M_Ftrim(fu),
+									(long)ck, M_Ftrim(ck));
+						}
 						else
 							CONS_Printf("  range from %d to %d\n", cvar->PossibleValue[MINVAL].value,
 								cvar->PossibleValue[MAXVAL].value);
@@ -973,7 +978,10 @@ static void COM_Add_f(void)
 	}
 
 	if (( cvar->flags & CV_FLOAT ))
-		CV_Set(cvar, va("%f", FIXED_TO_FLOAT (cvar->value) + atof(COM_Argv(2))));
+	{
+		float n =FIXED_TO_FLOAT (cvar->value) + atof(COM_Argv(2));
+		CV_Set(cvar, va("%ld%s", (long)n, M_Ftrim(n)));
+	}
 	else
 		CV_AddValue(cvar, atoi(COM_Argv(2)));
 }
@@ -1106,7 +1114,7 @@ static const char *cv_null_string = "";
   * \return Pointer to the variable if found, or NULL.
   * \sa CV_FindNetVar
   */
-static consvar_t *CV_FindVar(const char *name)
+consvar_t *CV_FindVar(const char *name)
 {
 	consvar_t *cvar;
 
@@ -1457,15 +1465,8 @@ static void Got_NetVar(UINT8 **p, INT32 playernum)
 	{
 		// not from server or remote admin, must be hacked/buggy client
 		CONS_Alert(CONS_WARNING, M_GetText("Illegal netvar command received from %s\n"), player_names[playernum]);
-
 		if (server)
-		{
-			UINT8 buf[2];
-
-			buf[0] = (UINT8)playernum;
-			buf[1] = KICK_MSG_CON_FAIL;
-			SendNetXCmd(XD_KICK, &buf, 2);
-		}
+			SendKick(playernum, KICK_MSG_CON_FAIL | KICK_MSG_KEEP_BODY);
 		return;
 	}
 	netid = READUINT16(*p);
@@ -2114,7 +2115,12 @@ void CV_SaveVariables(FILE *f)
 
 			// Silly hack for Min/Max vars
 			if (!strcmp(cvar->string, "MAX") || !strcmp(cvar->string, "MIN"))
-				sprintf(stringtowrite, "%d", cvar->value);
+			{
+				if (cvar->flags & CV_FLOAT)
+					sprintf(stringtowrite, "%f", FIXED_TO_FLOAT(cvar->value));
+				else
+					sprintf(stringtowrite, "%d", cvar->value);
+			}
 			else
 				strcpy(stringtowrite, cvar->string);
 

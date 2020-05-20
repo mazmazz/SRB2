@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2019 by Sonic Team Junior.
+// Copyright (C) 1999-2020 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -611,12 +611,12 @@ void M_SaveConfig(const char *filename)
 		CV_SetValue(&cv_usemouse, tutorialusemouse);
 		CV_SetValue(&cv_alwaysfreelook, tutorialfreelook);
 		CV_SetValue(&cv_mousemove, tutorialmousemove);
-		CV_SetValue(&cv_analog, tutorialanalog);
+		CV_SetValue(&cv_analog[0], tutorialanalog);
 		CV_SaveVariables(f);
 		CV_Set(&cv_usemouse, cv_usemouse.defaultvalue);
 		CV_Set(&cv_alwaysfreelook, cv_alwaysfreelook.defaultvalue);
 		CV_Set(&cv_mousemove, cv_mousemove.defaultvalue);
-		CV_Set(&cv_analog, cv_analog.defaultvalue);
+		CV_Set(&cv_analog[0], cv_analog[0].defaultvalue);
 	}
 	else
 		CV_SaveVariables(f);
@@ -1611,16 +1611,19 @@ boolean M_ScreenshotResponder(event_t *ev)
 // M_StartupLocale.
 // Sets up gettext to translate SRB2's strings.
 #ifdef GETTEXT
-#if defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
-#define GETTEXTDOMAIN1 "/usr/share/locale"
-#define GETTEXTDOMAIN2 "/usr/local/share/locale"
-#elif defined (_WIN32)
-#define GETTEXTDOMAIN1 "."
-#endif
+	#if defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
+		#define GETTEXTDOMAIN1 "/usr/share/locale"
+		#define GETTEXTDOMAIN2 "/usr/local/share/locale"
+	#elif defined (_WIN32)
+		#define GETTEXTDOMAIN1 "."
+	#endif
+#endif // GETTEXT
 
 void M_StartupLocale(void)
 {
+#ifdef GETTEXT
 	char *textdomhandle = NULL;
+#endif //GETTEXT
 
 	CONS_Printf("M_StartupLocale...\n");
 
@@ -1629,6 +1632,7 @@ void M_StartupLocale(void)
 	// Do not set numeric locale as that affects atof
 	setlocale(LC_NUMERIC, "C");
 
+#ifdef GETTEXT
 	// FIXME: global name define anywhere?
 #ifdef GETTEXTDOMAIN1
 	textdomhandle = bindtextdomain("srb2", GETTEXTDOMAIN1);
@@ -1649,8 +1653,8 @@ void M_StartupLocale(void)
 		textdomain("srb2");
 	else
 		CONS_Printf("Could not find locale text domain!\n");
+#endif //GETTEXT
 }
-#endif
 
 // ==========================================================================
 //                        MISC STRING FUNCTIONS
@@ -1796,7 +1800,7 @@ char *M_GetToken(const char *inputString)
 			|| stringToUse[startPos] == '\r'
 			|| stringToUse[startPos] == '\n'
 			|| stringToUse[startPos] == '\0'
-			|| stringToUse[startPos] == '"' // we're treating this as whitespace because SLADE likes adding it for no good reason
+			|| stringToUse[startPos] == '=' || stringToUse[startPos] == ';' // UDMF TEXTMAP.
 			|| inComment != 0)
 			&& startPos < stringLength)
 	{
@@ -1854,6 +1858,23 @@ char *M_GetToken(const char *inputString)
 		texturesToken[1] = '\0';
 		return texturesToken;
 	}
+	// Return entire string within quotes, except without the quotes.
+	else if (stringToUse[startPos] == '"')
+	{
+		endPos = ++startPos;
+		while (stringToUse[endPos] != '"' && endPos < stringLength)
+			endPos++;
+
+		texturesTokenLength = endPos++ - startPos;
+		// Assign the memory. Don't forget an extra byte for the end of the string!
+		texturesToken = (char *)Z_Malloc((texturesTokenLength+1)*sizeof(char),PU_STATIC,NULL);
+		// Copy the string.
+		M_Memcpy(texturesToken, stringToUse+startPos, (size_t)texturesTokenLength);
+		// Make the final character NUL.
+		texturesToken[texturesTokenLength] = '\0';
+
+		return texturesToken;
+	}
 
 	// Now find the end of the token. This includes several additional characters that are okay to capture as one character, but not trailing at the end of another token.
 	endPos = startPos + 1;
@@ -1864,7 +1885,7 @@ char *M_GetToken(const char *inputString)
 			&& stringToUse[endPos] != ','
 			&& stringToUse[endPos] != '{'
 			&& stringToUse[endPos] != '}'
-			&& stringToUse[endPos] != '"' // see above
+			&& stringToUse[endPos] != '=' && stringToUse[endPos] != ';' // UDMF TEXTMAP.
 			&& inComment == 0)
 			&& endPos < stringLength)
 	{
@@ -1906,6 +1927,20 @@ char *M_GetToken(const char *inputString)
 void M_UnGetToken(void)
 {
 	endPos = oldendPos;
+}
+
+/** Returns the current token's position.
+ */
+UINT32 M_GetTokenPos(void)
+{
+	return endPos;
+}
+
+/** Sets the current token's position.
+ */
+void M_SetTokenPos(UINT32 newPos)
+{
+	endPos = newPos;
 }
 
 /** Count bits in a number.
@@ -2556,4 +2591,59 @@ void M_MkdirEachUntil(const char *cpath, int start, int end, int mode)
 void M_MkdirEach(const char *path, int start, int mode)
 {
 	M_MkdirEachUntil(path, start, -1, mode);
+}
+
+int M_JumpWord(const char *line)
+{
+	int c;
+
+	c = line[0];
+
+	if (isspace(c))
+		return strspn(line, " ");
+	else if (ispunct(c))
+		return strspn(line, PUNCTUATION);
+	else
+	{
+		if (isspace(line[1]))
+			return 1 + strspn(&line[1], " ");
+		else
+			return strcspn(line, " "PUNCTUATION);
+	}
+}
+
+int M_JumpWordReverse(const char *line, int offset)
+{
+	int (*is)(int);
+	int c;
+	c = line[--offset];
+	if (isspace(c))
+		is = isspace;
+	else if (ispunct(c))
+		is = ispunct;
+	else
+		is = isalnum;
+	c = (*is)(line[offset]);
+	while (offset > 0 &&
+			(*is)(line[offset - 1]) == c)
+		offset--;
+	return offset;
+}
+
+const char * M_Ftrim (double f)
+{
+	static char dig[9];/* "0." + 6 digits (6 is printf's default) */
+	int i;
+	/* I know I said it's the default, but just in case... */
+	sprintf(dig, "%.6f", fabs(modf(f, &f)));
+	/* trim trailing zeroes */
+	for (i = strlen(dig)-1; dig[i] == '0'; --i)
+		;
+	if (dig[i] == '.')/* :NOTHING: */
+		return "";
+	else
+	{
+		dig[i + 1] = '\0';
+		return &dig[1];/* skip the 0 */
+	}
 }

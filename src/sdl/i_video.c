@@ -4,7 +4,7 @@
 //
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Portions Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 2014-2019 by Sonic Team Junior.
+// Copyright (C) 2014-2020 by Sonic Team Junior.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -110,7 +110,6 @@ static SDL_bool disable_fullscreen = SDL_FALSE;
 #define USE_FULLSCREEN (disable_fullscreen||!allow_fullscreen)?0:cv_fullscreen.value
 static SDL_bool disable_mouse = SDL_FALSE;
 #define USE_MOUSEINPUT (!disable_mouse && cv_usemouse.value && havefocus)
-#define IGNORE_MOUSE (!cv_alwaysgrabmouse.value && (menuactive || paused || con_destlines || chat_on || gamestate != GS_LEVEL))
 #define MOUSE_MENU false //(!disable_mouse && cv_usemouse.value && menuactive && !USE_FULLSCREEN)
 #define MOUSEBUTTONS_MAX MOUSEBUTTONS
 
@@ -175,7 +174,7 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen);
 //static void Impl_SetWindowName(const char *title);
 static void Impl_SetWindowIcon(void);
 
-static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen)
+static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool centerscreen)
 {
 	static SDL_bool wasfullscreen = SDL_FALSE;
 	Uint32 rmask;
@@ -204,10 +203,13 @@ static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen)
 			}
 			// Reposition window only in windowed mode
 			SDL_SetWindowSize(window, width, height);
-			SDL_SetWindowPosition(window,
-				SDL_WINDOWPOS_CENTERED_DISPLAY(SDL_GetWindowDisplayIndex(window)),
-				SDL_WINDOWPOS_CENTERED_DISPLAY(SDL_GetWindowDisplayIndex(window))
-			);
+			if (centerscreen)
+			{
+				SDL_SetWindowPosition(window,
+					SDL_WINDOWPOS_CENTERED_DISPLAY(SDL_GetWindowDisplayIndex(window)),
+					SDL_WINDOWPOS_CENTERED_DISPLAY(SDL_GetWindowDisplayIndex(window))
+				);
+			}
 		}
 	}
 	else
@@ -362,6 +364,17 @@ static INT32 Impl_SDL_Scancode_To_Keycode(SDL_Scancode code)
 	return 0;
 }
 
+static boolean IgnoreMouse(void)
+{
+	if (cv_alwaysgrabmouse.value)
+		return false;
+	if (menuactive)
+		return !M_MouseNeeded();
+	if (paused || con_destlines || chat_on || gamestate != GS_LEVEL)
+		return true;
+	return false;
+}
+
 static void SDLdoGrabMouse(void)
 {
 	SDL_ShowCursor(SDL_DISABLE);
@@ -388,7 +401,7 @@ void I_UpdateMouseGrab(void)
 {
 	if (SDL_WasInit(SDL_INIT_VIDEO) == SDL_INIT_VIDEO && window != NULL
 	&& SDL_GetMouseFocus() == window && SDL_GetKeyboardFocus() == window
-	&& USE_MOUSEINPUT && !IGNORE_MOUSE)
+	&& USE_MOUSEINPUT && !IgnoreMouse())
 		SDLdoGrabMouse();
 }
 
@@ -579,6 +592,11 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			kbfocus = SDL_FALSE;
 			mousefocus = SDL_FALSE;
 			break;
+		case SDL_WINDOWEVENT_RESIZED:
+			setresneeded[0] = evt.data1;
+			setresneeded[1] = evt.data2;
+			setresneeded[2] = 1;
+			break;
 		case SDL_WINDOWEVENT_MAXIMIZED:
 			break;
 	}
@@ -596,7 +614,7 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 		}
 		//else firsttimeonmouse = SDL_FALSE;
 
-		if (USE_MOUSEINPUT && !IGNORE_MOUSE)
+		if (USE_MOUSEINPUT && !IgnoreMouse())
 			SDLdoGrabMouse();
 	}
 	else if (!mousefocus && !kbfocus)
@@ -647,7 +665,7 @@ static void Impl_HandleMouseMotionEvent(SDL_MouseMotionEvent evt)
 
 	if (USE_MOUSEINPUT)
 	{
-		if ((SDL_GetMouseFocus() != window && SDL_GetKeyboardFocus() != window) || (IGNORE_MOUSE && !firstmove))
+		if ((SDL_GetMouseFocus() != window && SDL_GetKeyboardFocus() != window) || (IgnoreMouse() && !firstmove))
 		{
 			SDLdoUngrabMouse();
 			firstmove = false;
@@ -700,7 +718,7 @@ static void Impl_HandleMouseButtonEvent(SDL_MouseButtonEvent evt, Uint32 type)
 	// this apparently makes a mouse button down event but not a mouse button up event,
 	// resulting in whatever key was pressed down getting "stuck" if we don't ignore it.
 	// -- Monster Iestyn (28/05/18)
-	if (SDL_GetMouseFocus() != window || IGNORE_MOUSE)
+	if (SDL_GetMouseFocus() != window || IgnoreMouse())
 		return;
 
 	/// \todo inputEvent.button.which
@@ -867,6 +885,7 @@ static void Impl_HandleJoystickButtonEvent(SDL_JoyButtonEvent evt, Uint32 type)
 void I_GetEvent(void)
 {
 	SDL_Event evt;
+	char* dropped_filedir;
 	// We only want the first motion event,
 	// otherwise we'll end up catching the warp back to center.
 	//int mouseMotionOnce = 0;
@@ -1043,6 +1062,11 @@ void I_GetEvent(void)
 				if (currentMenu == &OP_JoystickSetDef)
 					M_SetupJoystickMenu(0);
 			 	break;
+			case SDL_DROPFILE:
+				dropped_filedir = evt.drop.file;
+				COM_BufInsertText(va("addfile \"%s\"", dropped_filedir));
+				SDL_free(dropped_filedir);    // Free dropped_filedir memory
+				break;
 			case SDL_QUIT:
 				I_Quit();
 				M_QuitResponse('y');
@@ -1082,7 +1106,7 @@ void I_StartupMouse(void)
 	}
 	else
 		firsttimeonmouse = SDL_FALSE;
-	if (cv_usemouse.value && !IGNORE_MOUSE)
+	if (cv_usemouse.value && !IgnoreMouse())
 		SDLdoGrabMouse();
 	else
 		SDLdoUngrabMouse();
@@ -1469,7 +1493,7 @@ void VID_CheckRenderer(void)
 		Impl_CreateContext();
 	}
 
-	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN);
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, SDL_TRUE);
 	Impl_VideoSetupBuffer();
 
 	if (rendermode == render_soft)
@@ -1489,7 +1513,44 @@ void VID_CheckRenderer(void)
 	{
 		I_StartupHardwareGraphics();
 		R_InitHardwareMode();
-		HWR_Switch();
+	}
+#endif
+
+	return SDL_TRUE;
+}
+
+// VID_SetMode but no video modes
+INT32 VID_SetResolution(INT32 width, INT32 height)
+{
+	SDLdoUngrabMouse();
+
+	vid.recalc = 1;
+	vid.bpp = 1;
+
+	vid.width = (width < BASEVIDWIDTH) ? BASEVIDWIDTH : ((width > MAXVIDWIDTH) ? MAXVIDWIDTH : width);
+	vid.height = (height < BASEVIDHEIGHT) ? BASEVIDHEIGHT : ((height > MAXVIDHEIGHT) ? MAXVIDHEIGHT : height);
+	vid.modenum = VID_GetModeForSize(width, height);
+
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (setresneeded[2] == 2));
+	Impl_VideoSetupBuffer();
+
+	if (rendermode == render_soft)
+	{
+		if (bufSurface)
+		{
+			SDL_FreeSurface(bufSurface);
+			bufSurface = NULL;
+		}
+#ifdef HWRENDER
+		HWR_FreeTextureCache();
+#endif
+		SCR_SetDrawFuncs();
+	}
+#ifdef HWRENDER
+	else if (rendermode == render_opengl)
+	{
+		I_StartupHardwareGraphics();
+		R_InitHardwareMode();
 	}
 #endif
 }
@@ -1534,6 +1595,8 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen)
 #ifdef HWRENDER
 	flags |= SDL_WINDOW_OPENGL;
 #endif
+
+	flags |= SDL_WINDOW_RESIZABLE;
 
 	// Create a window
 	window = SDL_CreateWindow("SRB2 "VERSIONSTRING, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

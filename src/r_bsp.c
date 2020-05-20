@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2019 by Sonic Team Junior.
+// Copyright (C) 1999-2020 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -1169,9 +1169,11 @@ static void R_Subsector(size_t num)
 	while (count--)
 	{
 //		CONS_Debug(DBG_GAMELOGIC, "Adding normal line %d...(%d)\n", line->linedef-lines, leveltime);
+		if (!line->glseg
 #ifdef POLYOBJECTS
-		if (!line->polyseg) // ignore segs that belong to polyobjects
+		&& !line->polyseg // ignore segs that belong to polyobjects
 #endif
+		)
 		R_AddLine(line);
 		line++;
 		curline = NULL; /* cph 2001/11/18 - must clear curline now we're done with it, so stuff doesn't try using it for other things */

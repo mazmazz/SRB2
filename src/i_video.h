@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2019 by Sonic Team Junior.
+// Copyright (C) 1999-2020 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -86,6 +86,18 @@ INT32 VID_GetModeForSize(INT32 w, INT32 h);
 */
 INT32 VID_SetMode(INT32 modenum);
 void VID_CheckRenderer(void);
+
+/**	\brief	The VID_SetResolution function
+
+	The same as VID_SetMode, but allows
+	any arbitrary resolution.
+
+	\param	width width
+	\param	height height
+
+	\return	???
+*/
+INT32 VID_SetResolution(INT32 width, INT32 height);
 
 /**	\brief	The VID_GetModeName function
 
