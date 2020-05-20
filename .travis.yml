@@ -11,7 +11,8 @@ matrix:
     include:
         - os: linux
           dist: bionic
-          before_install:
+          env: EMSCRIPTEN=1
+          install:
             # Save PWD to a file; for some reason, this var gets obliterated
             - echo "$PWD" > ~/oldpwd.txt
             # Install latest emscripten
@@ -25,10 +26,10 @@ matrix:
             - chmod +x llvm.sh
             - sudo ./llvm.sh 10
             - export PATH="/usr/lib/llvm-10/bin:$PATH"
-          install: ~
-          before_script: ~
-          script:
+            # Finishing touches
+            - mkdir -p $HOME/srb2_cache
             - cd "$(<~/oldpwd.txt)"
+          script:
             - emmake make -C src/
           ################################
           # This job deploys to GitHub Releases as a draft post.
@@ -719,7 +720,11 @@ install:
 before_script:
   # OLDPWD is root repo folder
   - OLDPWD=$PWD
-  - __ASSET_DIRECTORY="$OLDPWD/assets/installer"
+  - if [[ "$EMSCRIPTEN" == "1" ]]; then
+      __ASSET_DIRECTORY="$OLDPWD/assets";
+    else
+      __ASSET_DIRECTORY="$OLDPWD/assets/installer";
+    fi;
   - mkdir -p "$__ASSET_DIRECTORY"
   - cd "$HOME/srb2_cache"
 
@@ -742,7 +747,15 @@ before_script:
     fi;
 
   # Get optional files too
-  - if [[ "$__DPL_ACTIVE" == "1" ]] && [[ "$ASSET_FILES_OPTIONAL_GET" == "1" ]] && [[ "$ASSET_ARCHIVE_OPTIONAL_PATH" != "" ]]; then
+  - __DOWNLOAD_OPTIONAL_ASSETS=0
+  - if [[ "$ASSET_FILES_OPTIONAL_GET" == "1" ]] && [[ "$ASSET_ARCHIVE_OPTIONAL_PATH" != "" ]]; then
+      if [[ "$EMSCRIPTEN" == "1" ]]; then
+        __DOWNLOAD_OPTIONAL_ASSETS=1;
+      elif [[ "$__DPL_ACTIVE" == "1" ]]; then
+        __DOWNLOAD_OPTIONAL_ASSETS=1;
+      fi;
+    fi;
+  - if [[ "$__DOWNLOAD_OPTIONAL_ASSETS" == "1" ]]; then
       if [ -f "$(basename $ASSET_ARCHIVE_OPTIONAL_PATH)" ]; then
         echo "$(basename $ASSET_ARCHIVE_OPTIONAL_PATH) cache date -- $($STATCMD $(basename $ASSET_ARCHIVE_OPTIONAL_PATH))";
       fi;
@@ -753,27 +766,28 @@ before_script:
   # Go back to root repo folder
   - cd "$OLDPWD"
 
-  # Prepare CMake asset lists
-  - SRB2_ASSET_HASHED=$(echo ${ASSET_FILES_HASHED// /\;})
-  - SRB2_ASSET_DOCS=$(echo ${ASSET_FILES_DOCS// /\;})
-  - SRB2_ASSET_DIRECTORY="$__ASSET_DIRECTORY"
-
   # Prepare CMake
-  - mkdir build
-  - cd build
-  - mkdir package
-  - export CFLAGS="-Wall -W -Werror $WFLAGS"
-  - export CCACHE_COMPRESS=true
   # If OS X, set -march=core2 to build compatible binaries with old Macs
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      export CFLAGS="${CFLAGS} -march=core2";
+  - if [[ "$EMSCRIPTEN" != "1" ]]; then
+      SRB2_ASSET_HASHED=$(echo ${ASSET_FILES_HASHED// /\;});
+      SRB2_ASSET_DOCS=$(echo ${ASSET_FILES_DOCS// /\;});
+      SRB2_ASSET_DIRECTORY="$__ASSET_DIRECTORY";
+
+      mkdir build;
+      cd build;
+      mkdir package;
+      export CFLAGS="-Wall -W -Werror $WFLAGS";
+      export CCACHE_COMPRESS=true;
+      if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        export CFLAGS="${CFLAGS} -march=core2";
+      fi;
+      cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/bin -DCPACK_PACKAGE_DIRECTORY=$PWD/package
+        -DSRB2_ASSET_HASHED="${SRB2_ASSET_HASHED}" -DSRB2_ASSET_DOCS="${SRB2_ASSET_DOCS}"
+        -DSRB2_ASSET_DIRECTORY="${SRB2_ASSET_DIRECTORY}"
+        -DCPACK_PACKAGE_DESCRIPTION_SUMMARY="${PROGRAM_NAME}"
+        -DCPACK_PACKAGE_VENDOR="${PROGRAM_VENDOR}"
+        -DSRB2_SDL2_EXE_NAME="${PROGRAM_FILENAME}";
     fi;
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/bin -DCPACK_PACKAGE_DIRECTORY=$PWD/package
-      -DSRB2_ASSET_HASHED="${SRB2_ASSET_HASHED}" -DSRB2_ASSET_DOCS="${SRB2_ASSET_DOCS}"
-      -DSRB2_ASSET_DIRECTORY="${SRB2_ASSET_DIRECTORY}"
-      -DCPACK_PACKAGE_DESCRIPTION_SUMMARY="${PROGRAM_NAME}"
-      -DCPACK_PACKAGE_VENDOR="${PROGRAM_VENDOR}"
-      -DSRB2_SDL2_EXE_NAME="${PROGRAM_FILENAME}"
 
 script:
   # Build our Makefile from Cmake!
