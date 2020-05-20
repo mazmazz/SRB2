@@ -60,6 +60,11 @@ typedef off_t off64_t;
 #endif
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+
 #if defined(__MINGW32__) && ((__GNUC__ > 7) || (__GNUC__ == 6 && __GNUC_MINOR__ >= 3)) && (__GNUC__ < 8)
 #define PRIdS "u"
 #elif defined (_WIN32)
@@ -249,6 +254,12 @@ boolean FIL_WriteFile(char const *name, const void *source, size_t length)
 
 	count = fwrite(source, 1, length, handle);
 	fclose(handle);
+
+	#ifdef __EMSCRIPTEN__
+		EM_ASM(
+			FS.syncfs(function (err) { console.log(err); });
+		);
+	#endif
 
 	if (count < length)
 		return false;
@@ -619,6 +630,12 @@ void M_SaveConfig(const char *filename)
 	}
 
 	fclose(f);
+
+	#ifdef __EMSCRIPTEN__
+		EM_ASM(
+			FS.syncfs(function (err) { console.log(err); });
+		);
+	#endif
 }
 
 // ==========================================================================

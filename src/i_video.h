@@ -92,6 +92,7 @@ INT32 VID_GetModeForSize(INT32 w, INT32 h);
 	\return	current video mode
 */
 INT32 VID_SetMode(INT32 modenum);
+INT32 VID_SetResolution(INT32 width, INT32 height);
 
 /**	\brief Checks the render state
 */

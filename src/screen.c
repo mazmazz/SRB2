@@ -53,13 +53,18 @@ void (*spanfuncs_npo2[SPANDRAWFUNC_MAX])(void);
 // ------------------
 viddef_t vid;
 INT32 setmodeneeded; //video mode change needed if > 0 (the mode number to set + 1)
-UINT8 setrenderneeded = 0;
+UINT8 setrenderneeded = 0; // set render mode
+INT32 setresneeded[3]; // if setresneeded[2] is > 0, set resolution
+
+static void SCR_ChangeFullscreen (void);
+static void SCR_ChangeWidthCVAR (void);
+static void SCR_ChangeHeightCVAR (void);
 
 static CV_PossibleValue_t scr_depth_cons_t[] = {{8, "8 bits"}, {16, "16 bits"}, {24, "24 bits"}, {32, "32 bits"}, {0, NULL}};
 
 //added : 03-02-98: default screen mode, as loaded/saved in config
-consvar_t cv_scr_width = {"scr_width", CONFIGVIDWIDTH, CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_scr_height = {"scr_height", CONFIGVIDHEIGHT, CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_scr_width = {"scr_width", CONFIGVIDWIDTH, CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeWidthCVAR, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_scr_height = {"scr_height", CONFIGVIDHEIGHT, CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeHeightCVAR, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_depth = {"scr_depth", "16 bits", CV_SAVE, scr_depth_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_renderview = {"renderview", "On", 0, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 
@@ -75,7 +80,7 @@ consvar_t cv_renderer = {"renderer", "Software", CV_SAVE|CV_NOLUA|CV_CALL, cv_re
 
 static void SCR_ChangeFullscreen(void);
 
-consvar_t cv_fullscreen = {"fullscreen", "Yes", CV_SAVE|CV_CALL, CV_YesNo, SCR_ChangeFullscreen, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_fullscreen = {"fullscreen", "No", CV_SAVE|CV_CALL, CV_YesNo, SCR_ChangeFullscreen, 0, NULL, NULL, 0, 0, NULL};
 
 // =========================================================================
 //                           SCREEN VARIABLES
@@ -177,7 +182,6 @@ void SCR_SetDrawFuncs(void)
 		spanfunc = basespanfunc = R_DrawSpan_16;
 		transcolfunc = R_DrawTranslatedColumn_16;
 		transtransfunc = R_DrawTranslucentColumn_16; // No 16bit operation for this function
-
 		colfunc = basecolfunc = R_DrawColumn_16;
 		shadecolfunc = NULL; // detect error if used somewhere..
 		fuzzcolfunc = R_DrawTranslucentColumn_16;
@@ -191,24 +195,27 @@ void SCR_SetDrawFuncs(void)
 */
 }
 
+void SCR_SetRenderer(void)
+{
+	Z_PreparePatchFlush();
+	needpatchflush = true;
+	needpatchrecache = true;
+	VID_CheckRenderer();
+	if (!setmodeneeded && !setresneeded[2])
+		VID_SetResolution(vid.width, vid.height);
+}
+
 void SCR_SetMode(void)
 {
 	if (dedicated)
 		return;
 
-	if (!(setmodeneeded || setrenderneeded) || WipeInAction)
+	if (!(setmodeneeded || setrenderneeded || setresneeded[2]) || WipeInAction)
 		return; // should never happen and don't change it during a wipe, BAD!
 
 	// Lactozilla: Renderer switching
 	if (setrenderneeded)
-	{
-		Z_PreparePatchFlush();
-		needpatchflush = true;
-		needpatchrecache = true;
-		VID_CheckRenderer();
-		if (!setmodeneeded)
-			VID_SetMode(vid.modenum);
-	}
+		SCR_SetRenderer();
 
 	if (setmodeneeded)
 		VID_SetMode(--setmodeneeded);
@@ -217,8 +224,32 @@ void SCR_SetMode(void)
 
 	SCR_SetDrawFuncs();
 
-	// set the apprpriate drawer for the sky (tall or INT16)
+	// set the appropriate drawer for the sky (tall or INT16)
 	setmodeneeded = 0;
+	setrenderneeded = 0;
+}
+
+void SCR_SetResolution(void)
+{
+	if (dedicated)
+		return;
+
+	if (!setresneeded[2] || WipeInAction)
+		return; // should never happen and don't change it during a wipe, BAD!
+
+	// Lactozilla: Renderer switching
+	if (setrenderneeded)
+		SCR_SetRenderer();
+
+	if (setresneeded[2])
+		VID_SetResolution(setresneeded[0], setresneeded[1]);
+
+	V_SetPalette(0);
+
+	SCR_SetDrawFuncs();
+
+	// set the appropriate drawer for the sky (tall or INT16)
+	setresneeded[2] = 0;
 	setrenderneeded = 0;
 }
 
@@ -400,15 +431,17 @@ void SCR_CheckDefaultMode(void)
 	if (scr_forcex && scr_forcey)
 	{
 		CONS_Printf(M_GetText("Using resolution: %d x %d\n"), scr_forcex, scr_forcey);
-		// returns -1 if not found, thus will be 0 (no mode change) if not found
-		setmodeneeded = VID_GetModeForSize(scr_forcex, scr_forcey) + 1;
+		setresneeded[0] = scr_forcex;
+		setresneeded[1] = scr_forcey;
+		setresneeded[2] = 2;
 	}
 	else
 	{
 		CONS_Printf(M_GetText("Default resolution: %d x %d (%d bits)\n"), cv_scr_width.value,
 			cv_scr_height.value, cv_scr_depth.value);
-		// see note above
-		setmodeneeded = VID_GetModeForSize(cv_scr_width.value, cv_scr_height.value) + 1;
+		setresneeded[0] = cv_scr_width.value;
+		setresneeded[1] = cv_scr_height.value;
+		setresneeded[2] = 2;
 	}
 
 	SCR_ActuallyChangeRenderer();
@@ -435,10 +468,30 @@ void SCR_ChangeFullscreen(void)
 	if (graphics_started)
 	{
 		VID_PrepareModeList();
-		setmodeneeded = VID_GetModeForSize(vid.width, vid.height) + 1;
+		setresneeded[0] = cv_scr_width.value;
+		setresneeded[1] = cv_scr_height.value;
+		setresneeded[2] = 1;
 	}
 	return;
 #endif
+}
+
+// Called after changing the value of scr_width
+// Keeps the height the same
+void SCR_ChangeWidthCVAR(void)
+{
+	setresneeded[0] = cv_scr_width.value;
+	setresneeded[1] = vid.height;
+	setresneeded[2] = 1;
+}
+
+// Called after changing the value of scr_height
+// Keeps the width the same
+void SCR_ChangeHeightCVAR(void)
+{
+	setresneeded[0] = vid.width;
+	setresneeded[1] = cv_scr_height.value;
+	setresneeded[2] = 1;
 }
 
 static int target_renderer = 0;

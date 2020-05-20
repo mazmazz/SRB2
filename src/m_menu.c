@@ -162,9 +162,13 @@ static  INT32   (*setupcontrols)[2];  // pointer to the gamecontrols of the play
 // shhh... what am I doing... nooooo!
 static INT32 vidm_testingmode = 0;
 static INT32 vidm_previousmode;
+static INT32 vidm_previousres[3];
 static INT32 vidm_selected = 0;
 static INT32 vidm_nummodes;
 static INT32 vidm_column_size;
+
+#define vidm_customreslength 12 // (XXXXXxYYYYY) - 11 plus the zero terminator
+static char vidm_customres[vidm_customreslength];
 
 // new menus
 static tic_t recatkdrawtimer = 0;
@@ -504,7 +508,9 @@ static menuitem_t MainMenu[] =
 	{IT_STRING|IT_CALL,    NULL, "Extras",      M_SecretsMenu,           92},
 	{IT_CALL   |IT_STRING, NULL, "Addons",      M_Addons,               100},
 	{IT_STRING|IT_CALL,    NULL, "Options",     M_Options,              108},
+	#ifndef __EMSCRIPTEN__
 	{IT_STRING|IT_CALL,    NULL, "Quit  Game",  M_QuitSRB2,             116},
+	#endif
 };
 
 typedef enum
@@ -562,7 +568,9 @@ static menuitem_t MPauseMenu[] =
 	{IT_STRING | IT_CALL,    NULL, "Options",                   M_Options,             64},
 
 	{IT_STRING | IT_CALL,    NULL, "Return to Title",           M_EndGame,             80},
+	#ifndef __EMSCRIPTEN__
 	{IT_STRING | IT_CALL,    NULL, "Quit Game",                 M_QuitSRB2,            88},
+	#endif
 };
 
 typedef enum
@@ -599,7 +607,9 @@ static menuitem_t SPauseMenu[] =
 	{IT_CALL | IT_STRING,    NULL, "Options",              M_Options,             64},
 
 	{IT_CALL | IT_STRING,    NULL, "Return to Title",      M_EndGame,             80},
+	#ifndef __EMSCRIPTEN__
 	{IT_CALL | IT_STRING,    NULL, "Quit Game",            M_QuitSRB2,            88},
+	#endif
 };
 
 typedef enum
@@ -4039,7 +4049,16 @@ void M_Ticker(void)
 	{
 		// restore the previous video mode
 		if (--vidm_testingmode == 0)
-			setmodeneeded = vidm_previousmode + 1;
+		{
+			if (vidm_previousres[2])
+			{
+				setresneeded[0] = vidm_previousres[0];
+				setresneeded[1] = vidm_previousres[1];
+				setresneeded[2] = 2;
+			}
+			else
+				setmodeneeded = vidm_previousmode + 1;
+		}
 	}
 
 	if (currentMenu == &OP_ScreenshotOptionsDef)
@@ -5894,7 +5913,7 @@ static void M_DrawNightsAttackMountains(void)
 
 	if (vid.height != BASEVIDHEIGHT * dupz)
 		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 158);
-	V_DrawFill(0, y+50, vid.width, BASEVIDHEIGHT, V_SNAPTOLEFT|31);
+	V_DrawFill(0, y+50, vid.width, vid.height, V_SNAPTOLEFT|31);
 
 	V_DrawScaledPatch(x, y, V_SNAPTOLEFT, background);
 	x += w;
@@ -9335,11 +9354,20 @@ static void M_DrawSetupChoosePlayerMenu(void)
 	}
 
 	y = (charseltimer%32);
+
+	V_DrawMappedPatch(0, y-(bgheight*3), V_SNAPTOTOP, charbg, colormap);
+	V_DrawMappedPatch(0, y-(bgheight*2), V_SNAPTOTOP, charbg, colormap);
 	V_DrawMappedPatch(0, y-bgheight, V_SNAPTOTOP, charbg, colormap);
 	V_DrawMappedPatch(0, y, V_SNAPTOTOP, charbg, colormap);
 	V_DrawMappedPatch(0, y+bgheight, V_SNAPTOTOP, charbg, colormap);
+	V_DrawMappedPatch(0, y+(bgheight*2), V_SNAPTOTOP, charbg, colormap);
+	V_DrawMappedPatch(0, y+(bgheight*3), V_SNAPTOTOP, charbg, colormap);
+
 	V_DrawMappedPatch(0, -y, V_SNAPTOTOP, charfg, colormap);
 	V_DrawMappedPatch(0, -y+fgheight, V_SNAPTOTOP, charfg, colormap);
+	V_DrawMappedPatch(0, -y+(fgheight*2), V_SNAPTOTOP, charfg, colormap);
+	V_DrawMappedPatch(0, -y+(fgheight*3), V_SNAPTOTOP, charfg, colormap);
+
 	V_DrawFill(fgwidth, 0, vid.width, vid.height, V_SNAPTOTOP|colormap[106]);
 
 	// Character pictures
@@ -12395,11 +12423,12 @@ static void M_DrawCameraOptionsMenu(void)
 #define MAXCOLUMNMODES   12     //max modes displayed in one column
 #define MAXMODEDESCS     (MAXCOLUMNMODES*3)
 
-static modedesc_t modedescs[MAXMODEDESCS];
+static modedesc_t modedescs[MAXMODEDESCS+1];
 
 static void M_VideoModeMenu(INT32 choice)
 {
 	INT32 i, j, vdup, nummodes, width, height;
+	boolean modefound = false;
 	const char *desc;
 
 	(void)choice;
@@ -12443,7 +12472,10 @@ static void M_VideoModeMenu(INT32 choice)
 						vdup = 1;
 
 						if (i == vid.modenum)
+						{
 							vidm_selected = j;
+							modefound = true;
+						}
 					}
 					else
 						vdup = 1;
@@ -12458,7 +12490,10 @@ static void M_VideoModeMenu(INT32 choice)
 				modedescs[vidm_nummodes].desc = desc;
 
 				if (i == vid.modenum)
+				{
 					vidm_selected = vidm_nummodes;
+					modefound = true;
+				}
 
 				// Pull out the width and height
 				sscanf(desc, "%u%*c%u", &width, &height);
@@ -12474,6 +12509,16 @@ static void M_VideoModeMenu(INT32 choice)
 
 	vidm_column_size = (vidm_nummodes+2) / 3;
 
+	// add the custom video mode entry
+	modedescs[vidm_nummodes].modenum = -1;
+	vidm_nummodes++;
+
+	if (!modefound)
+		vidm_selected = vidm_nummodes-1;
+
+	if (strlen(vidm_customres) == 0)
+		strncpy(vidm_customres, va("%dx%d", vid.width, vid.height), vidm_customreslength);
+
 	M_SetupNextMenu(&OP_VideoModeDef);
 }
 
@@ -12486,7 +12531,7 @@ static void M_DrawMainVideoMenu(void)
 		if (itemOn == 7)
 			y -= 10;
 		V_DrawRightAlignedString(BASEVIDWIDTH - currentMenu->x, y,
-		(SCR_IsAspectCorrect(vid.width, vid.height) ? V_GREENMAP : V_YELLOWMAP),
+		(SCR_IsAspectCorrect(vid.width, vid.height) ? V_GREENMAP : V_YELLOWMAP)|V_ALLOWLOWERCASE,
 			va("%dx%d", vid.width, vid.height));
 	}
 }
@@ -12506,11 +12551,19 @@ static void M_DrawVideoMode(void)
 	col = OP_VideoModeDef.y + 14;
 	for (i = 0; i < vidm_nummodes; i++)
 	{
+		// custom video mode
+		if (modedescs[i].modenum == -1)
+		{
+			M_DrawLevelPlatterHeader(OP_VideoModeDef.y + 76, "Custom resolution", true, false);
+			V_DrawFill(19, OP_VideoModeDef.y + 92, (vidm_customreslength*8)+4, 8+6, 159);
+			V_DrawString(22, OP_VideoModeDef.y + 95, V_ALLOWLOWERCASE|V_MONOSPACE, vidm_customres);
+			continue;
+		}
 		if (i == vidm_selected)
-			V_DrawString(row, col, V_YELLOWMAP, modedescs[i].desc);
+			V_DrawString(row, col, V_YELLOWMAP|V_ALLOWLOWERCASE, modedescs[i].desc);
 		// Show multiples of 320x200 as green.
 		else
-			V_DrawString(row, col, (modedescs[i].goodratio) ? V_GREENMAP : 0, modedescs[i].desc);
+			V_DrawString(row, col, ((modedescs[i].goodratio) ? V_GREENMAP : 0)|V_ALLOWLOWERCASE, modedescs[i].desc);
 
 		col += 8;
 		if ((i % vidm_column_size) == (vidm_column_size-1))
@@ -12557,6 +12610,14 @@ static void M_DrawVideoMode(void)
 			V_YELLOWMAP, "Other modes may have visual errors.");
 		V_DrawCenteredString(BASEVIDWIDTH/2, OP_VideoModeDef.y + 158,
 			V_YELLOWMAP, "Larger modes may have performance issues.");
+	}
+
+	if (modedescs[vidm_selected].modenum == -1)
+	{
+		if (skullAnimCounter < 4 && !vidm_testingmode)
+			V_DrawCharacter(22 + V_StringWidth(vidm_customres, V_ALLOWLOWERCASE|V_MONOSPACE), OP_VideoModeDef.y + 95,
+				'_' | 0x80, false);
+		return;
 	}
 
 	// Draw the cursor for the VidMode menu
@@ -12698,11 +12759,19 @@ static void M_DrawColorMenu(void)
 // special menuitem key handler for video mode list
 static void M_HandleVideoMode(INT32 ch)
 {
+	size_t l;
 	if (vidm_testingmode > 0) switch (ch)
 	{
 		// change back to the previous mode quickly
 		case KEY_ESCAPE:
-			setmodeneeded = vidm_previousmode + 1;
+			if (vidm_previousres[2])
+			{
+				setresneeded[0] = vidm_previousres[0];
+				setresneeded[1] = vidm_previousres[1];
+				setresneeded[2] = 2;
+			}
+			else
+				setmodeneeded = vidm_previousmode + 1;
 			vidm_testingmode = 0;
 			break;
 
@@ -12745,12 +12814,35 @@ static void M_HandleVideoMode(INT32 ch)
 
 		case KEY_ENTER:
 			S_StartSound(NULL, sfx_menu1);
-			if (vid.modenum == modedescs[vidm_selected].modenum)
+			// custom res
+			if (modedescs[vidm_selected].modenum == -1)
+			{
+				// Pull out the width and height
+				INT32 width = vid.width, height = vid.height;
+				if (strlen(vidm_customres) < 1)
+					break;
+				sscanf(vidm_customres, "%u%*c%u", &width, &height);
+
+				vidm_previousres[0] = vid.width;
+				vidm_previousres[1] = vid.height;
+				vidm_previousres[2] = 1;
+				vidm_testingmode = 15*TICRATE;
+
+				// in case the previous setmode was not finished
+				if (!setresneeded[2])
+				{
+					setresneeded[0] = width;
+					setresneeded[1] = height;
+					setresneeded[2] = 2;
+				}
+			}
+			else if (vid.modenum == modedescs[vidm_selected].modenum)
 				SCR_SetDefaultMode();
 			else
 			{
 				vidm_testingmode = 15*TICRATE;
 				vidm_previousmode = vid.modenum;
+				vidm_previousres[2] = 0;
 				if (!setmodeneeded) // in case the previous setmode was not finished
 					setmodeneeded = modedescs[vidm_selected].modenum + 1;
 			}
@@ -12763,7 +12855,52 @@ static void M_HandleVideoMode(INT32 ch)
 				M_ClearMenus(true);
 			break;
 
+		// custom video mode
+		case KEY_BACKSPACE:
+			if (modedescs[vidm_selected].modenum != -1)
+				break;
+
+			if ((l = strlen(vidm_customres)) != 0)
+			{
+				S_StartSound(NULL,sfx_menu1); // Tails
+				vidm_customres[l-1] = 0;
+			}
+			break;
+
+		case KEY_DEL:
+			if (modedescs[vidm_selected].modenum != -1)
+				break;
+
+			if (vidm_customres[0])
+			{
+				S_StartSound(NULL,sfx_menu1); // Tails
+				vidm_customres[0] = 0;
+			}
+			break;
+
 		default:
+			if (modedescs[vidm_selected].modenum != -1)
+				break;
+
+			l = strlen(vidm_customres);
+			if (l >= vidm_customreslength-1)
+				break;
+
+			if ((ch == 'x' || ch == 'X') || (ch >= '0' && ch <= '9'))
+			{
+				S_StartSound(NULL,sfx_menu1); // Tails
+				vidm_customres[l] = (char)ch;
+				vidm_customres[l+1] = 0;
+			}
+			else if (ch >= 199 && ch <= 211 && ch != 202 && ch != 206) //numpad too!
+			{
+				char keypad_translation[] = {'7','8','9','-','4','5','6','+','1','2','3','0','.'};
+				ch = keypad_translation[ch - 199];
+				S_StartSound(NULL,sfx_menu1); // Tails
+				vidm_customres[l] = (char)ch;
+				vidm_customres[l+1] = 0;
+			}
+
 			break;
 	}
 }

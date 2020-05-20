@@ -159,6 +159,7 @@ void G_DeferedInitNew(boolean pultmode, const char *mapname, INT32 pickedchar,
 	boolean SSSG, boolean FLS);
 void G_DoLoadLevel(boolean resetplayer);
 void G_StartTitleCard(void);
+boolean G_RunPreLevelTitleCard();
 void G_PreLevelTitleCard(void);
 boolean G_IsTitleCardAvailable(void);
 

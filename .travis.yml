@@ -35,14 +35,69 @@ matrix:
           # New build drafts will NOT overwrite old build drafts.
           ################################
           deploy:
-            provider: releases
-            api_key: $GITHUB_TOKEN
-            file_glob: true
-            file: app/build/outputs/apk/*/** # relative to [repo]/android, per `skip_cleanup`
-            skip_cleanup: true
-            draft: true
-            on:
-              all_branches: true
+            - provider: releases
+              api_key: $GITHUB_TOKEN
+              file_glob: true
+              file: app/build/outputs/apk/*/** # relative to [repo]/android, per `skip_cleanup`
+              skip_cleanup: true
+              draft: true
+              on:
+                all_branches: true
+        - os: linux
+          dist: bionic
+          env: EMSCRIPTEN=1
+          install:
+            # Save PWD to a file; for some reason, this var gets obliterated
+            - echo "$PWD" > ~/oldpwd.txt
+            # Install latest emscripten
+            - git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+            - cd ~/emsdk
+            - ./emsdk install latest
+            - ./emsdk activate latest
+            - source ./emsdk_env.sh
+            # Install llvm 10 (current latest version)
+            - wget https://apt.llvm.org/llvm.sh
+            - chmod +x llvm.sh
+            - sudo ./llvm.sh 10
+            - export PATH="/usr/lib/llvm-10/bin:$PATH"
+            # Finishing touches
+            - mkdir -p $HOME/srb2_cache
+            - cd "$(<~/oldpwd.txt)"
+          script:
+            - emmake make -C src/
+          after_success:
+            - echo "<html><head></head><body><p>Test</p></body></html>" > bin/Emscripten/Release/index.html
+          ################################
+          # This job deploys to GitHub Releases and Netlify.
+          # Netlify is deployed to preview; the URL will be in the build log.
+          # 
+          # Grab your Netlify site's API ID at:
+          #   Your site > Settings > General - Site details
+          # The API key is in GUID format.
+          # In your Travis environment variables, set NETLIFY_SITE= to this ID.
+          #
+          # Setup your personal access token at:
+          #   User Settings > Applications > Personal Access Tokens
+          # In your Travis environment variables, set NETLIFY_TOKEN= to your token.
+          ################################
+          deploy:
+            - provider: releases
+              api_key: $GITHUB_TOKEN
+              file_glob: true
+              file: bin/Emscripten/Release/** # relative to [repo]
+              skip_cleanup: true
+              draft: true
+              on:
+                all_branches: true
+            - provider: netlify
+              edge: true # opt into dpl v2
+              site: $NETLIFY_SITE
+              auth: $NETLIFY_TOKEN
+              dir: bin/Emscripten/Release
+              skip_cleanup: true
+              on:
+                all_branches: true
+
 ################################
 # Test Buildbots
 # Deployer does not operate on these. See Deployer Buildbots, below.
@@ -709,7 +764,11 @@ install:
 before_script:
   # OLDPWD is root repo folder
   - OLDPWD=$PWD
-  - __ASSET_DIRECTORY="$OLDPWD/assets/installer"
+  - if [[ "$EMSCRIPTEN" == "1" ]]; then
+      __ASSET_DIRECTORY="$OLDPWD/assets";
+    else
+      __ASSET_DIRECTORY="$OLDPWD/assets/installer";
+    fi;
   - mkdir -p "$__ASSET_DIRECTORY"
   - cd "$HOME/srb2_cache"
 
@@ -739,6 +798,8 @@ before_script:
         if [[ "$ANDROID_PACKAGE_ASSETS" == "1" ]]; then
           __DOWNLOAD_OPTIONAL_ASSETS=1;
         fi;
+      elif [[ "$EMSCRIPTEN" == "1" ]]; then
+        __DOWNLOAD_OPTIONAL_ASSETS=1;
       elif [[ "$__DPL_ACTIVE" == "1" ]]; then
         __DOWNLOAD_OPTIONAL_ASSETS=1;
       fi;
@@ -759,14 +820,13 @@ before_script:
   # Go back to root repo folder
   - cd "$OLDPWD"
 
-  # Prepare CMake asset lists
-  - SRB2_ASSET_HASHED=$(echo ${ASSET_FILES_HASHED// /\;})
-  - SRB2_ASSET_DOCS=$(echo ${ASSET_FILES_DOCS// /\;})
-  - SRB2_ASSET_DIRECTORY="$__ASSET_DIRECTORY"
-
   # Prepare CMake
   # If OS X, set -march=core2 to build compatible binaries with old Macs
-  - if [[ "$ANDROID" != "1" ]]; then
+  - if [[ "$ANDROID" != "1" ]] && [[ "$EMSCRIPTEN" != "1" ]]; then
+      SRB2_ASSET_HASHED=$(echo ${ASSET_FILES_HASHED// /\;});
+      SRB2_ASSET_DOCS=$(echo ${ASSET_FILES_DOCS// /\;});
+      SRB2_ASSET_DIRECTORY="$__ASSET_DIRECTORY";
+
       mkdir build;
       cd build;
       mkdir package;

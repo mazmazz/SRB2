@@ -91,6 +91,18 @@ D_FILES=$(D_DIR)/srb2.pk3 \
 
 PKG_CONFIG?=pkg-config
 
+ifdef EMSCRIPTEN
+EXENAME=srb2.html
+NONET=1
+NOOPENMPT=1
+NOASM=1
+NONX86=1
+NOHW=1
+NOHS=1
+NOOBJDUMP=1
+include emscripten/Makefile.cfg
+endif
+
 ifdef PANDORA
 LINUX=1
 endif
@@ -383,7 +395,10 @@ else
 	WINDRESFLAGS = -DNDEBUG
 	CFLAGS+=-O3
 endif
-	CFLAGS+=-g $(OPTS) $(ARCHOPTS) $(WINDRESFLAGS)
+	CFLAGS+=$(OPTS) $(ARCHOPTS) $(WINDRESFLAGS)
+ifndef EMSCRIPTEN
+	CFLAGS+=-g
+endif
 
 ifdef YASM
 ifdef STABS
@@ -575,9 +590,11 @@ endif
 
 # mac os x lsdlsrb2 does not like objcopy
 ifndef MACOSX
+ifndef EMSCRIPTEN
 	$(OBJCOPY) $(BIN)/$(EXENAME) $(BIN)/$(DBGNAME)
 	$(OBJCOPY) --strip-debug $(BIN)/$(EXENAME)
 	-$(OBJCOPY) --add-gnu-debuglink=$(BIN)/$(DBGNAME) $(BIN)/$(EXENAME)
+endif
 endif
 ifndef NOUPX
 	-$(UPX) $(UPX_OPTS) $(BIN)/$(EXENAME)

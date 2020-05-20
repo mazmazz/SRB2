@@ -4911,7 +4911,7 @@ void TryRunTics(tic_t realtics)
 			else
 				D_StartTitle();
 		}
-		else
+		else {
 			// run the count * tics
 			while (neededtic > gametic)
 			{
@@ -4920,8 +4920,12 @@ void TryRunTics(tic_t realtics)
 				G_Ticker((gametic % NEWTICRATERATIO) == 0);
 				ExtraDataTicker();
 				gametic++;
+				// Really shouldnt do this
+				#ifndef __EMSCRIPTEN__ 
 				consistancy[gametic%BACKUPTICS] = Consistancy();
+				#endif
 			}
+		}
 	}
 }
 
