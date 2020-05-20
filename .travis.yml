@@ -32,7 +32,7 @@ matrix:
           script:
             - emmake make -C src/
           after_success:
-            - echo "<html><head></head><body><p>Test</p></body></html>" > bin/Emscripten/Release/index.html
+            - mv bin/Emscripten/Release/srb2.html bin/Emscripten/Release/index.html
           ################################
           # This job deploys to GitHub Releases as a draft post.
           # It is not visible to the public.
