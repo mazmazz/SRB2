@@ -17,6 +17,23 @@ matrix:
               - android-26
               - platform-tools
           env: ANDROID=1
+          before_install: ~
+          install:
+            - echo y | sdkmanager 'ndk-bundle'
+          after_success: ~
+          ################################
+          # This job deploys to GitHub Releases as a draft post.
+          # It is not visible to the public.
+          # 
+          # Setup your GitHub API token by going to your:
+          #   User Settings > Developer Settings > Personal Access Token
+          # Enable all Repo permissions; clear all other permissions.
+          # In your Travis environment variables, set GITHUB_TOKEN= to your token.
+          #
+          # When deploying new builds, make sure your previous
+          # draft release is published or deleted.
+          # New build drafts will NOT overwrite old build drafts.
+          ################################
           deploy:
             provider: releases
             api_key: $GITHUB_TOKEN
@@ -26,10 +43,6 @@ matrix:
             draft: true
             on:
               all_branches: true
-          before_install: ~
-          install:
-            - echo y | sdkmanager 'ndk-bundle'
-          after_success: ~
 ################################
 # Test Buildbots
 # Deployer does not operate on these. See Deployer Buildbots, below.
