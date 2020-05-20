@@ -512,7 +512,7 @@ static void GIF_rgbconvert(UINT8 *linear, UINT8 *scr)
 		g = (UINT8)linear[src + 1];
 		b = (UINT8)linear[src + 2];
 		scr[dest] = colorlookup[r >> SHIFTCOLORBITS][g >> SHIFTCOLORBITS][b >> SHIFTCOLORBITS];
-		i += (3 * scrbuf_downscaleamt);
+		src += (3 * scrbuf_downscaleamt);
 		dest += scrbuf_downscaleamt;
 	}
 }
