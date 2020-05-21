@@ -378,8 +378,28 @@ INT32 VID_SetMode (INT32 modenum)  //, UINT8 *palette)
 	return 1;
 }
 
-void VID_CheckRenderer(void) {}
-void VID_CheckGLLoaded(rendermode_t oldrender) {}
+INT32 VID_SetResolution(INT32 width, INT32 height)
+{
+	(void)width;
+	(void)height;
+	return 1;
+}
+
+INT32 VID_GetScreenWidth(void)
+{
+	return 320;
+}
+
+INT32 VID_GetScreenHeight(void)
+{
+	return 200;
+}
+
+boolean VID_CheckRenderer(void) {}
+void VID_CheckGLLoaded(void)
+{
+	(void)oldrender;
+}
 
 
 

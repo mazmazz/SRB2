@@ -249,14 +249,19 @@ static void D_Display(void)
 		M_StopMovie();
 
 	// check for change of renderer or screen size (video mode)
-	if ((setrenderneeded || setmodeneeded) && !wipe)
+	if ((setrenderneeded || (setmodeneeded || setresneeded[2])) && !wipe)
 	{
 		if (setrenderneeded)
 		{
 			CONS_Debug(DBG_RENDER, "setrenderneeded set (%d)\n", setrenderneeded);
 			setrenderstillneeded = setrenderneeded;
+			SCR_SetMode();
 		}
-		SCR_SetMode(); // change video mode
+		// change video mode
+		else if (setresneeded[2])
+			SCR_SetResolution();
+		else if (setmodeneeded)
+			SCR_SetMode();
 	}
 
 	if (vid.recalc || setrenderstillneeded)
@@ -655,7 +660,7 @@ void D_SRB2Loop(void)
 	con_startup = false;
 
 	// make sure to do a d_display to init mode _before_ load a level
-	SCR_SetMode(); // change video mode
+	SCR_SetResolution(); // change video resolution
 	SCR_Recalc();
 
 	// Check and print which version is executed.

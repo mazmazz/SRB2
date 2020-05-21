@@ -93,9 +93,36 @@ INT32 VID_GetModeForSize(INT32 w, INT32 h);
 */
 INT32 VID_SetMode(INT32 modenum);
 
-/**	\brief Checks the render state
+/**	\brief	The VID_SetResolution function
+
+	The same as VID_SetMode, but allows
+	any arbitrary resolution.
+
+	\param	width width
+	\param	height height
 */
-void VID_CheckRenderer(void);
+INT32 VID_SetResolution(INT32 width, INT32 height);
+
+/**	\brief	The VID_GetScreenWidth function
+
+	Returns the display's width.
+
+	\return screen width
+*/
+INT32 VID_GetScreenWidth(void);
+
+/**	\brief	The VID_GetScreenHeight function
+
+	Returns the display's height.
+
+	\return screen height
+*/
+INT32 VID_GetScreenHeight(void);
+
+/**	\brief Checks the render state
+	\return	true if the renderer changed
+*/
+boolean VID_CheckRenderer(void);
 
 /**	\brief Load OpenGL mode
 */

@@ -39,8 +39,8 @@
 // we try to re-allocate a minimum of buffers for stability of the memory,
 // so all the small-enough tables based on screen size, are allocated once
 // and for all at the maximum size.
-#define MAXVIDWIDTH 1920 // don't set this too high because actually
-#define MAXVIDHEIGHT 1200 // lots of tables are allocated with the MAX size.
+#define MAXVIDWIDTH 2560 // don't set this too high because actually
+#define MAXVIDHEIGHT 1440 // lots of tables are allocated with the MAX size.
 
 // NEVER CHANGE THIS! This is the original resolution of the graphics.
 #define BASEVIDWIDTH 320
@@ -184,6 +184,7 @@ extern boolean R_SSE2;
 
 extern viddef_t vid;
 extern INT32 setmodeneeded; // mode number to set if needed, or 0
+extern INT32 setresneeded[3]; // if setresneeded[2] is > 0, set resolution
 
 void SCR_ChangeRenderer(void);
 void SCR_ChangeRendererCVars(INT32 mode);
@@ -203,6 +204,11 @@ extern consvar_t cv_vidwait;
 
 // Change video mode, only at the start of a refresh.
 void SCR_SetMode(void);
+// Change resolution
+void SCR_SetResolution(void);
+// Change render mode
+void SCR_SetRenderer(void);
+// Set drawer functions
 void SCR_SetDrawFuncs(void);
 // Recalc screen size dependent stuff
 void SCR_Recalc(void);

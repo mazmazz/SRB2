@@ -617,6 +617,13 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			kbfocus = SDL_FALSE;
 			mousefocus = SDL_FALSE;
 			break;
+#if !defined(__ANDROID__)
+		case SDL_WINDOWEVENT_RESIZED:
+			setresneeded[0] = evt.data1;
+			setresneeded[1] = evt.data2;
+			setresneeded[2] = 1;
+			break;
+#endif
 		case SDL_WINDOWEVENT_MAXIMIZED:
 			break;
 	}
@@ -1006,6 +1013,7 @@ static void Impl_HandleTextInput(SDL_TextInputEvent evt)
 void I_GetEvent(void)
 {
 	SDL_Event evt;
+	char* dropped_filedir;
 	// We only want the first motion event,
 	// otherwise we'll end up catching the warp back to center.
 	//int mouseMotionOnce = 0;
@@ -1192,6 +1200,11 @@ void I_GetEvent(void)
 				if (currentMenu == &OP_JoystickSetDef)
 					M_SetupJoystickMenu(0);
 			 	break;
+			case SDL_DROPFILE:
+				dropped_filedir = evt.drop.file;
+				COM_BufInsertText(va("addfile \"%s\"", dropped_filedir));
+				SDL_free(dropped_filedir);    // Free dropped_filedir memory
+				break;
 			case SDL_QUIT:
 				I_Quit();
 				M_QuitResponse('y');
@@ -1653,14 +1666,47 @@ void VID_CheckGLLoaded(rendermode_t oldrender)
 #endif
 }
 
-void VID_CheckRenderer(void)
+static void Impl_InitRendererContext(boolean rendererchanged)
+{
+	if (rendermode == render_soft)
+	{
+		if (bufSurface)
+		{
+			SDL_FreeSurface(bufSurface);
+			bufSurface = NULL;
+		}
+
+		if (rendererchanged)
+		{
+#ifdef HWRENDER
+			if (vid_opengl_state == 1) // Only if OpenGL ever loaded!
+				HWR_FreeTextureCache();
+#endif
+			SCR_SetDrawFuncs();
+		}
+	}
+#ifdef HWRENDER
+	else if (rendermode == render_opengl)
+	{
+		if (rendererchanged)
+		{
+			R_InitHardwareMode();
+			V_SetPalette(0);
+		}
+	}
+#endif
+}
+
+boolean VID_CheckRenderer(void)
 {
 	boolean rendererchanged = false;
 	boolean contextcreated = false;
+#ifdef HWRENDER
 	rendermode_t oldrenderer = rendermode;
+#endif
 
 	if (dedicated)
-		return;
+		return false;
 
 	if (setrenderneeded)
 	{
@@ -1715,42 +1761,35 @@ void VID_CheckRenderer(void)
 		setrenderneeded = 0;
 	}
 
-	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (rendererchanged ? SDL_FALSE : SDL_TRUE));
+	return rendererchanged;
+}
+
+// VID_SetMode but no video modes
+INT32 VID_SetResolution(INT32 width, INT32 height)
+{
+	boolean newrender;
+
+	SDLdoUngrabMouse();
+
+	vid.recalc = 1;
+	vid.bpp = 1;
+
+	vid.width = (width < BASEVIDWIDTH) ? BASEVIDWIDTH : ((width > MAXVIDWIDTH) ? MAXVIDWIDTH : width);
+	vid.height = (height < BASEVIDHEIGHT) ? BASEVIDHEIGHT : ((height > MAXVIDHEIGHT) ? MAXVIDHEIGHT : height);
+	vid.modenum = VID_GetModeForSize(width, height);
+
+	newrender = VID_CheckRenderer();
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (newrender ? false : (setresneeded[2] == 2)));
 	Impl_VideoSetupBuffer();
+	Impl_InitRendererContext(newrender);
 
-	if (rendermode == render_soft)
-	{
-		if (bufSurface)
-		{
-			SDL_FreeSurface(bufSurface);
-			bufSurface = NULL;
-		}
-
-		if (rendererchanged)
-		{
-#ifdef HWRENDER
-			if (vid_opengl_state == 1) // Only if OpenGL ever loaded!
-				HWR_FreeTextureCache();
-#endif
-			SCR_SetDrawFuncs();
-		}
-	}
-#ifdef HWRENDER
-	else if (rendermode == render_opengl)
-	{
-		if (rendererchanged)
-		{
-			R_InitHardwareMode();
-			V_SetPalette(0);
-		}
-	}
-#else
-	(void)oldrenderer;
-#endif
+	return SDL_TRUE;
 }
 
 INT32 VID_SetMode(INT32 modeNum)
 {
+	boolean newrender;
+
 	SDLdoUngrabMouse();
 
 	vid.recalc = 1;
@@ -1766,8 +1805,49 @@ INT32 VID_SetMode(INT32 modeNum)
 	vid.modenum = modeNum;
 
 	//Impl_SetWindowName("SRB2 "VERSIONSTRING);
-	VID_CheckRenderer();
+	newrender = VID_CheckRenderer();
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (!newrender));
+	Impl_VideoSetupBuffer();
+	Impl_InitRendererContext(newrender);
+
 	return SDL_TRUE;
+}
+
+static void Impl_GetScreenResolution(INT32 *width, INT32 *height)
+{
+	SDL_DisplayMode resolution;
+	int i;
+
+	if (width)
+		*width = 320;
+	if (height)
+		*height = 200;
+
+	for (i = 0; i < SDL_GetNumVideoDisplays(); i++)
+	{
+		int nodisplay = SDL_GetCurrentDisplayMode(i, &resolution);
+		if (!nodisplay)
+		{
+			if (width)
+				*width = (INT32)(resolution.w);
+			if (height)
+				*height = (INT32)(resolution.h);
+		}
+	}
+}
+
+INT32 VID_GetScreenWidth(void)
+{
+	INT32 width;
+	Impl_GetScreenResolution(&width, NULL);
+	return width;
+}
+
+INT32 VID_GetScreenHeight(void)
+{
+	INT32 height;
+	Impl_GetScreenResolution(NULL, &height);
+	return height;
 }
 
 static SDL_bool Impl_CreateWindow(SDL_bool fullscreen)
@@ -1792,6 +1872,8 @@ static SDL_bool Impl_CreateWindow(SDL_bool fullscreen)
 #endif
 		flags |= SDL_WINDOW_OPENGL;
 #endif
+
+	flags |= SDL_WINDOW_RESIZABLE;
 
 	// Create a window
 	window = SDL_CreateWindow("SRB2 "VERSIONSTRING, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
