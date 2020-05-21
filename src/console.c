@@ -101,7 +101,7 @@ static void CON_DrawBackpic(void);
 static void CONS_hudlines_Change(void);
 static void CONS_backcolor_Change(void);
 
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 static void CON_ScreenKeyboardInput(char *text, size_t length);
 #endif
 
@@ -406,7 +406,7 @@ void CON_Init(void)
 	con_destlines = vid.height;
 	con_curlines = vid.height;
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 	// Lactozilla: Change the default console height for Android
 	cons_height.defaultvalue = "40";
 #endif
@@ -627,7 +627,7 @@ void CON_Ticker(void)
 	con_tick++;
 	con_tick &= 7;
 
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	// Lactozilla: Close the console, if the screen keyboard is not visible
 	if (consoleready && (!I_KeyboardOnScreen()))
 		consoletoggle = true;
@@ -648,7 +648,7 @@ void CON_Ticker(void)
 		else
 			CON_ChangeHeight();
 
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 		con_scrollup = 0;
 #endif
 	}
@@ -672,7 +672,7 @@ void CON_Ticker(void)
 	// check if console ready for prompt
 	if (con_destlines >= minheight)
 	{
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 		// Lactozilla: Raise the screen keyboard
 		if (!I_KeyboardOnScreen())
 		{
@@ -770,7 +770,7 @@ static void CON_InputDelChar(void)
 	input_sel = --input_cur;
 }
 
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 static void CON_ScreenKeyboardInput(char *text, size_t length)
 {
 	(void)length;
@@ -1123,7 +1123,7 @@ boolean CON_Responder(event_t *ev)
 		return true;
 	}
 
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	// Inputs handled elsewhere
 	if (I_KeyboardOnScreen())
 		return true;

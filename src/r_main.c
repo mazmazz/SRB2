@@ -1517,7 +1517,7 @@ void R_RegisterEngineStuff(void)
 	if (dedicated)
 		return;
 
-#if defined(__ANDROID__) // Override CVARs
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__) // Override CVARs
 	// Change the default draw distance
 	cv_drawdist.defaultvalue = "1536";
 

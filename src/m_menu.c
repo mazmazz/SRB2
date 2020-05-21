@@ -3539,7 +3539,7 @@ boolean M_Responder(event_t *ev)
 		return false;
 	}
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 	// Lactozilla: Open the console from the menu
 	if (ch == KEY_CONSOLE)
 	{

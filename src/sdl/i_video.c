@@ -1809,7 +1809,7 @@ boolean VID_CheckRenderer(void)
 			{
 				VID_StartupOpenGL();
 
-#if !defined(__ANDROID__)
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 				// Loaded successfully!
 				if (vid_opengl_state == 1)
 				{
@@ -2043,7 +2043,7 @@ static void Impl_InitVideoSubSystem(void)
 		return;
 	}
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles");
 #endif

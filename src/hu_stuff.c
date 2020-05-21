@@ -938,7 +938,7 @@ static void Got_Saycmd(UINT8 **p, INT32 playernum)
 //
 static inline boolean HU_keyInChatString(char *s, char ch)
 {
-#if (!(defined(__ANDROID__) && defined(TOUCHINPUTS)))
+#if (!((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS)))
 	size_t l;
 
 	if ((ch >= HU_FONTSTART && ch <= HU_FONTEND && hu_font[ch-HU_FONTSTART])
@@ -1020,7 +1020,7 @@ void HU_Ticker(void)
 	else
 		hu_showscores = false;
 
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	// Close the chat if the keyboard isn't visible
 	if (chat_on && (!I_KeyboardOnScreen()))
 		HU_CloseChat();
@@ -1166,7 +1166,7 @@ void HU_clearChatChars(void)
 	c_input = 0;
 
 	I_UpdateMouseGrab();
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	I_CloseScreenKeyboard();
 #endif
 }
@@ -1258,7 +1258,7 @@ boolean HU_Responder(event_t *ev)
 				c = shiftxform[c];
 		}
 
-#if (!(defined(__ANDROID__) && defined(TOUCHINPUTS)))
+#if (!((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS)))
 		// pasting. pasting is cool. chat is a bit limited, though :(
 		if (((c == 'v' || c == 'V') && ctrldown) && !CHAT_MUTE)
 		{
@@ -1370,7 +1370,7 @@ void HU_OpenChat(void)
 	teamtalk = G_GametypeHasTeams(); // Don't teamtalk if we don't have teams.
 	chat_scrollmedown = true;
 	typelines = 1;
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	I_RaiseScreenKeyboard(w_chat, HU_MAXMSGLEN);
 #endif
 #endif
@@ -1382,7 +1382,7 @@ void HU_CloseChat(void)
 	chat_on = false;
 	c_input = 0; // reset input cursor
 	I_UpdateMouseGrab();
-#if (defined(__ANDROID__) && defined(TOUCHINPUTS))
+#if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	I_CloseScreenKeyboard();
 #endif
 #endif

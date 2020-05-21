@@ -120,7 +120,7 @@ extern consvar_t cv_skipmapcheck;
 
 extern consvar_t cv_sleep;
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 extern consvar_t cv_thinkless;
 #endif
 

@@ -35,7 +35,7 @@
 #include "f_finale.h"
 #include "m_cond.h"
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 consvar_t cv_thinkless = {"reducedthinking", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 #endif
 
@@ -10018,7 +10018,7 @@ void P_MobjThinker(mobj_t *mobj)
 	if (mobj->flags & MF_NOTHINK)
 		return;
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 	//__ANDROID__: lmao fuck netplay I just want cez2 to be playable
 	if (!mobj->player && (cv_thinkless.value && !(netgame || multiplayer)))
 	{
