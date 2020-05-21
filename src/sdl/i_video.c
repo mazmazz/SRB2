@@ -1779,7 +1779,7 @@ INT32 VID_SetResolution(INT32 width, INT32 height)
 	vid.modenum = VID_GetModeForSize(width, height);
 
 	newrender = VID_CheckRenderer();
-	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (newrender ? false : (setresneeded[2] == 2)));
+	SDLSetMode(vid.width, vid.height, USE_FULLSCREEN, (newrender ? SDL_FALSE : (setresneeded[2] == 2 ? SDL_TRUE : SDL_FALSE)));
 	Impl_VideoSetupBuffer();
 	Impl_InitRendererContext(newrender);
 
