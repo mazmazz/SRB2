@@ -762,6 +762,12 @@ void D_SRB2Loop(void)
 
 	// make sure to do a d_display to init mode _before_ load a level
 	SCR_SetResolution(); // change video resolution
+#ifdef __EMSCRIPTEN__
+	// Dirty hack to properly size the game viewport at first run.
+	// This invokes the window.onresize event handler.
+	// See srb2.js _emscripten_set_resize_callback_on_thread
+	emscripten_run_script("window.dispatchEvent(new Event('resize'));");
+#endif
 	SCR_Recalc();
 
 	// Check and print which version is executed.
