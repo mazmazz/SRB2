@@ -72,7 +72,7 @@
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
-      
+
       function startload() {
         var script = document.createElement('script');
         script.setAttribute('src','./srb2.js');
@@ -82,9 +82,114 @@
         document.getElementById('status-cont').style = "z-index: -9999;";
       }
 
+      ////////////////////////////////
+      // Utilities
+      ////////////////////////////////
+      
+      var userAgentIsiOS = () => {
+        var ua = window.navigator.userAgent;
+        var iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i) || !!ua.match(/iPod/i);
+        var webkit = !!ua.match(/WebKit/i);
+        var iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+        return iOSSafari;
+      };
+
+      var userAgentIsiPhone = () => /iPhone|iPod/.test(navigator.userAgent);
+
+      var fn = (path) => path.split('\\').pop().split('/').pop();
+
+      var lazyLoadFileToFS = (url, baseDest) => {
+        let dependencyId = `download-${fn(url)}`;
+        let basePath = (baseDest === undefined ? '/home/web_user/.srb2' : baseDest);
+        let name = `${fn(url)}`;
+        addRunDependency(dependencyId);
+        console.log(`Checking ${name}...`);
+
+        return fetch(url, {
+          method: 'HEAD'
+        })
+        .then((response) => {
+          let remote_size = parseInt(response.headers.get('Content-Length'));
+
+          try {
+            let local_size = parseInt(FS.stat(`${basePath}/${name}`)['size']);
+            if (remote_size == local_size)
+              return resolve(`${name} already loaded`);
+            FS.unlink(`${basePath}/${name}`);
+            console.log(`Downloading ${fn(url)}...`);
+          } catch(e) { /* File doesn't exist */ }
+
+          return fetch(url);
+        })
+        .then((response) => {
+          return response.arrayBuffer();
+        })
+        .then((buffer) => {
+          data = new Uint8Array(buffer);
+          FS.createDataFile(basePath, name, data, true, true);
+
+          // commit to persistent storage
+          return (new Promise((resolve, reject) => {
+            FS.syncfs((err) => {
+              console.log('Synced persistent storage');
+              console.log(err);
+              resolve(err);
+            });
+          }));
+        })
+        .catch((reason) => {
+          console.error(reason);
+        })
+        .finally(() => {
+          removeRunDependency(dependencyId);
+        });
+      };
+
+      ////////////////////////////////
+      // Emscripten Module -- Runtime Parameters
+      ////////////////////////////////
+
       var Module = {
-        preRun: [],
-        postRun: [],
+        arguments: ['-file','/emscripten.pk3','+scr_resizeheight','400','+addons_option','CUSTOM','+addons_folder','/addons'],
+
+        preRun: [() => {
+          ////////////////////////////////
+          // if iPhone, then force off window resize events because
+          // the reported dimensions are not reliable.
+          ////////////////////////////////
+          if (userAgentIsiPhone())
+            Module['arguments'].push('+scr_resize','Off','-width','640','-height','400');
+
+          ////////////////////////////////
+          // Mount filesystem, then check for music.dta
+          ////////////////////////////////
+
+          addRunDependency('mount-filesystem');
+          FS.mkdirTree('/addons');
+          FS.symlink('/home/web_user/.srb2', '/addons/.srb2');
+          FS.mount(IDBFS, {}, '/home/web_user');
+          (new Promise((resolve, reject) => {
+            FS.syncfs(true, (err) => {
+              console.log("Intial syncFS done");
+              console.log(err);
+              resolve();
+            });
+          }))
+          .then(()=>{
+            if (!userAgentIsiOS())
+              return lazyLoadFileToFS('music.dta');
+            else
+              resolve();
+          })
+          .finally(() => {
+            removeRunDependency('mount-filesystem');
+          });
+        }],
+        
+        ////////////////////////////////
+        // Platform Stuff
+        ////////////////////////////////
+
         print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
@@ -173,5 +278,3 @@
     <!-- {{{ SCRIPT }}} -->
   </body>
 </html>
-
-

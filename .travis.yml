@@ -67,6 +67,8 @@ matrix:
             - emmake make -C src/
           after_success:
             - mv bin/Emscripten/Release/srb2.html bin/Emscripten/Release/index.html
+            - wget -O $HOME/srb2_cache/music.dta https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/music.dta
+            - cp $HOME/srb2_cache/music.dta bin/Emscripten/Release/music.dta
           ################################
           # This job deploys to GitHub Releases and Netlify.
           # Netlify is deployed to preview; the URL will be in the build log.
