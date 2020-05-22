@@ -312,6 +312,7 @@ void I_UpdateSound(void)
 /// SFX
 /// ------------------------
 
+#ifndef __EMSCRIPTEN__
 // this is as fast as I can possibly make it.
 // sorry. more asm needed.
 static Mix_Chunk *ds2chunk(void *stream)
@@ -423,6 +424,7 @@ static Mix_Chunk *ds2chunk(void *stream)
 	// return Mixer Chunk.
 	return Mix_QuickLoad_RAW(sound, (Uint32)((UINT8*)d-sound));
 }
+#endif
 
 void *I_GetSfx(sfxinfo_t *sfx)
 {
@@ -440,6 +442,8 @@ void *I_GetSfx(sfxinfo_t *sfx)
 
 	lump = W_CacheLumpNum(sfx->lumpnum, PU_SOUND);
 
+	// Doom sounds are not converted properly in emscripten, so fail silently.
+#ifndef __EMSCRIPTEN__
 	// convert from standard DoomSound format.
 	chunk = ds2chunk(lump);
 	if (chunk)
@@ -447,6 +451,7 @@ void *I_GetSfx(sfxinfo_t *sfx)
 		Z_Free(lump);
 		return chunk;
 	}
+#endif
 
 	// Not a doom sound? Try something else.
 #ifdef HAVE_LIBGME
