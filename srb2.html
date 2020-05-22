@@ -142,6 +142,33 @@
           if (text) Module.printErr('[post-exception status] ' + text);
         };
       };
+
+      // iOS Safari requires us to activate WebAudio context upon user touch.
+      // The runtime will use this same audioContext.
+      // https://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+      var activateAudio = function() {
+        if (typeof (Module['SDL2']) === 'undefined') {
+            Module['SDL2'] = {};
+        }
+        var SDL2 = Module['SDL2'];
+        if (!SDL2.audioContext) {
+            if (typeof (AudioContext) !== 'undefined') {
+                SDL2.audioContext = new AudioContext();
+            } else if (typeof (webkitAudioContext) !== 'undefined') {
+                SDL2.audioContext = new webkitAudioContext();
+            }
+        }
+        if (SDL2.audioContext && SDL2.audioContext.currentTime == 0) {
+          var buffer = SDL2.audioContext.createBuffer(1, 1, 44100);
+          var source = SDL2.audioContext.createBufferSource();
+          source.buffer = buffer;
+          source.connect(SDL2.audioContext.destination);
+          source.start();
+        }
+      };
+      window.addEventListener('load', function() {
+        document.addEventListener('touchstart', activateAudio, {once: true});
+      }, false);
     </script>
     <!-- {{{ SCRIPT }}} -->
   </body>
