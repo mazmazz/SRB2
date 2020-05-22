@@ -658,10 +658,10 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 
 				ResizeDimensions(&x, &y);
 
-				if (
+				if (!cv_scr_resize.value || (
 					(setresneeded[0] == x) &&
 					(setresneeded[1] == y)
-				) break;
+				)) break;
 
 				setresneeded[0] = x;
 				setresneeded[1] = y;

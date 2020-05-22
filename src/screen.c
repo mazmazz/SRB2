@@ -66,6 +66,7 @@ static CV_PossibleValue_t scr_depth_cons_t[] = {{8, "8 bits"}, {16, "16 bits"}, 
 consvar_t cv_scr_width = {"scr_width", CONFIGVIDWIDTH, CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeWidthCVAR, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_height = {"scr_height", CONFIGVIDHEIGHT, CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeHeightCVAR, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_depth = {"scr_depth", "16 bits", CV_SAVE, scr_depth_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_scr_resize = {"scr_resize", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_resizeheight = {"scr_resizeheight", "0", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_renderview = {"renderview", "On", 0, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 
