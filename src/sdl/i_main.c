@@ -23,6 +23,10 @@
 #include "../m_misc.h"/* path shit */
 #include "../i_system.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #if defined (__GNUC__) || defined (__unix__)
 #include <unistd.h>
 #endif
@@ -113,10 +117,15 @@ static inline VOID MakeCodeWritable(VOID)
 #ifdef FORCESDLMAIN
 int SDL_main(int argc, char **argv)
 #else
+#ifdef __EMSCRIPTEN__
+int main_cont(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 #endif
 {
 	const char *logdir = NULL;
+
 	myargc = argc;
 	myargv = argv; /// \todo pull out path to exe from this string
 
@@ -255,4 +264,33 @@ int main(int argc, char **argv)
 	// return to OS
 	return 0;
 }
+
+#ifdef __EMSCRIPTEN__
+int main(int argc, char **argv)
+{
+    EM_ASM(
+        try
+		{
+			// Make a directory other than '/'
+			// FS.mkdir('/user');
+			// Then mount with IDBFS type
+			FS.mount(IDBFS, {}, '/home/web_user');
+
+			// Then sync
+			FS.syncfs(true, function (err) {
+				console.log("Intial syncFS done");
+				console.log(err);
+				Module.ccall("emscripten_main");
+        	});
+		} 
+		catch (err)
+		{
+			// May have already mounted during preRun, so fail silently
+			console.log(err);
+		}
+    );
+	return main_cont(argc, argv);
+}
+#endif
+
 #endif
