@@ -79,6 +79,7 @@
 #include "../console.h"
 #include "../command.h"
 #include "../r_main.h"
+#include "../screen.h"
 #include "sdlmain.h"
 #ifdef HWRENDER
 #include "../hardware/hw_main.h"
@@ -594,6 +595,39 @@ static INT32 SDLJoyAxis(const Sint16 axis, evtype_t which)
 	return raxis;
 }
 
+#if !defined(__ANDROID__)
+static void ResizeDimensions(INT32 *x, INT32 *y)
+{
+	boolean portrait = (*x < *y);
+	INT32 width = max(*x, *y);
+	INT32 height = min(*x, *y);
+	float target = max((float)cv_scr_resizeheight.value, BASEVIDHEIGHT);
+	float factor;
+
+	if (!cv_scr_resizeheight.value)
+		return;
+	
+	factor = target / height;
+	if (width * factor < BASEVIDWIDTH)
+		factor = BASEVIDWIDTH / (float)width;
+
+	width *= factor;
+	height *= factor;
+
+	if (portrait)
+	{
+		*x = ceil(height);
+		*y = ceil(width);
+	}
+	else
+	{
+		*x = ceil(width);
+		*y = ceil(height);
+	}
+	
+}
+#endif
+
 static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 {
 	static SDL_bool firsttimeonmouse = SDL_TRUE;
@@ -616,12 +650,24 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			kbfocus = SDL_FALSE;
 			mousefocus = SDL_FALSE;
 			break;
+
 #if !defined(__ANDROID__)
 		case SDL_WINDOWEVENT_RESIZED:
-			setresneeded[0] = evt.data1;
-			setresneeded[1] = evt.data2;
-			setresneeded[2] = 1;
-			break;
+			{
+				INT32 x = evt.data1, y = evt.data2;
+
+				ResizeDimensions(&x, &y);
+
+				if (
+					(setresneeded[0] == x) &&
+					(setresneeded[1] == y)
+				) break;
+
+				setresneeded[0] = x;
+				setresneeded[1] = y;
+				setresneeded[2] = 1;
+				break;
+			}
 #endif
 		case SDL_WINDOWEVENT_MAXIMIZED:
 			break;
