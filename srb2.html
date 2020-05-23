@@ -31,19 +31,28 @@
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <title>Sonic Robo Blast 2</title>
     <style>
+      html, body {
+        height: 100%;
+      }
+
       body {
-        font-family: arial;
+        font-family: 'Segoe UI', sans-serif;
         margin: 0;
         padding: none;
         background: #000;
-        color: #fff;
+        color: #ffffff;
+      }
+
+      #content {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       #status-cont {
-        position: fixed;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
         font-weight: bold;
         text-align: center;
       }
@@ -53,6 +62,11 @@
         width: 256px;
       }
 
+      #startbtn {
+        width: 128px;
+        height: 48px;
+      }
+
       #canvas {
           position: fixed;
           top: 0;
@@ -60,54 +74,71 @@
           width: 100%;
           height: 100%;
       }
-
-      #logo {
-        display: inline-block;
-        width: 192px;
-        height: 192px;
-        background-image: url("assets/srb2.png");
-        background-size: 100% 100%;
-      }
     </style>
   </head>
   <body>   
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
-
-    <div id="status-cont" class="emscripten">
-      <div id="logo"></div>
-      <div style="text-align: center;">
-          <h1><a href="https://www.srb2.org" target="_blank">SRB2</a> for Web</h1>
-          <div id="details">
-            <p>
-              <button id="startbtn" onclick="startload()">Start Game</button>
-              <span hidden class="emscripten" id="status"></span>
-            </p>
-            <progress value="0" max="100" id="progress" hidden=1></progress>
-            <div style="text-align: left;">
-              <p>Notes:</p>
-              <ul>
-                  <li>No online</li>
-                  <li>Config/Save games DO work</li>
-                  <li>Controllers DO work</li>
-              </ul>
-            </div>
-          </div>
-          <p>Contributors: <a href="https://github.com/mazmazz">mazmazz</a>, <a href="https://github.com/heyjoeway">heyjoeway</a>, <a href="https://github.com/Jimita">Jimita</a>. <a href="https://github.com/Jimita/SRB2/compare/android-port...mazmazz:emscripten-touch">View the source</a>.</p>
+    <div id="content">
+      <div id="status-cont" class="emscripten">
+        <div id="header">
+          <p>
+            <a href="https://www.srb2.org" target="_blank">
+              <img src="assets/srb2logo.png" width="320"/>
+            </a>
+          </p>
+        </div>
+        <div id="details">
+          <p>
+            <button id="startbtn" onclick="startload()">Start Game</button>
+            <span hidden class="emscripten" id="status"></span>
+          </p>
+          <progress value="0" max="100" id="progress" hidden=1></progress>
+        </div>
+        <div id="controls">
+          <label for="resizeHeight">Resolution</label>
+          <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p')"
+            min="200" max="800" value="400" step="100"/>
+          <span id="resizeHeightValue"></span>
+        </div>
+        <div id="notes">
+          <p>Notes:</p>
+          <p>No online<br/>
+          Config/Save games DO work<br/>
+          Controllers DO work</p>
+        </div>
+        <div id="footer">
+          <p>Contributors: <a href="https://github.com/mazmazz">mazmazz</a>, <a href="https://github.com/heyjoeway">heyjoeway</a>, <a href="https://github.com/Jimita">Jimita</a>.</p>
+          <p><a href="https://github.com/Jimita/SRB2/compare/android-port...mazmazz:emscripten-touch">View the source</a>.</p>
+        </div>
       </div>
     </div>
+    
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1 style="z-index:-9999;"></canvas>
 
     <script type='text/javascript'>
+      ////////////////////////////////
+      // UI
+      ////////////////////////////////
+
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
 
-      var startload = function () {
+      var startload = () => {
         var script = document.createElement('script');
         script.setAttribute('src','./srb2.js');
         document.head.appendChild(script);
         statusElement.hidden = false;
         document.getElementById('startbtn').hidden = true;
-        document.getElementById('status-cont').style.zIndex = "-9999";
-      }
+        document.getElementById('canvas').style.zIndex = "9999";
+        document.getElementById('controls').style.display = "none";
+      };
+
+      var showValue = (elem, suffix) => {
+        document.getElementById(`${elem.id}Value`).innerText = `${elem.value}${suffix}`;
+      };
+
+      var initUi = () => {
+        showValue(document.getElementById('resizeHeight'), 'p');
+      };
 
       ////////////////////////////////
       // Utilities
@@ -214,26 +245,27 @@
       var Module = {
         arguments: [
           '-file','/emscripten.pk3',
-          '+scr_resizeheight', (userAgentIsiPhone() ? '200' : '400'),
           '+addons_option','CUSTOM',
           '+addons_folder','/addons',
         ],
 
         preRun: [() => {
+          let dims = resizeDimensions(
+            document.documentElement.clientWidth,
+            document.documentElement.clientHeight,
+            document.getElementById('resizeHeight').value.toString()
+          );
+          Module['arguments'].push(
+            '+scr_resizeheight', document.getElementById('resizeHeight').value.toString(),
+            '-width', dims.x.toString(),
+            '-height', dims.y.toString()
+          );
+
           ////////////////////////////////
           // if iPhone, then force off window resize events because
           // the reported dimensions are not reliable. We'll handle
           // viewport changes on the JS-side.
           ////////////////////////////////
-          let dims = resizeDimensions(
-            document.documentElement.clientWidth,
-            document.documentElement.clientHeight,
-            (userAgentIsiPhone() ? 200 : 400)
-          );
-          Module['arguments'].push(
-            '-width', dims.x.toString(),
-            '-height', dims.y.toString()
-          );
           if (userAgentIsiPhone())
             Module['arguments'].push('+scr_resize','Off');
           else
@@ -394,7 +426,12 @@
         if(userAgentIsiOS()) {
           if(!isStandalone()) {
             document.getElementById("details").innerHTML = "<strong>To play, add this site to your Home Screen!</strong>";
+            document.getElementById("controls").style.display = "none";
+            document.getElementById("notes").style.display = "none";
           } else {
+            if (userAgentIsiPhone())
+              document.getElementById("resizeHeight").value = 200;
+
             installAudioInitializer();
             // orientationchanged does not have the new sizes;
             // resize fires after.
@@ -404,6 +441,7 @@
             window.addEventListener('focus', handleVisibilityChange);
           }
         }
+        initUi();
       }, false);
     </script>
     <!-- {{{ SCRIPT }}} -->
