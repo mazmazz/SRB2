@@ -66,9 +66,20 @@ matrix:
           script:
             - emmake make -C src/
           after_success:
+            # Compile asset tree for deployment
             - mv bin/Emscripten/Release/srb2.html bin/Emscripten/Release/index.html
             - wget -O $HOME/srb2_cache/music.dta https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/music.dta
-            - cp $HOME/srb2_cache/music.dta bin/Emscripten/Release/music.dta
+            - mkdir -p bin/Emscripten/Release/assets
+            - cp $HOME/srb2_cache/music.dta bin/Emscripten/Release/assets/music.dta
+            - cp srb2.png bin/Emscripten/Release/assets/srb2.png
+            - cp -R splash/* bin/Emscripten/Release/assets
+            # Package for GitHub Releases
+            - OLDPWD="$PWD"
+            - cd bin/Emscripten/Release
+            - zip -r ../srb2-emscripten.zip .
+            - cp ../srb2-emscripten.zip ../srb2-emscripten-noassets.zip
+            - zip --delete ../srb2-emscripten-noassets.zip "assets/*"
+            - cd "$OLDPWD"
           ################################
           # This job deploys to GitHub Releases and Netlify.
           # Netlify is deployed to preview; the URL will be in the build log.
@@ -86,7 +97,7 @@ matrix:
             - provider: releases
               api_key: $GITHUB_TOKEN
               file_glob: true
-              file: bin/Emscripten/Release/** # relative to [repo]
+              file: bin/Emscripten/*.zip # relative to [repo]
               skip_cleanup: true
               draft: true
               on:
