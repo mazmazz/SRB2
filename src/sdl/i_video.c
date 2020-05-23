@@ -116,7 +116,12 @@ INT32 vid_opengl_state = 0;
 // To disable fullscreen at startup; is set in VID_PrepareModeList
 boolean allow_fullscreen = false;
 static SDL_bool disable_fullscreen = SDL_FALSE;
+#ifdef __EMSCRIPTEN__
+// Fullscreen reacts weirdly to browser resize events
+#define USE_FULLSCREEN 0
+#else
 #define USE_FULLSCREEN (disable_fullscreen||!allow_fullscreen)?0:cv_fullscreen.value
+#endif
 static SDL_bool disable_mouse = SDL_FALSE;
 #define USE_MOUSEINPUT (!disable_mouse && cv_usemouse.value && havefocus)
 #define MOUSE_MENU false //(!disable_mouse && cv_usemouse.value && menuactive && !USE_FULLSCREEN)
