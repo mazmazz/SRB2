@@ -497,7 +497,9 @@ void D_RegisterServerCommands(void)
 #ifdef UPDATE_ALERT
 	COM_AddCommand("mod_details", Command_ModDetails_f);
 #endif
+#ifndef __EMSCRIPTEN__
 	COM_AddCommand("quit", Command_Quit_f);
+#endif
 
 	COM_AddCommand("saveconfig", Command_SaveConfig_f);
 	COM_AddCommand("loadconfig", Command_LoadConfig_f);
