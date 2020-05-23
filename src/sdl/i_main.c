@@ -25,6 +25,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include "../screen.h"
 #endif
 
 #if defined (__GNUC__) || defined (__unix__)
@@ -290,6 +291,16 @@ int main(int argc, char **argv)
 		}
     );
 	return main_cont(argc, argv);
+}
+
+int change_resolution(INT32 x, INT32 y)
+{
+	INT32 newX = x, newY = y;
+	SCR_ResizeDimensions(&newX, &newY, cv_scr_resizeheight.value);
+	setresneeded[0] = newX;
+	setresneeded[1] = newY;
+	setresneeded[2] = 1;
+	return 0;
 }
 #endif
 

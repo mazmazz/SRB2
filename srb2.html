@@ -76,10 +76,10 @@
     <div id="status-cont" class="emscripten">
       <div id="logo"></div>
       <div style="text-align: center;">
-          <h1><a href="https://www.srb2.org" target="_blank">SRB2</a> v2.2.4</h1>
+          <h1><a href="https://www.srb2.org" target="_blank">SRB2</a> for Web</h1>
           <div id="details">
             <p>
-              <button id="startbtn">Start Game</button>
+              <button id="startbtn" onclick="startload()">Start Game</button>
               <span hidden class="emscripten" id="status"></span>
             </p>
             <progress value="0" max="100" id="progress" hidden=1></progress>
@@ -127,6 +127,36 @@
         ("standalone" in window.navigator) &&
         window.navigator.standalone
       );
+
+      var resizeDimensions = (x, y, resizeHeight) => {
+        let portrait = (x < y);
+        let width = Math.max(x, y);
+        let height = Math.min(x, y);
+        let target = Math.max(resizeHeight, (portrait ? 320 : 200)); // BASEVIDHEIGHT
+        let factor;
+
+        if (!resizeHeight)
+          return {x:x, y:y};
+        
+        factor = target / height;
+        if (width * factor < 320) // BASEVIDWIDTH
+          factor = 320 / width;
+
+        width *= factor;
+        height *= factor;
+
+        if (portrait)
+        {
+          x = Math.ceil(height);
+          y = Math.ceil(width);
+        }
+        else
+        {
+          x = Math.ceil(width);
+          y = Math.ceil(height);
+        }
+        return {x:x, y:y};
+      };
 
       var fn = (path) => path.split('\\').pop().split('/').pop();
 
@@ -184,7 +214,7 @@
       var Module = {
         arguments: [
           '-file','/emscripten.pk3',
-          '+scr_resizeheight','400',
+          '+scr_resizeheight', (userAgentIsiPhone() ? '200' : '400'),
           '+addons_option','CUSTOM',
           '+addons_folder','/addons',
         ],
@@ -192,10 +222,22 @@
         preRun: [() => {
           ////////////////////////////////
           // if iPhone, then force off window resize events because
-          // the reported dimensions are not reliable.
+          // the reported dimensions are not reliable. We'll handle
+          // viewport changes on the JS-side.
           ////////////////////////////////
+          let dims = resizeDimensions(
+            document.documentElement.clientWidth,
+            document.documentElement.clientHeight,
+            (userAgentIsiPhone() ? 200 : 400)
+          );
+          Module['arguments'].push(
+            '-width', dims.x.toString(),
+            '-height', dims.y.toString()
+          );
           if (userAgentIsiPhone())
-            Module['arguments'].push('+scr_resize','Off','-width','640','-height','400');
+            Module['arguments'].push('+scr_resize','Off');
+          else
+            Module['arguments'].push('+scr_resize','On');
 
           ////////////////////////////////
           // Mount filesystem, then check for music.dta
@@ -292,6 +334,10 @@
         };
       };
 
+      ////////////////////////////////
+      // iOS Support
+      ////////////////////////////////
+
       // iOS Safari requires us to activate WebAudio context upon user touch.
       // The runtime will use this same audioContext.
       // https://paulbakaus.com/tutorials/html5/web-audio-on-ios/
@@ -315,12 +361,48 @@
           source.start();
         }
       };
-      window.addEventListener('load', function() {
-        if(userAgentIsiPhone() && !isStandalone()) {
-          document.getElementById("details").innerHTML = "<strong>To play, add this site to your Home Screen!</strong>";
+
+      var installAudioInitializer = () => {
+        document.addEventListener('touchend', activateAudio, {once: true});
+      }
+
+      var changeResolution = () => {
+        if (calledRun)
+          Module.ccall('change_resolution',
+            'number',
+            ['number', 'number'],
+            [document.documentElement.clientWidth, document.documentElement.clientHeight]
+          );
+      };
+
+      var handleViewportChange = () => {
+        changeResolution();
+      };
+
+      var handleVisibilityChange = (e) => {
+        if (e.type === 'focus') {
+          changeResolution();
+          if (SDL2 && SDL2.audioContext)
+            SDL2.audioContext.resume();
         } else {
-          document.getElementById("startbtn").onclick = startload;
-          document.addEventListener('touchstart', activateAudio, {once: true});
+          if (SDL2 && SDL2.audioContext)
+            SDL2.audioContext.suspend();
+        }
+      };
+
+      window.addEventListener('load', function() {
+        if(userAgentIsiOS()) {
+          if(!isStandalone()) {
+            document.getElementById("details").innerHTML = "<strong>To play, add this site to your Home Screen!</strong>";
+          } else {
+            installAudioInitializer();
+            // orientationchanged does not have the new sizes;
+            // resize fires after.
+            window.addEventListener('resize', handleViewportChange);
+            // on iOS 12, only blur/focus fire on change to home or power button
+            window.addEventListener('blur', handleVisibilityChange);
+            window.addEventListener('focus', handleVisibilityChange);
+          }
         }
       }, false);
     </script>

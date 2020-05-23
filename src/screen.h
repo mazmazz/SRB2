@@ -206,6 +206,10 @@ extern consvar_t cv_vidwait;
 void SCR_SetMode(void);
 // Change resolution
 void SCR_SetResolution(void);
+#if !defined(__ANDROID__) || defined(__EMSCIRPTEN__)
+// Resize dimensions for resolution
+void SCR_ResizeDimensions(INT32 *x, INT32 *y, INT32 resizeHeight);
+#endif
 // Change render mode
 void SCR_SetRenderer(void);
 // Set drawer functions

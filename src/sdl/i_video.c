@@ -36,6 +36,10 @@
 #include <lodepng.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #ifdef _MSC_VER
 #include <windows.h>
 #pragma warning(default : 4214 4244)
@@ -600,39 +604,6 @@ static INT32 SDLJoyAxis(const Sint16 axis, evtype_t which)
 	return raxis;
 }
 
-#if !defined(__ANDROID__)
-static void ResizeDimensions(INT32 *x, INT32 *y)
-{
-	boolean portrait = (*x < *y);
-	INT32 width = max(*x, *y);
-	INT32 height = min(*x, *y);
-	float target = max((float)cv_scr_resizeheight.value, BASEVIDHEIGHT);
-	float factor;
-
-	if (!cv_scr_resizeheight.value)
-		return;
-	
-	factor = target / height;
-	if (width * factor < BASEVIDWIDTH)
-		factor = BASEVIDWIDTH / (float)width;
-
-	width *= factor;
-	height *= factor;
-
-	if (portrait)
-	{
-		*x = ceil(height);
-		*y = ceil(width);
-	}
-	else
-	{
-		*x = ceil(width);
-		*y = ceil(height);
-	}
-	
-}
-#endif
-
 static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 {
 	static SDL_bool firsttimeonmouse = SDL_TRUE;
@@ -659,14 +630,31 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 #if !defined(__ANDROID__)
 		case SDL_WINDOWEVENT_RESIZED:
 			{
-				INT32 x = evt.data1, y = evt.data2;
+				INT32 x, y;
 
-				ResizeDimensions(&x, &y);
+				if (!cv_scr_resize.value)
+					break;
 
-				if (!cv_scr_resize.value || (
+#ifdef __EMSCRIPTEN__
+				// viewport reporting is inconsistent between browsers.
+				// documentElement is the most consistent.
+				x = EM_ASM_INT({
+					return document.documentElement.clientWidth;
+				});
+				y = EM_ASM_INT({
+					return document.documentElement.clientHeight;
+				});
+#else
+				x = evt.data1;
+				y = evt.data2;
+#endif
+
+				SCR_ResizeDimensions(&x, &y, cv_scr_resizeheight.value);
+
+				if (
 					(setresneeded[0] == x) &&
 					(setresneeded[1] == y)
-				)) break;
+				) break;
 
 				setresneeded[0] = x;
 				setresneeded[1] = y;

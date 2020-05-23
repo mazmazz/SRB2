@@ -253,6 +253,38 @@ void SCR_SetResolution(void)
 	setrenderneeded = 0;
 }
 
+#if !defined(__ANDROID__) || defined(__EMSCIRPTEN__)
+void SCR_ResizeDimensions(INT32 *x, INT32 *y, INT32 resizeHeight)
+{
+	boolean portrait = (*x < *y);
+	INT32 width = max(*x, *y);
+	INT32 height = min(*x, *y);
+	float target = max((float)resizeHeight, (portrait ? BASEVIDWIDTH : BASEVIDHEIGHT));
+	float factor;
+
+	if (!resizeHeight)
+		return;
+	
+	factor = target / height;
+	if (width * factor < BASEVIDWIDTH)
+		factor = BASEVIDWIDTH / (float)width;
+
+	width *= factor;
+	height *= factor;
+
+	if (portrait)
+	{
+		*x = ceil(height);
+		*y = ceil(width);
+	}
+	else
+	{
+		*x = ceil(width);
+		*y = ceil(height);
+	}
+}
+#endif
+
 // do some initial settings for the game loading screen
 //
 void SCR_Startup(void)
