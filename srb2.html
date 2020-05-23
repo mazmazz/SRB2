@@ -186,6 +186,13 @@
           });
         }],
         
+        postRun: [() => {
+          document.getElementById('status-cont').style.zIndex = '0';
+          statusElement.hidden = true;
+          document.getElementById('startbtn').hidden = false;
+          document.getElementById('status').innerText = '';
+        }],
+        
         ////////////////////////////////
         // Platform Stuff
         ////////////////////////////////
