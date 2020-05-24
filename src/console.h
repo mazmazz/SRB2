@@ -13,6 +13,12 @@
 #include "d_event.h"
 #include "command.h"
 
+#ifdef __EMSCRIPTEN__
+// Magic numbers to mark an event as an injected key.
+#define CON_INJECT_X 923
+#define CON_INJECT_Y 2008
+#endif
+
 void CON_Init(void);
 
 boolean CON_Responder(event_t *ev);

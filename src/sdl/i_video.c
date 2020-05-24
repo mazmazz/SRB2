@@ -635,7 +635,12 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 				if (!cv_scr_resize.value)
 					break;
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
+				if (!EM_ASM_INT({
+					return AllowWindowResize();
+				}))
+					break;
+
 				// viewport reporting is inconsistent between browsers.
 				// documentElement is the most consistent.
 				x = EM_ASM_INT({
@@ -1340,6 +1345,11 @@ void I_RaiseScreenKeyboard(char *buffer, size_t length)
 	textbufferlength = length;
 	textinputcallback = NULL;
 	SDL_StartTextInput();
+#ifdef __EMSCRIPTEN__
+	EM_ASM({
+		I_RaiseScreenKeyboard();
+	});
+#endif
 }
 
 void I_ScreenKeyboardCallback(void (*callback)(char *, size_t))
@@ -1349,7 +1359,13 @@ void I_ScreenKeyboardCallback(void (*callback)(char *, size_t))
 
 boolean I_KeyboardOnScreen(void)
 {
-	return ((SDL_IsTextInputActive() == SDL_TRUE) ? true : false);
+	return
+#ifdef __EMSCRIPTEN__
+	EM_ASM_INT({
+		return I_KeyboardOnScreen();
+	}) &&
+#endif
+	((SDL_IsTextInputActive() == SDL_TRUE) ? true : false);
 }
 
 void I_CloseScreenKeyboard(void)
@@ -1358,6 +1374,11 @@ void I_CloseScreenKeyboard(void)
 	textbufferlength = 0;
 	textinputcallback = NULL;
 	SDL_StopTextInput();
+#ifdef __EMSCRIPTEN__
+	EM_ASM({
+		I_CloseScreenKeyboard();
+	});
+#endif
 }
 #endif
 

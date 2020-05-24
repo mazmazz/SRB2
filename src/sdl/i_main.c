@@ -302,6 +302,27 @@ int change_resolution(INT32 x, INT32 y)
 	setresneeded[2] = 1;
 	return 0;
 }
+
+int inject_keycode(INT32 keyCode, boolean isup)
+{
+	event_t event;
+	if (isup)
+		event.type = ev_keyup;
+	else
+		event.type = ev_keydown;
+	//event.key = Impl_SDL_Scancode_To_Keycode(evt.keysym.scancode);
+	event.key = keyCode;
+	// Mark this event with magic numbers so that CON_Responder does not ignore us
+	event.x = CON_INJECT_X;
+	event.y = CON_INJECT_Y;
+	if (event.key) D_PostEvent(&event);
+	return 0;
+}
+
+	return 0;
+#endif
+}
+}
 #endif
 
 #endif
