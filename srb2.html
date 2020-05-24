@@ -39,22 +39,83 @@
         font-family: 'Segoe UI', sans-serif;
         margin: 0;
         padding: none;
-        background: #000;
+        background-color: #000;
+        background-image: 
+          linear-gradient(90deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.80) 10%, rgba(0,0,0,0.80) 90%, rgba(0,0,0,0.25) 100%),
+          url(assets/background.jpg);
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
         color: #ffffff;
+      }
+
+      body.postRun {
+        background-image: none;
+      }
+
+      body.postRun #content {
+        display: none;
       }
 
       #content {
         width: 100%;
         height: 100%;
         overflow-y: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        text-align: center;
+        display: grid;
       }
 
       #status-cont {
+        display: inline-block;
         font-weight: bold;
         text-align: center;
+        margin: auto 10%;
+      }
+
+      @media (min-width: 320px) {
+        #logo {
+          width: 120%;
+          height: auto;
+          margin: 0 -10%;
+        }
+
+        #systemArguments, #userArguments {
+          width: 120%;
+          margin: 0 -10%;
+        }
+      }
+
+      @media (min-width: 481px) {
+        #logo {
+          width: 90%;
+          height: auto;
+        }
+
+        #systemArguments, #userArguments {
+          width: 90%;
+        }
+      }
+
+      @media (min-width: 641px) {
+        #logo {
+          width: 60%;
+          height: auto;
+        }
+
+        #systemArguments, #userArguments {
+          width: 60%;
+        }
+      }
+
+      @media (min-width: 1281px) {
+        #logo {
+          width: 40%;
+          height: auto;
+        }
+
+        #systemArguments, #userArguments {
+          width: 40%;
+        }
       }
 
       #progress {
@@ -63,8 +124,15 @@
       }
 
       #startbtn {
-        width: 128px;
+        width: 160px;
         height: 48px;
+        background-color: yellow;
+        color: black;
+        background-image: linear-gradient(yellow, orange);
+        border: 0.1em orange solid;
+        font-weight: bolder;
+        font-size: 1.1em;
+        cursor: pointer;
       }
 
       #canvas, #keyCapture {
@@ -101,6 +169,16 @@
       #textSubmit {
         width: 6.66em;
       }
+
+      #notes {
+        display: inline-block;
+        text-align: start;
+      }
+
+      summary {
+        margin: 0.75em 0;
+      }
+
     </style>
   </head>
   <body>   
@@ -108,34 +186,64 @@
       <div id="status-cont" class="emscripten">
         <div id="header">
           <p>
-            <a href="https://www.srb2.org" target="_blank">
-              <img src="assets/srb2logo.png" width="320"/>
-            </a>
+            <img id="logo" src="assets/srb2logo.png"/>
           </p>
         </div>
         <div id="details">
           <p>
-            <button id="startbtn" onclick="startload()">Start Game</button>
+            <button id="startbtn" onclick="startload()">Play</button>
             <span hidden class="emscripten" id="status"></span>
           </p>
           <progress value="0" max="100" id="progress" hidden=1></progress>
         </div>
-        <div id="controls">
-          <label for="resizeHeight">Resolution</label>
-          <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p')"
-            min="200" max="800" value="400" step="100"/>
-          <span id="resizeHeightValue"></span>
-        </div>
-        <div id="notes">
-          <p>Notes:</p>
-          <p>No online<br/>
-          Config/Save games DO work<br/>
-          Controllers DO work</p>
-        </div>
-        <div id="footer">
-          <p>Contributors: <a href="https://github.com/mazmazz">mazmazz</a>, <a href="https://github.com/heyjoeway">heyjoeway</a>, <a href="https://github.com/Jimita">Jimita</a>.</p>
-          <p><a href="https://github.com/Jimita/SRB2/compare/android-port...mazmazz:emscripten-touch">View the source</a>.</p>
-        </div>
+        <form id="controlsForm" action="javascript:void(0);">
+          <details id="controls">
+            <summary>Settings</summary>
+            <p>
+              <label for="resizeHeight">Resolution</label>
+            <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p', (elem) => { return elem.value < 200; }, 'Full');"
+                min="100" max="800" value="400" step="100"/>
+              <span id="resizeHeightValue"></span>
+            </p>
+            <p>
+              <input type="checkbox" id="playMusic" checked/>
+              <label for="playMusic">Play Music</label>
+              <input type="checkbox" id="playSound" checked/>
+              <label for="playSound">Play Sounds</label>
+            </p>
+            <details id="advancedControls">
+              <summary>Advanced</summary>
+              <p>
+                <input type="checkbox" id="skipIntro"/>
+                <label for="skipIntro">Skip Intro</label>
+                <input type="checkbox" id="shadow" checked/>
+                <label for="shadow">Render Shadows</label>
+              </p>
+              <p>
+                <label for="userArguments">Command Line</label><br/>
+                <textarea id="systemArguments" rows="2" readonly></textarea><br/>
+                <textarea id="userArguments" rows="2" placeholder="Custom Arguments"></textarea>
+              </p>
+            </details>
+          </details>
+        </form>
+        <details id="footer">
+          <summary>About</summary>
+          <ul id="notes">
+            <lh>Game Notes:</lh>
+            <li>No network play</li>
+            <li>Config/Save games DO work</li>
+            <li>Controllers DO work</li>
+            <li>If this page crashes, try refreshing this page or restarting your browser.</li>
+          </ul>
+          <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
+          <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
+          <p><a href="https://git.magicalgirl.moe/digiku/SRB2/issues/2">View issues</a> / <a href="https://github.com/Jimita/SRB2/compare/android-port-dynres...mazmazz:emscripten-touch">View source</a></p>
+          <p>Contributors:</p>
+          <p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
+          <p>Follow SRB2:</p>
+          <p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
+        </details>
       </div>
     </div>
     
@@ -156,24 +264,93 @@
       var canvasElement = document.getElementById('canvas');
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
+      var controlsFormElement = document.getElementById('controlsForm');
 
       var startload = () => {
+        saveFormToStorage(controlsFormElement);
         var script = document.createElement('script');
         script.setAttribute('src','./srb2.js');
         document.head.appendChild(script);
         statusElement.hidden = false;
         document.getElementById('startbtn').hidden = true;
         document.getElementById('canvas').style.zIndex = "9999";
+        document.getElementById('addons').style.display = "none";
         document.getElementById('controls').style.display = "none";
+        document.getElementById('footer').style.display = "none";
+        document.body.classList.add('calledRun');
       };
 
-      var showValue = (elem, suffix) => {
-        document.getElementById(`${elem.id}Value`).innerText = `${elem.value}${suffix}`;
+      var showValue = (elem, suffix, overrideTest, override) => {
+        if (typeof overrideTest !== 'undefined' && overrideTest(elem))
+          document.getElementById(`${elem.id}Value`).innerText = override;
+        else
+          document.getElementById(`${elem.id}Value`).innerText = `${elem.value}${suffix}`;
       };
 
-      var initUi = () => {
-        showValue(document.getElementById('resizeHeight'), 'p');
+      var saveFormToStorage = (form) => {
+        let inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => localStorage.setItem(`${form.id}_${input.id}`, 
+                       input.type === 'checkbox' ? input.checked
+                       : input.value));
       };
+
+      var loadFormFromStorage = (form) => {
+        let inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+          let val = localStorage.getItem(`${form.id}_${input.id}`);
+          if (val !== null && !val.readOnly) {
+            if (input.type === 'checkbox')
+              input.checked = (val === "true");
+            else
+              input.value = val;
+          }
+        });
+      };
+
+      var addFormEventListeners = (form, event, callback, settings) => {
+        let inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => input.addEventListener(event, callback, settings));
+      };
+
+      document.getElementById('controls').addEventListener('toggle', function(e) {
+        localStorage.setItem('controls', event.target.open);
+      }, false);
+
+      document.getElementById('advancedControls').addEventListener('toggle', function(e) {
+        localStorage.setItem('advancedControls', event.target.open);
+      }, false);
+
+      window.addEventListener('load', function() {
+        if (userAgentIsiOS()) {
+          if (!isStandalone()) {
+            document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
+            document.getElementById("controls").style.display = "none";
+            document.getElementById("notes").style.display = "none";
+            return;
+          }
+        }
+
+        loadFormFromStorage(controlsFormElement);
+        showValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value < 200; }, 'Full');
+
+        // By default, mobile phones should run at 200p.
+        if (localStorage.getItem('controlsForm_resizeHeight') === null && userAgentIsMobile())
+          document.getElementById('resizeHeight').value = 200;
+
+        addFormEventListeners(controlsFormElement, 'input', e => {
+          localStorage.setItem(`${controlsFormElement.id}_${e.target.id}`, 
+                               e.target.type === 'checkbox' ? e.target.checked
+                               : e.target.value);
+          buildControlArguments();
+          document.getElementById("systemArguments").value = systemArgumentsToString();
+        }, false);
+
+        buildControlArguments();
+        document.getElementById("systemArguments").value = systemArgumentsToString();
+
+        document.getElementById('controls').open = (localStorage.getItem('controls') === 'true');
+        document.getElementById('advancedControls').open = (localStorage.getItem('advancedControls') === 'true');
+      }, {once: true});
 
       ////////////////////////////////
       // Utilities
@@ -286,31 +463,95 @@
       // Emscripten Module -- Runtime Parameters
       ////////////////////////////////
 
+      var systemArguments = [
+        '+addons_option','CUSTOM',
+        '+addons_folder','/addons',
+        '-file','/emscripten.pk3'
+      ];
+
+      var controlArguments = [];
+
+      var userArguments = [];
+
+      var buildControlArguments = () => {
+        let inputs = controlsFormElement.querySelectorAll('input, textarea');
+        let args = [];
+
+        inputs.forEach(input => {
+          switch(input.id) {
+            case 'resizeHeight': {
+              let resizeHeight = input.value < 200 ? 0 : input.value;
+              let dims = resizeDimensions(
+                document.documentElement.clientWidth,
+                document.documentElement.clientHeight,
+                resizeHeight
+              );
+              args.push(
+                '+scr_resizeheight', resizeHeight.toString(),
+                '-width', dims.x.toString(),
+                '-height', dims.y.toString()
+              );
+              break;
+            }
+            case 'playMusic': {
+              let val = (input.checked ? 'on' : 'off');
+              args.push(
+                '+midimusic',val,
+                '+digimusic',val
+              );
+              break;
+            }
+            case 'playSounds': {
+              let val = (input.checked ? 'on' : 'off');
+              args.push(
+                '+sounds',val
+              );
+              break;
+            }
+            case 'skipIntro':
+              if(input.checked)
+                args.push('-skipintro');
+              break;
+            case 'shadow': {
+              let val = (input.checked ? 'on' : 'off');
+              args.push(
+                '+shadow',val
+              );
+              break;
+            }
+          }
+        });
+        // Don't trust iPhone to give reliable resize events. Handle ourselves.
+        if (userAgentIsiPhone())
+          args.push('+scr_resize', 'off');
+        else
+          args.push('+scr_resize', 'on');
+        controlArguments = args;
+      };
+
+      var buildUserArguments = () => {
+        let argString = document.getElementById('userArguments').value;
+        let args = [];
+        if (argString.trim().length > 0)
+          args = argString.split(' ');
+        userArguments = args;
+      };
+
+      var systemArgumentsToString = () => `${systemArguments.join(' ')} ${controlArguments.join(' ')}`;
+
+      ////////////////////////////////
+      // Emscripten Module -- Runtime Parameters
+      ////////////////////////////////
+
       var Module = {
-        arguments: [
-          '-file','/emscripten.pk3',
-          '+addons_option','CUSTOM',
-          '+addons_folder','/addons',
-        ],
+        arguments: [],
 
         calledRun: false,
 
         preRun: [() => {
-          let dims = resizeDimensions(
-            document.documentElement.clientWidth,
-            document.documentElement.clientHeight,
-            document.getElementById('resizeHeight').value
-          );
-          Module['arguments'].push(
-            '+scr_resizeheight', document.getElementById('resizeHeight').value.toString(),
-            '-width', dims.x.toString(),
-            '-height', dims.y.toString()
-          );
-          // Don't trust iPhone to give reliable resize events. Handle ourselves.
-          if (userAgentIsiPhone())
-            Module['arguments'].push('+scr_resize', 'Off');
-          else
-            Module['arguments'].push('+scr_resize', 'On');
+          buildControlArguments();
+          buildUserArguments();
+          Module['arguments'].push(...systemArguments, ...controlArguments, ...userArguments);
 
           ////////////////////////////////
           // Mount filesystem, then check for music.dta
@@ -339,10 +580,10 @@
         }],
 
         postRun: [() => {
-          document.getElementById('status-cont').style.zIndex = '0';
           statusElement.hidden = true;
           document.getElementById('startbtn').hidden = false;
           document.getElementById('status').innerText = '';
+          document.body.classList.add('postRun');
         }],
         
         ////////////////////////////////
@@ -444,20 +685,17 @@
           );
       };
 
+      var handleViewportChange = () => {
+        changeResolution();
+      };
+
       window.addEventListener('load', function() {
         if(userAgentIsiOS()) {
-          if(!isStandalone()) {
-            document.getElementById("details").innerHTML = "<strong>To play, add this site to your Home Screen!</strong>";
-            document.getElementById("controls").style.display = "none";
-            document.getElementById("notes").style.display = "none";
-          } else {
-            if (userAgentIsiPhone())
-              document.getElementById("resizeHeight").value = 200;
-
+          if(isStandalone()) {
             window.addEventListener('touchend', activateAudio, {once: true});
+            window.addEventListener('resize', handleViewportChange, false);
           }
         }
-        initUi();
       }, {once: true});
 
       ////////////////////////////////
@@ -615,9 +853,9 @@
 
       var changeResolution = (x, y) => {
         if (Module['calledRun']) {
-          if (x === undefined)
+          if (typeof x === 'undefined')
             x = document.documentElement.clientWidth;
-          if (y === undefined)
+          if (typeof y === 'undefined')
             y = document.documentElement.clientHeight;
           Module.ccall('change_resolution',
             'number',
