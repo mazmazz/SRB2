@@ -26,6 +26,7 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #include "../screen.h"
+#include "../console.h"
 #endif
 
 #if defined (__GNUC__) || defined (__unix__)
@@ -319,9 +320,16 @@ int inject_keycode(INT32 keyCode, boolean isup)
 	return 0;
 }
 
+int pause_loop(void)
+{
+	emscripten_pause_main_loop();
 	return 0;
-#endif
 }
+
+int resume_loop(void)
+{
+	emscripten_resume_main_loop();
+	return 0;
 }
 #endif
 

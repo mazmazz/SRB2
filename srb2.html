@@ -267,6 +267,8 @@
           '+addons_folder','/addons',
         ],
 
+        calledRun: false,
+
         preRun: [() => {
           let dims = resizeDimensions(
             document.documentElement.clientWidth,
@@ -391,31 +393,29 @@
             Module['SDL2'] = {};
         }
         var SDL2 = Module['SDL2'];
-        if (!SDL2.audioContext) {
+        if (typeof(Module['SDL2'].audioContext) !== 'undefined' 
+            || !Module['SDL2'].audioContext) {
             if (typeof (AudioContext) !== 'undefined') {
                 SDL2.audioContext = new AudioContext();
             } else if (typeof (webkitAudioContext) !== 'undefined') {
                 SDL2.audioContext = new webkitAudioContext();
             }
         }
-        if (SDL2.audioContext && SDL2.audioContext.currentTime == 0) {
+        if (typeof(Module['SDL2'].audioContext) !== 'undefined' 
+            && SDL2.audioContext.currentTime == 0) {
           var buffer = SDL2.audioContext.createBuffer(1, 1, 44100);
           var source = SDL2.audioContext.createBufferSource();
           source.buffer = buffer;
           source.connect(SDL2.audioContext.destination);
           source.start();
         }
-      };
 
-      var handleVisibilityChange = (e) => {
-        if (e.type === 'focus') {
-          changeResolution();
-          if (SDL2 && SDL2.audioContext)
-            SDL2.audioContext.resume();
-        } else {
-          if (SDL2 && SDL2.audioContext)
-            SDL2.audioContext.suspend();
-        }
+        if (Module['calledRun'])
+          Module.ccall('COM_ImmedExecute',
+            null,
+            ['string'],
+            ['restartaudio']
+          );
       };
 
       window.addEventListener('load', function() {
@@ -429,14 +429,84 @@
               document.getElementById("resizeHeight").value = 200;
 
             document.addEventListener('touchend', activateAudio, {once: true});
-            
-            // on iOS 12, only blur/focus fire on change to home or power button
-            window.addEventListener('blur', handleVisibilityChange);
-            window.addEventListener('focus', handleVisibilityChange);
           }
         }
         initUi();
-      }, false);
+      }, {once: true});
+
+      ////////////////////////////////
+      // Pause/Resume
+      ////////////////////////////////
+
+      var pauseLoop = () => {
+        if (Module['calledRun'])
+          Module.ccall('pause_loop',
+            'number',
+            [],
+            []
+          );
+      };
+
+      var resumeLoop = () => {
+        if (Module['calledRun'])
+          Module.ccall('resume_loop',
+            'number',
+            [],
+            []
+          );
+      };
+
+      var doResume = () => {
+        if (Module['calledRun']) {
+          let SDL2 = null;
+          if (typeof (Module['SDL2']) !== 'undefined')
+            SDL2 = Module['SDL2'];
+
+          if (typeof(SDL2.audioContext) === 'undefined'
+              || !SDL2.audioContext 
+              || SDL2.audioContext.status === 'closed') {
+                SDL2.audioContext = null;
+                if (userAgentIsiOS())
+              window.addEventListener('touchend', activateAudio, {once: true});
+                else
+                  activateAudio();
+              } else
+                SDL2.audioContext.resume();
+            resumeLoop();
+            changeResolution();
+        }
+        window.removeEventListener('touchend', doResume, {once: true});
+        window.removeEventListener('click', doResume, {once: true});
+        window.removeEventListener('keydown', doResume, {once: true});
+      };
+
+      var handleVisibilityChange = (e) => {
+        if (Module['calledRun']) {
+          let SDL2 = null;
+          if (typeof (Module['SDL2']) !== 'undefined')
+            SDL2 = Module['SDL2'];
+
+          if (e.type === 'focus')
+            doResume();
+          else {
+            pauseLoop();
+            if (typeof(SDL2.audioContext) !== 'undefined'
+                && SDL2.audioContext)
+              SDL2.audioContext.suspend();
+            // just in case the browser does not fire a 'focus'
+            // event upon our return, allow the user to touch to wake
+            window.addEventListener('touchend', doResume, {once: true});
+            window.addEventListener('click', doResume, {once: true});
+            window.addEventListener('keydown', doResume, {once: true});
+          }
+        }
+      };
+
+      window.addEventListener('load', function() {
+        // on iOS 12, only blur/focus fire on change to home or power button
+        window.addEventListener('blur', handleVisibilityChange);
+        window.addEventListener('focus', handleVisibilityChange);
+      }, {once: true});
 
       ////////////////////////////////
       // On-Screen Keyboard
@@ -523,7 +593,7 @@
       ////////////////////////////////
 
       var changeResolution = (x, y) => {
-        if (calledRun) {
+        if (Module['calledRun']) {
           if (x === undefined)
             x = document.documentElement.clientWidth;
           if (y === undefined)
