@@ -1134,7 +1134,11 @@ boolean CON_Responder(event_t *ev)
 
 #if ((defined(__ANDROID__) || defined(__EMSCRIPTEN__)) && defined(TOUCHINPUTS))
 	// Inputs handled elsewhere
-	if (I_KeyboardOnScreen() && !(ev->x == CON_INJECT_X && ev->y == CON_INJECT_Y))
+	if (I_KeyboardOnScreen()
+#ifdef __EMSCRIPTEN__
+		&& !(ev->x == CON_INJECT_X && ev->y == CON_INJECT_Y)
+#endif
+		)
 		return true;
 #endif
 

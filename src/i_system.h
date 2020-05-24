@@ -185,6 +185,10 @@ void I_RaiseScreenKeyboard(char *buffer, size_t length);
 */
 void I_ScreenKeyboardCallback(void (*callback)(char *, size_t));
 
+/**	\brief call a callback for text input events
+*/
+void I_CallScreenKeyboardCallback(char *text, size_t length);
+
 /**	\brief returns the status of the on-screen keyboard
 */
 boolean I_KeyboardOnScreen(void);

@@ -1357,6 +1357,12 @@ void I_ScreenKeyboardCallback(void (*callback)(char *, size_t))
 	textinputcallback = callback;
 }
 
+void I_CallScreenKeyboardCallback(char *text, size_t length)
+{
+	if (textinputcallback != NULL)
+		textinputcallback(text, length);
+}
+
 boolean I_KeyboardOnScreen(void)
 {
 	return
