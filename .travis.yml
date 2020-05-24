@@ -45,7 +45,9 @@ matrix:
                 all_branches: true
         - os: linux
           dist: bionic
-          env: EMSCRIPTEN=1
+          env: 
+            - EMSCRIPTEN=1
+            - BUILD=${BUILD:-Release}
           install:
             # Save PWD to a file; for some reason, this var gets obliterated
             - echo "$PWD" > ~/oldpwd.txt
@@ -64,18 +66,21 @@ matrix:
             - mkdir -p $HOME/srb2_cache
             - cd "$(<~/oldpwd.txt)"
           script:
-            - emmake make -C src/
+            - if [[ "${BUILD}" == "Debug" ]]; then
+                DEBUGCMD="DEBUGMODE=1";
+              fi
+            - emmake make -C src/ $DEBUGCMD
           after_success:
             # Compile asset tree for deployment
-            - mv bin/Emscripten/Release/srb2.html bin/Emscripten/Release/index.html
+            - mv bin/Emscripten/${BUILD}/srb2.html bin/Emscripten/${BUILD}/index.html
             - wget -O $HOME/srb2_cache/music.dta https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/music.dta
-            - mkdir -p bin/Emscripten/Release/assets
-            - cp $HOME/srb2_cache/music.dta bin/Emscripten/Release/assets/music.dta
-            - cp srb2.png bin/Emscripten/Release/assets/srb2.png
-            - cp -R splash/* bin/Emscripten/Release/assets
+            - mkdir -p bin/Emscripten/${BUILD}/assets
+            - cp $HOME/srb2_cache/music.dta bin/Emscripten/${BUILD}/assets/music.dta
+            - cp srb2.png bin/Emscripten/${BUILD}/assets/srb2.png
+            - cp -R splash/* bin/Emscripten/${BUILD}/assets
             # Package for GitHub Releases
             - OLDPWD="$PWD"
-            - cd bin/Emscripten/Release
+            - cd bin/Emscripten/${BUILD}
             - zip -r ../srb2-emscripten.zip .
             - cp ../srb2-emscripten.zip ../srb2-emscripten-noassets.zip
             - zip --delete ../srb2-emscripten-noassets.zip "assets/*"
@@ -106,7 +111,7 @@ matrix:
               edge: true # opt into dpl v2
               site: $NETLIFY_SITE
               auth: $NETLIFY_TOKEN
-              dir: bin/Emscripten/Release
+              dir: bin/Emscripten/$BUILD
               skip_cleanup: true
               on:
                 all_branches: true
