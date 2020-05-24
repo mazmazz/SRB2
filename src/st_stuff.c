@@ -1762,7 +1762,12 @@ void ST_startTitleCard(void)
 	ST_cacheLevelTitle();
 
 	// initialize HUD variables
-	lt_ticker = lt_exitticker = lt_lasttic = 0;
+#ifdef NOWIPE
+	lt_ticker = PRELEVELTIME;
+#else
+	lt_ticker = 0;
+#endif
+	lt_exitticker = lt_lasttic = 0;
 	lt_endtime = 2*TICRATE + (10*NEWTICRATERATIO);
 	lt_scroll = BASEVIDWIDTH * FRACUNIT;
 	lt_zigzag = -((lt_patches[1])->width * FRACUNIT);
