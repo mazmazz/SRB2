@@ -193,7 +193,8 @@
 
       .addonFilesField label,
       .addonFilesField .addonButton,
-      #addonButtonAdd {
+      #addonButtonAdd,
+      #resetbtn {
         width: 2.5em;
         background-color: darkgray;
         background-image: linear-gradient(black, darkgray);
@@ -203,6 +204,13 @@
         line-height: 2.5em;
         cursor: default;
         text-align: center;
+      }
+
+      #resetbtn {
+        width: 160px;
+        height: 48px;
+        font-weight: bold;
+        display: none;
       }
 
       .addonFilesField label,
@@ -244,6 +252,9 @@
             <span hidden class="emscripten" id="status"></span>
           </p>
           <progress value="0" max="100" id="progress" hidden=1></progress>
+          <p>
+            <button id="resetbtn" onclick="javascript:window.location.reload()">Cancel</button>
+          </p>
         </div>
         <form id="controlsForm" action="javascript:void(0);">
           <details id="addons">
@@ -347,10 +358,10 @@
         document.head.appendChild(script);
         statusElement.hidden = false;
         document.getElementById('startbtn').hidden = true;
-        document.getElementById('canvas').style.zIndex = "9999";
         document.getElementById('addons').style.display = "none";
         document.getElementById('controls').style.display = "none";
         document.getElementById('footer').style.display = "none";
+        document.getElementById('resetbtn').style.display = "inline-block";
         document.body.classList.add('calledRun');
       };
 
@@ -847,6 +858,7 @@
       ////////////////////////////////
 
       var StartedMainLoopCallback = () => {
+        document.getElementById('canvas').style.zIndex = "9999";
         document.body.classList.add('startedMainLoop');
         // go scorched earth to save memory
         deleteNode(document.getElementById('content'));
@@ -878,12 +890,9 @@
           .finally(() => removeRunDependency('mount-filesystem'));
         }],
 
-        postRun: [() => {
-          statusElement.hidden = true;
-          document.getElementById('startbtn').hidden = false;
-          document.getElementById('status').innerText = '';
-          document.body.classList.add('postRun');
-        }],
+        onExit: () => {
+          window.location.reload();
+        },
         
         ////////////////////////////////
         // Platform Stuff

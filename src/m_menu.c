@@ -505,9 +505,7 @@ static menuitem_t MainMenu[] =
 	{IT_STRING|IT_CALL,    NULL, "Extras",      M_SecretsMenu,           92},
 	{IT_CALL   |IT_STRING, NULL, "Addons",      M_Addons,               100},
 	{IT_STRING|IT_CALL,    NULL, "Options",     M_Options,              108},
-#ifndef __EMSCRIPTEN__
 	{IT_STRING|IT_CALL,    NULL, "Quit  Game",  M_QuitSRB2,             116},
-#endif
 };
 
 typedef enum
@@ -604,9 +602,8 @@ static menuitem_t SPauseMenu[] =
 	{IT_CALL | IT_STRING,    NULL, "Options",              M_Options,             64},
 
 	{IT_CALL | IT_STRING,    NULL, "Return to Title",      M_EndGame,             80},
-#ifndef __EMSCRIPTEN__
+
 	{IT_CALL | IT_STRING,    NULL, "Quit Game",            M_QuitSRB2,            88},
-#endif
 };
 
 typedef enum

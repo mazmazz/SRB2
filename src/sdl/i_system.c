@@ -140,6 +140,10 @@ typedef LPVOID (WINAPI *p_MapViewOfFile) (HANDLE, DWORD, DWORD, DWORD, SIZE_T);
 #include <ndk_crash_handler.h>
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
+
 #ifndef errno
 #include <errno.h>
 #endif
@@ -2376,6 +2380,10 @@ void I_Quit(void)
 		free(myargv); // Deallocate allocated memory
 death:
 	W_Shutdown();
+#ifdef __EMSCRIPTEN__
+	emscripten_cancel_main_loop();
+	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#endif
 	exit(0);
 }
 
@@ -2448,6 +2456,10 @@ void I_Error(const char *error, ...)
 				buffer, NULL);
 
 			W_Shutdown();
+#ifdef __EMSCRIPTEN__
+			emscripten_cancel_main_loop();
+			EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#endif
 			exit(-1); // recursive errors detected
 		}
 	}
@@ -2496,6 +2508,11 @@ void I_Error(const char *error, ...)
 	// in case the fullscreen window blocks it for some absurd reason.
 
 	W_Shutdown();
+
+#ifdef __EMSCRIPTEN__
+	emscripten_cancel_main_loop();
+	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#endif
 
 #if defined (PARANOIA) && defined (__CYGWIN__)
 	*(INT32 *)2 = 4; //Alam: Debug!
