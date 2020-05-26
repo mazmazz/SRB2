@@ -51,11 +51,11 @@
         color: #ffffff;
       }
 
-      body.postRun {
+      body.startedMainLoop {
         background-image: none;
       }
 
-      body.postRun #content {
+      body.startedMainLoop #content {
         display: none;
       }
 
@@ -845,6 +845,12 @@
       ////////////////////////////////
       // Emscripten Module -- Runtime Parameters
       ////////////////////////////////
+
+      var StartedMainLoopCallback = () => {
+        document.body.classList.add('startedMainLoop');
+        // go scorched earth to save memory
+        deleteNode(document.getElementById('content'));
+      };
 
       var Module = {
         arguments: [],
