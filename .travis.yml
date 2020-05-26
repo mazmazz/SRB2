@@ -48,6 +48,11 @@ matrix:
           env: 
             - EMSCRIPTEN=1
             - BUILD=${BUILD:-Release}
+          cache:
+            apt: true
+            directories:
+            - $HOME/srb2_cache
+            - $TRAVIS_BUILD_DIR/objs/Emscripten/SDL/$BUILD
           install:
             # Save PWD to a file; for some reason, this var gets obliterated
             - echo "$PWD" > ~/oldpwd.txt
@@ -65,6 +70,11 @@ matrix:
             # Finishing touches
             - mkdir -p $HOME/srb2_cache
             - cd "$(<~/oldpwd.txt)"
+            - if [[ "${USE_OBJ_CACHE}" != "1" ]]; then
+                shopt -s globstar;
+                for f in objs/Emscripten/SDL/${BUILD}/**/*; do [[ -f $f ]] && echo rm -- "$f"; done;
+                shopt -u globstar;
+              fi;
           script:
             - if [[ "${BUILD}" == "Debug" ]]; then
                 DEBUGCMD="DEBUGMODE=1";
