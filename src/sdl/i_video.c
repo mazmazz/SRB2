@@ -671,6 +671,9 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			break;
 	}
 
+	// Focus tracking is unreliable with browser events, so skip this.
+	// We handle this ourselves on JS-side.
+#ifndef __EMSCRIPTEN__
 	if (mousefocus && kbfocus)
 	{
 		// Tell game we got focus back, resume music if necessary
@@ -707,7 +710,7 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			SDLdoUngrabMouse();
 		}
 	}
-
+#endif
 }
 
 static void Impl_HandleKeyboardEvent(SDL_KeyboardEvent evt, Uint32 type)
