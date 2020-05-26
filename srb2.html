@@ -454,8 +454,9 @@
 
       var initializeiOSLanding = () => {
         if (userAgentIsiOS()) {
-          if (0 && !isStandalone()) {
+          if (!isStandalone()) {
             document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
+            document.getElementById("addons").style.display = "none";
             document.getElementById("controls").style.display = "none";
             document.getElementById("notes").style.display = "none";
             return true;

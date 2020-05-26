@@ -39,6 +39,10 @@
 #include "lua_hook.h"
 #include "md5.h" // demo checksums
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 boolean timingdemo; // if true, exit with report on completion
 boolean nodrawers; // for comparative timing purposes
 boolean noblit; // for comparative timing purposes
@@ -1986,6 +1990,12 @@ void G_DoPlayDemo(char *defdemoname)
 	players[0].pflags = pflags;
 
 	demo_start = true;
+
+#ifdef __EMSCRIPTEN__
+	// Make the browser push frames as fast as possible
+	if (timingdemo)
+		emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+#endif
 }
 
 void G_AddGhost(char *defdemoname)
@@ -2376,6 +2386,10 @@ ATTRNORETURN void FUNCNORETURN G_StopMetalRecording(boolean kill)
 // called from stopdemo command, map command, and g_checkdemoStatus.
 void G_StopDemo(void)
 {
+#ifdef __EMSCRIPTEN__
+	if (timingdemo)
+		emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 1000/NEWTICRATE);
+#endif
 	Z_Free(demobuffer);
 	demobuffer = NULL;
 	demoplayback = false;
