@@ -29,6 +29,8 @@
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1334-750.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <link rel="apple-touch-startup-image" href="assets/apple-splash-640-1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
     <title>Sonic Robo Blast 2</title>
     <style>
       html, body {
@@ -179,9 +181,56 @@
         margin: 0.75em 0;
       }
 
+      #addonFilesTemplate {
+        display: none;
+      }
+
+      .addonFilesField {
+        display: inline-block;
+        width: 100%;
+        margin: 0.1em 0;
+      }
+
+      .addonFilesField label,
+      .addonFilesField .addonButton,
+      #addonButtonAdd {
+        width: 2.5em;
+        background-color: darkgray;
+        background-image: linear-gradient(black, darkgray);
+        color: white;
+        border: 0.1em gray solid;
+        display: inline-block;
+        line-height: 2.5em;
+        cursor: default;
+        text-align: center;
+      }
+
+      .addonFilesField label,
+      .addonFilesField input[type=file] {
+        width: 12.5em;
+        height: 2.5em;
+        cursor: pointer;
+      }
+
+      .addonFilesField input[type=file] {
+        font-size: 1em;
+      }
+
+      .addonFilesField .addonDelete {
+        margin-left: 0.1em;
+      }
+
+      .addonFilesField input[type=file] {
+        display: none;
+      }
+
+      #addonButtonAdd {
+        width: 15.3em;
+        margin: 0.1em 0;
+      }
     </style>
   </head>
-  <body>   
+  <body>
     <div id="content">
       <div id="status-cont" class="emscripten">
         <div id="header">
@@ -197,6 +246,25 @@
           <progress value="0" max="100" id="progress" hidden=1></progress>
         </div>
         <form id="controlsForm" action="javascript:void(0);">
+          <details id="addons">
+            <summary>Mods</summary>
+            <div id="addonFilesContainer">
+              <div class="addonFilesField" id="addonFilesTemplate">
+                <input type="file" id="addonFiles"/>
+                <label for="addonFiles">Load File</label><!--
+                --><div class="addonButton addonDelete">-</div>
+              </div>
+            </div>
+            <div id="addonButtonAdd">+</div>
+            <details id="addonsHelp">
+              <summary>Mod Help</summary>
+              <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
+              <p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
+              <p>To load savegames and gamedata, place them in a folder titled <code>.srb2/</code> within the ZIP file.</p>
+              <p>Your stored gamedata will be overwritten.</p>
+              <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may find mods here</a>.</p>
+            </details>
+          </details>
           <details id="controls">
             <summary>Settings</summary>
             <p>
@@ -265,6 +333,12 @@
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var controlsFormElement = document.getElementById('controlsForm');
+      var addonFields = 0;
+
+      var deleteNode = (node) => {
+        node.querySelectorAll('*').forEach(n => n.remove());
+        node.remove();
+      };
 
       var startload = () => {
         saveFormToStorage(controlsFormElement);
@@ -289,16 +363,19 @@
 
       var saveFormToStorage = (form) => {
         let inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => localStorage.setItem(`${form.id}_${input.id}`, 
-                       input.type === 'checkbox' ? input.checked
-                       : input.value));
+        inputs.forEach(input => {
+          if (input.type !== 'file')
+            localStorage.setItem(`${form.id}_${input.id}`, 
+                                  input.type === 'checkbox' ? input.checked
+                                  : input.value);
+        });
       };
 
       var loadFormFromStorage = (form) => {
         let inputs = form.querySelectorAll('input, textarea');
         inputs.forEach(input => {
           let val = localStorage.getItem(`${form.id}_${input.id}`);
-          if (val !== null && !val.readOnly) {
+          if (val !== null && !input.readOnly && input.type !== 'file') {
             if (input.type === 'checkbox')
               input.checked = (val === "true");
             else
@@ -307,49 +384,130 @@
         });
       };
 
+      var handleInput = (e) => {
+        if (e.target.type !== 'file') {
+          localStorage.setItem(`${controlsFormElement.id}_${e.target.id}`, 
+                              e.target.type === 'checkbox' ? e.target.checked
+                              : e.target.value);
+        }
+        buildControlArguments();
+        document.getElementById("systemArguments").value = systemArgumentsToString();
+      };
+
       var addFormEventListeners = (form, event, callback, settings) => {
         let inputs = form.querySelectorAll('input, textarea');
         inputs.forEach(input => input.addEventListener(event, callback, settings));
       };
 
-      document.getElementById('controls').addEventListener('toggle', function(e) {
-        localStorage.setItem('controls', event.target.open);
-      }, false);
+      var deleteAddonField = (elem) => {
+        deleteNode(elem);
+        if (!document.getElementById("addonFilesContainer").querySelectorAll('.addonFilesField:not([id=addonFilesTemplate])').length)
+          addAddonField();
+      };
 
-      document.getElementById('advancedControls').addEventListener('toggle', function(e) {
-        localStorage.setItem('advancedControls', event.target.open);
-      }, false);
+      var handleDeleteAddon = (e) => {
+        deleteAddonField(e.target.parentElement);
+        buildControlArguments();
+        document.getElementById("systemArguments").value = systemArgumentsToString();
+      }
 
-      window.addEventListener('load', function() {
+      var handleFileInput = (e) => {
+        if (e.target.files.length) {
+          let name = e.target.files[0].name;
+          // truncate name ourselves, because overflow: hidden bugs the layout
+          if (name.length > 16)
+            name = `${name.substring(0, 16)}...`;
+          e.target.parentElement.querySelector('label').innerText = name;
+        }
+      };
+
+      var addAddonField = () => {
+        let newField = document.getElementById("addonFilesTemplate").cloneNode(true);
+        newField.id = `addonFilesField${addonFields}`;
+        newField.querySelector('input[type=file]').id = `addonFiles${addonFields}`;
+        newField.querySelector('input[type=file]').addEventListener('input', handleFileInput, false);
+        newField.querySelector('input[type=file]').addEventListener('input', handleInput, false);
+        newField.querySelector('label').htmlFor = `addonFiles${addonFields}`;
+        // iOS file inputs do not emit input events, so let's expose
+        // the input element itself so the user can see the filename.
         if (userAgentIsiOS()) {
-          if (!isStandalone()) {
+          newField.querySelector('label').style.display = 'none';
+          newField.querySelector('input[type=file]').classList.add('addonButton');
+          newField.querySelector('input[type=file]').style.display = 'inline-block';
+        }
+        newField.querySelector('.addonDelete').addEventListener('click', handleDeleteAddon, false);
+        newField.style.display = 'block';
+        document.getElementById("addonFilesContainer").insertBefore(newField, null);
+        addonFields++;
+      };
+
+      var initializeiOSLanding = () => {
+        if (userAgentIsiOS()) {
+          if (0 && !isStandalone()) {
             document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
             document.getElementById("controls").style.display = "none";
             document.getElementById("notes").style.display = "none";
-            return;
+            return true;
           }
         }
+      };
 
+      var initializeFormFields = () => {
         loadFormFromStorage(controlsFormElement);
-        showValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value < 200; }, 'Full');
 
         // By default, mobile phones should run at 200p.
         if (localStorage.getItem('controlsForm_resizeHeight') === null && userAgentIsMobile())
-          document.getElementById('resizeHeight').value = 200;
+            document.getElementById('resizeHeight').value = 200;
+        
+        showValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value < 200; }, 'Full');
 
-        addFormEventListeners(controlsFormElement, 'input', e => {
-          localStorage.setItem(`${controlsFormElement.id}_${e.target.id}`, 
-                               e.target.type === 'checkbox' ? e.target.checked
-                               : e.target.value);
-          buildControlArguments();
-          document.getElementById("systemArguments").value = systemArgumentsToString();
-        }, false);
+        addFormEventListeners(controlsFormElement, 'input', handleInput, false);
 
         buildControlArguments();
         document.getElementById("systemArguments").value = systemArgumentsToString();
+      };
 
+      var initializeAddons = () => {
+        addAddonField();
+        document.getElementById("addonButtonAdd").addEventListener('click', addAddonField, false);
+        Sortable.create(document.getElementById('addonFilesContainer'), {
+          onEnd: () => {
+            buildControlArguments();
+            document.getElementById("systemArguments").value = systemArgumentsToString();
+          }
+        });
+      };
+
+      var initializeSections = () => {
+        document.getElementById('addons').open = (localStorage.getItem('addons') === 'true');
+        document.getElementById('addonsHelp').open = (localStorage.getItem('addonsHelp') === 'true'
+          || localStorage.getItem('addonsHelp') === null);
         document.getElementById('controls').open = (localStorage.getItem('controls') === 'true');
         document.getElementById('advancedControls').open = (localStorage.getItem('advancedControls') === 'true');
+
+        document.getElementById('addons').addEventListener('toggle', function(e) {
+          localStorage.setItem('addons', event.target.open);
+        }, false);
+
+        document.getElementById('addonsHelp').addEventListener('toggle', function(e) {
+          localStorage.setItem('addonsHelp', event.target.open);
+        }, false);
+
+        document.getElementById('controls').addEventListener('toggle', function(e) {
+          localStorage.setItem('controls', event.target.open);
+        }, false);
+
+        document.getElementById('advancedControls').addEventListener('toggle', function(e) {
+          localStorage.setItem('advancedControls', event.target.open);
+        }, false);
+      };
+
+      window.addEventListener('load', function() {
+        if (!initializeiOSLanding()) {
+          initializeAddons();
+          initializeFormFields();
+          initializeSections();
+        }
       }, {once: true});
 
       ////////////////////////////////
@@ -411,6 +569,86 @@
       };
 
       var fn = (path) => path.split('\\').pop().split('/').pop();
+      var base = (path) => {
+        let arr = path.split('\\').pop().split('/');
+        arr.pop();
+        return arr.join('/');
+      };
+
+      // iOS Safari does not implement Blob.arrayBuffer(), so let's
+      // do it ourselves.
+      // https://gist.github.com/hanayashiki/8dac237671343e7f0b15de617b0051bd
+      function myArrayBuffer () {
+        // this: File or Blob
+        return new Promise((resolve) => {
+          let fr = new FileReader();
+          fr.onload = () => {
+            resolve(fr.result);
+          };
+          fr.readAsArrayBuffer(this);
+        })
+      }
+
+      var implementArrayBuffer = () => {
+        if ('File' in self)
+          File.prototype.arrayBuffer = File.prototype.arrayBuffer || myArrayBuffer;
+        if ('Blob' in self)
+          Blob.prototype.arrayBuffer = Blob.prototype.arrayBuffer || myArrayBuffer;
+      };
+
+      implementArrayBuffer();
+
+      var initializeFS = () => {
+        FS.mkdirTree('/addons');
+        FS.symlink('/home/web_user/.srb2', '/addons/.srb2');
+        FS.mount(IDBFS, {}, '/home/web_user');
+        return (new Promise((resolve, reject) => {
+          FS.syncfs(true, (err) => {
+            console.log("syncFS done");
+            console.log(err);
+            resolve();
+          });
+        }));
+      };
+
+      var writeFS = (basePath, path, data) => {
+        if (data instanceof ArrayBuffer)
+          data = new Uint8Array(data);
+        // split path to base dir and filename
+        if (path.includes('/') || path.includes('\\'))
+          basePath = `${basePath}/${base(path)}`;
+        path = fn(path);
+        // check for symlinks
+        let parents = '/';
+        basePath.split('/').forEach((name) => {
+          if (name.length) {
+            let mode = 0;
+            try { mode = FS.lstat(`${parents}${name}`)['mode']; } catch(err) { console.log('writeFS(): lstat info'); console.log(err); }
+            if (FS.isLink(mode))
+              parents = `${FS.readlink(`${parents}${name}`)}/`;
+            else
+              parents += `${name}/`;
+          }
+        });
+        basePath = parents.substring(0, parents.length-1);
+        console.log(`writeFS(): Writing ${basePath}/${path}: ${data.byteLength} bytes`);
+        // attempt write
+        try { FS.mkdirTree(parents); } catch(err) { console.log('writeFS(): mkdirTree info'); console.log(err); }
+        try { FS.unlink(`${basePath}/${path}`); } catch(err) { console.log('writeFS(): unlink info'); console.log(err); }
+        FS.createDataFile(basePath, path, data, true, true);
+        return Promise.resolve();
+      };
+
+      var syncFS = () => {
+        // commit to persistent storage
+        return (new Promise((resolve, reject) => {
+          FS.syncfs((err) => {
+            console.log('Synced persistent storage');
+            console.log(err);
+            resolve(err);
+          });
+        }));
+      };
 
       var lazyLoadFileToFS = (url, baseDest) => {
         let dependencyId = `download-${fn(url)}`;
@@ -435,28 +673,86 @@
 
           return fetch(url);
         })
-        .then((response) => {
-          return response.arrayBuffer();
-        })
+        .then((response) => response.arrayBuffer())
         .then((buffer) => {
           data = new Uint8Array(buffer);
           FS.createDataFile(basePath, name, data, true, true);
+          return syncFS;
+        })
+        .catch((reason) => console.error(reason))
+        .finally(() => removeRunDependency(dependencyId));
+      };
 
-          // commit to persistent storage
-          return (new Promise((resolve, reject) => {
-            FS.syncfs((err) => {
-              console.log('Synced persistent storage');
-              console.log(err);
-              resolve(err);
-            });
-          }));
+      var downloadFS = () => {
+        if (Module['calledRun'])
+          pauseLoop();
+        
+        initializeFS()
+        .then(() => {
+          // TODO
         })
-        .catch((reason) => {
-          console.error(reason);
-        })
-        .finally(() => {
-          removeRunDependency(dependencyId);
+        .catch((err) => console.log(err));
+        
+        if (Module['calledRun'])
+          resumeLoop();
+      };
+
+      var extractZipFile = (basePath, buffer) => {
+        return JSZip.loadAsync(buffer)
+        .then((zip) => {
+          let files = [];
+          zip.forEach((path, file) => {
+            if (!file['dir']) {
+              files.push(
+                zip.file(path).async('uint8array')
+                .then((data) => {
+                  return writeFS(basePath, path, data);
+                })
+              );
+            } else {
+              try { FS.mkdir(`${basePath}/${path}`); } catch(e) { }
+            }
+          });
+          return Promise.all(files)
+          .then(syncFS)
+          .catch((err) => console.log(err));
         });
+      };
+
+      var downloadExtractZipFile = (url, baseDest, cors) => {
+        let preUrl = cors ? 'https://cors-anywhere.herokuapp.com/' : '';
+        return fetch(`${preUrl}${url}`, cors ? {mode: 'cors'} : {})
+          .then((response) => response.blob())
+          .then((buffer) => extractZipFile(baseDest, buffer))
+          .catch((err) => console.log(err));
+      };
+
+      var downloadDataFile = (url, baseDest, path, cors) => {
+        let preUrl = cors ? 'https://cors-anywhere.herokuapp.com/' : '';
+        return fetch(`${preUrl}${url}`, cors ? {mode: 'cors'} : {})
+          .then((response) => response.arrayBuffer())
+          .then((buffer) => writeFS(baseDest, path, new Uint8Array(buffer)))
+          .catch((err) => {
+            console.log(err);
+          });
+      };
+
+      var loadAddons = () => {
+        let addons = [];
+        let inputs = document.getElementById("addonFilesContainer").querySelectorAll(".addonFilesField:not([id=addonFilesTemplate]) input[type=file]");
+        inputs.forEach((input) => {
+          if (input.files.length) {
+            if (input.files[0].name.endsWith('.zip'))
+              addons.push(extractZipFile('/addons', input.files[0]));
+            else{
+              addons.push(input.files[0].arrayBuffer()
+              .then((buffer) => writeFS('/addons', input.files[0].name.replace(' ', '_'), new Uint8Array(buffer)))
+              .catch((err) => { console.log('loadAddons():'); console.log(err); })
+              );}
+          }
+        });
+        return Promise.all(addons)
+        .catch(err => { console.log('loadAddons() error'); console.log(err); });
       };
 
       ////////////////////////////////
@@ -475,7 +771,14 @@
 
       var buildControlArguments = () => {
         let inputs = controlsFormElement.querySelectorAll('input, textarea');
+        let files = document.getElementById('addonFilesContainer').querySelectorAll('input[type=file]')
         let args = [];
+
+        // do files first, so we can use the '-file' operator from systemArguments
+        files.forEach(input => {
+          if (input.files.length && !input.files[0].name.endsWith('.zip'))
+            args.push(`/addons/${input.files[0].name.replace(' ', '_')}`);
+        });
 
         inputs.forEach(input => {
           switch(input.id) {
@@ -558,25 +861,15 @@
           ////////////////////////////////
 
           addRunDependency('mount-filesystem');
-          FS.mkdirTree('/addons');
-          FS.symlink('/home/web_user/.srb2', '/addons/.srb2');
-          FS.mount(IDBFS, {}, '/home/web_user');
-          (new Promise((resolve, reject) => {
-            FS.syncfs(true, (err) => {
-              console.log("Intial syncFS done");
-              console.log(err);
-              resolve();
-            });
-          }))
+          initializeFS()
           .then(()=>{
             if (!userAgentIsiOS())
               return lazyLoadFileToFS('assets/music.dta');
             else
-              resolve();
+              Promise.resolve();
           })
-          .finally(() => {
-            removeRunDependency('mount-filesystem');
-          });
+          .then(loadAddons)
+          .finally(() => removeRunDependency('mount-filesystem'));
         }],
 
         postRun: [() => {
