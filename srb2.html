@@ -31,6 +31,8 @@
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
+    <!-- {{{ GTAG }}} -->
+
     <title>Sonic Robo Blast 2</title>
     <style>
       html, body {
@@ -57,6 +59,14 @@
 
       body.startedMainLoop #content {
         display: none;
+      }
+
+      a {
+        color: rgb(107, 161, 255);
+      }
+
+      a:visited {
+        color: #7f6bd1;
       }
 
       #content {
@@ -313,7 +323,7 @@
             <li>No network play</li>
             <li>Config/Save games DO work</li>
             <li>Controllers DO work</li>
-            <li>If this page crashes, try refreshing this page or restarting your browser.</li>
+            <li>If this page crashes, try closing background apps or restarting your browser.</li>
           </ul>
           <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
           <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
@@ -322,8 +332,24 @@
           <p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
           <p>Follow SRB2:</p>
           <p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
+          <p style="font-size:xx-small;">
+            Version: {{{ VERSION_UX }}}
+          </p>
+          <span id="newVersion"></span>
+          <p style="font-size:xx-small;">
+            Original design and content is copyright 1998-2020 Sonic Team Junior. All non-original material is copyrighted by their respective owners, and no copyright infringement is intended.
+          </p>
         </details>
+        <div id="copyright">
+        <p style="font-size:xx-small;">
+            Sonic Robo Blast 2 and Sonic Team Junior are in no way affiliated with SEGA&reg; or Sonic Team.
+        </p>
+        <p style="font-size:xx-small;">
+          Sonic the Hedgehog is a trademark of SEGA&reg;<br/>
+          The copyrights of "Sonic the Hedgehog" and all associated characters, names, terms, art, and music thereof belong to SEGA&reg;
+        </p>
       </div>
+    </div>
     </div>
     
     <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" style="z-index:-9999;"></canvas>
@@ -361,6 +387,7 @@
         document.getElementById('addons').style.display = "none";
         document.getElementById('controls').style.display = "none";
         document.getElementById('footer').style.display = "none";
+        document.getElementById('copyright').style.display = "none";
         document.getElementById('resetbtn').style.display = "inline-block";
         document.body.classList.add('calledRun');
       };
@@ -520,6 +547,34 @@
           initializeFormFields();
           initializeSections();
         }
+      }, {once: true});
+
+      ////////////////////////////////
+      // Version Check - For PWA
+      ////////////////////////////////
+      window.addEventListener('load', () => {
+        fetch("version.txt")
+        .then(response => response.text())
+        .then(data => {
+          console.log(`SRB2 Web Version: ${data}`);
+          if (data.trim() !== "{{{ VERSION }}}") {
+            console.log(`New Version Found: ${data}`);
+            // Don't refresh page more than once in a row.
+            let updateCount = localStorage.getItem('srb2web_update');
+            if (isStandalone() && (!updateCount || !parseInt(updateCount))) {
+              localStorage.setItem('srb2web_update', (1).toString());
+              window.location.reload(true);
+              return Promise.resolve();
+            } else
+              document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
+          }
+          localStorage.setItem('srb2web_update', (0).toString());
+        })
+        .catch(err => {
+          console.log(`Error Checking New Version:`)
+          console.log(err);
+          localStorage.setItem('srb2web_update', (0).toString());
+        });
       }, {once: true});
 
       ////////////////////////////////
