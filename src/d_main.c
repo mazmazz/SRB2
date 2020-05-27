@@ -1057,6 +1057,11 @@ static void IdentifyVersion(void)
 	D_AddFile(FILEPATH("android.pk3"));
 #endif
 
+#if defined(__EMSCRIPTEN__)
+	// Emscripten assets
+	D_AddFile(FILEPATH("emscripten.pk3"));
+#endif
+
 #if !defined (HAVE_SDL) || defined (HAVE_MIXER)
 	{
 #define MUSICTEST(str) \
@@ -1295,6 +1300,9 @@ void D_SRB2Main(void)
 #if defined(__ANDROID__)
 	mainwads++;
 #endif
+#if defined(__EMSCRIPTEN__)
+	mainwads++;
+#endif
 
 	// load wad, including the main wad file
 	CONS_Printf("W_InitMultipleFiles(): Adding IWAD and main PWADs.\n");
@@ -1312,6 +1320,11 @@ void D_SRB2Main(void)
 #endif
 #if defined(__ANDROID__)
 	W_VerifyFileMD5(4, ASSET_HASH_ANDROID_PK3); // android.pk3
+#endif
+#if 0
+#if defined(__EMSCRIPTEN__)
+	W_VerifyFileMD5(4, ASSET_HASH_EMSCRIPTEN_PK3); // android.pk3
+#endif
 #endif
 	// don't check music.dta because people like to modify it, and it doesn't matter if they do
 	// ...except it does if they slip maps in there, and that's what W_VerifyNMUSlumps is for.
