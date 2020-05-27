@@ -88,6 +88,15 @@ matrix:
             - cp $HOME/srb2_cache/music.dta bin/Emscripten/${BUILD}/assets/music.dta
             - cp srb2.png bin/Emscripten/${BUILD}/assets/srb2.png
             - cp -R splash/* bin/Emscripten/${BUILD}/assets
+            # Insert GTAG Analytics
+            - if [[ "$GTAG" != "" ]]; then
+                GTAG_DECODED="$(echo $GTAG | base64 -d | tr -d "\n")";
+                sed -e "s@<!-- {{{ GTAG }}} -->@$GTAG_DECODED@" -i "bin/Emscripten/${BUILD}/index.html";
+              fi;
+            # Output version string
+            - echo "$TRAVIS_COMMIT" > "bin/Emscripten/${BUILD}/version.txt"
+            - sed -e "s@{{{ VERSION }}}@$TRAVIS_COMMIT@g" -i "bin/Emscripten/${BUILD}/index.html";
+            - sed -e "s@{{{ VERSION_UX }}}@$(date +"%Y/%m/%d %r") - $TRAVIS_COMMIT@g" -i "bin/Emscripten/${BUILD}/index.html";
             # Package for GitHub Releases
             - OLDPWD="$PWD"
             - cd bin/Emscripten/${BUILD}
