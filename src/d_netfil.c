@@ -1001,6 +1001,9 @@ void Got_Filetxpak(void)
 #if defined(__ANDROID__)
 		&& strcmp(filename, "android.pk3")
 #endif
+#if defined(__EMSCRIPTEN__)
+		&& strcmp(filename, "emscripten.pk3")
+#endif
 		))
 		I_Error("Tried to download \"%s\"", filename);
 
