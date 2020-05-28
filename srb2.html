@@ -312,8 +312,8 @@
             <summary>Settings</summary>
             <p>
               <label for="resizeHeight">Resolution</label>
-            <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p', (elem) => { return elem.value < 200; }, 'Full');"
-                min="100" max="800" value="400" step="100"/>
+            <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
+                min="200" max="900" value="400" step="100"/>
               <span id="resizeHeightValue"></span>
             </p>
             <p>
@@ -366,15 +366,15 @@
           </p>
         </details>
         <div id="copyright">
-        <p style="font-size:xx-small;">
+          <p style="font-size:xx-small;">
             Sonic Robo Blast 2 and Sonic Team Junior are in no way affiliated with SEGA&reg; or Sonic Team.
-        </p>
-        <p style="font-size:xx-small;">
-          Sonic the Hedgehog is a trademark of SEGA&reg;<br/>
-          The copyrights of "Sonic the Hedgehog" and all associated characters, names, terms, art, and music thereof belong to SEGA&reg;
-        </p>
+          </p>
+          <p style="font-size:xx-small;">
+            Sonic the Hedgehog is a trademark of SEGA&reg;<br/>
+            The copyrights of "Sonic the Hedgehog" and all associated characters, names, terms, art, and music thereof belong to SEGA&reg;
+          </p>
+        </div>
       </div>
-    </div>
     </div>
     
     <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" style="z-index:-9999;"></canvas>
@@ -523,7 +523,7 @@
         if (localStorage.getItem('controlsForm_resizeHeight') === null && userAgentIsMobile())
             document.getElementById('resizeHeight').value = 200;
         
-        showValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value < 200; }, 'Full');
+        showValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
 
         addFormEventListeners(controlsFormElement, 'input', handleInput, false);
 
@@ -854,7 +854,6 @@
       var systemArguments = [
         '+addons_option','CUSTOM',
         '+addons_folder','/addons',
-        '-file','/emscripten.pk3'
       ];
 
       var controlArguments = [];
@@ -867,15 +866,21 @@
         let args = [];
 
         // do files first, so we can use the '-file' operator from systemArguments
+        let validFile = false;
         files.forEach(input => {
-          if (input.files.length && !input.files[0].name.endsWith('.zip'))
+          if (input.files.length && !input.files[0].name.endsWith('.zip')) {
+            if (!validFile) {
+              args.push('-file');
+              validFile = true;
+            }
             args.push(`/addons/${input.files[0].name.replace(' ', '_')}`);
+          }
         });
 
         inputs.forEach(input => {
           switch(input.id) {
             case 'resizeHeight': {
-              let resizeHeight = input.value < 200 ? 0 : input.value;
+              let resizeHeight = input.value > 800 ? 0 : input.value;
               let dims = resizeDimensions(
                 document.documentElement.clientWidth,
                 document.documentElement.clientHeight,
