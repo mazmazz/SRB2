@@ -336,6 +336,10 @@ void F_StartCustomCutscene(INT32 cutscenenum, boolean precutscene, boolean reset
 
 void F_StartIntro(void)
 {
+#ifdef LOWMEMORY
+	Z_ForceFlushPatches();
+#endif
+
 	S_StopMusic();
 	S_StopSounds();
 
@@ -1331,6 +1335,10 @@ static const UINT8 credits_numpics = sizeof(credits_pics)/sizeof(credits_pics[0]
 
 void F_StartCredits(void)
 {
+#ifdef LOWMEMORY
+	Z_ForceFlushPatches();
+#endif
+
 	G_SetGamestate(GS_CREDITS);
 
 	// Just in case they're open ... somehow
@@ -1825,6 +1833,10 @@ static void F_CacheGoodEnding(void)
 
 void F_StartEnding(void)
 {
+#ifdef LOWMEMORY
+	Z_ForceFlushPatches();
+#endif
+
 	G_SetGamestate(GS_ENDING);
 	wipetypepost = INT16_MAX;
 
@@ -3978,6 +3990,10 @@ void F_StartCustomCutscene(INT32 cutscenenum, boolean precutscene, boolean reset
 {
 	if (!cutscenes[cutscenenum])
 		return;
+
+#ifdef LOWMEMORY
+	Z_ForceFlushPatches();
+#endif
 
 	G_SetGamestate(GS_CUTSCENE);
 

@@ -1195,6 +1195,10 @@ void Y_StartIntermission(void)
 {
 	INT32 i;
 
+#ifdef LOWMEMORY
+	Z_ForceFlushPatches();
+#endif
+
 	intertic = -1;
 
 #ifdef PARANOIA

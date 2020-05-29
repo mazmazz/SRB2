@@ -818,6 +818,10 @@ void D_StartTitle(void)
 {
 	INT32 i;
 
+#ifdef LOWMEMORY
+	Z_ForceFlushPatches();
+#endif
+
 	S_StopMusic();
 
 	if (netgame)

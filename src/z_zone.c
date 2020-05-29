@@ -33,6 +33,9 @@
 #include "z_zone.h"
 #include "m_misc.h" // M_Memcpy
 #include "lua_script.h"
+#ifdef LOWMEMORY
+#include "r_main.h" // R_ReloadHUDGraphics
+#endif
 
 #ifdef HWRENDER
 #include "hardware/hw_main.h" // For hardware memory info
@@ -528,6 +531,16 @@ void Z_PreparePatchFlush(void)
 	R_FreeAllRotSprite();
 #endif
 }
+
+#ifdef LOWMEMORY
+void Z_ForceFlushPatches(void)
+{
+	// Aggressive memory management to support low memory devices
+	Z_PreparePatchFlush();
+	Z_FlushCachedPatches(); 
+	R_ReloadHUDGraphics();
+}
+#endif
 
 // starting value of nextcleanup
 #define CLEANUPCOUNT 2000

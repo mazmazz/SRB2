@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include "doomtype.h"
+#include "doomdef.h"
 
 #ifdef __GNUC__ // __attribute__ ((X))
 #if (__GNUC__ > 4) || (__GNUC__ == 4 && (__GNUC_MINOR__ >= 3 || (__GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ >= 5)))
@@ -149,5 +150,8 @@ extern boolean needpatchflush;
 extern boolean needpatchrecache;
 void Z_FlushCachedPatches(void);
 void Z_PreparePatchFlush(void);
+#ifdef LOWMEMORY
+void Z_ForceFlushPatches(void);
+#endif
 
 #endif

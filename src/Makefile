@@ -100,6 +100,7 @@ NONX86=1
 NOHW=1
 NOHS=1
 NOOBJDUMP=1
+LOWMEMORY=1
 include emscripten/Makefile.cfg
 endif
 
@@ -376,6 +377,10 @@ endif
 
 ifdef TOUCHINPUTS
 	OPTS+=-DTOUCHINPUTS
+endif
+
+ifdef LOWMEMORY
+	OPTS+=-DLOWMEMORY
 endif
 
 ifdef DEBUGMODE
