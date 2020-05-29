@@ -1429,6 +1429,7 @@ static char      music_name[7]; // up to 6-character name
 static void      *music_data;
 static UINT16    music_flags;
 static boolean   music_looping;
+static lumpnum_t music_lumpnum;
 
 static char      queue_name[7];
 static UINT16    queue_flags;
@@ -2245,6 +2246,7 @@ static boolean S_LoadMusic(const char *mname)
 		strncpy(music_name, mname, 7);
 		music_name[6] = 0;
 		music_data = mdata;
+		music_lumpnum = mlumpnum;
 		return true;
 	}
 	else
@@ -2258,10 +2260,11 @@ static void S_UnloadMusic(void)
 {
 	I_UnloadSong();
 
-#ifndef HAVE_SDL //SDL uses RWOPS
-	Z_ChangeTag(music_data, PU_CACHE);
-#endif
+	Z_Free(music_data);
 	music_data = NULL;
+	if (wadfiles[WADFILENUM(music_lumpnum)]->lumpinfo[LUMPNUM(music_lumpnum)].handle)
+		W_CloseFileLump(music_lumpnum);
+	music_lumpnum = INT16_MAX;
 
 	music_name[0] = 0;
 	music_flags = 0;
