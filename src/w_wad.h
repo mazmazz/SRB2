@@ -37,6 +37,8 @@ typedef struct
 #pragma pack()
 #endif
 
+// Enable flat-file lumps for WAD
+#define FWAD
 
 // ==============================================================
 //               WAD FILE STRUCTURE DEFINITIONS
@@ -71,6 +73,10 @@ typedef struct
 	char *fullname;         //                   e.g. "Folder/Subfolder/LongEntryName.extension"
 	size_t size;            // real (uncompressed) size
 	compmethod compression; // lump compression method
+#ifdef FWAD
+	char *filename;         // flat-file location
+	void *handle;           // flat-file handle
+#endif
 } lumpinfo_t;
 
 // =========================================================================
@@ -213,6 +219,10 @@ void W_UnlockCachedPatch(void *patch);
 void W_FlushCachedPatches(void);
 
 void W_VerifyFileMD5(UINT16 wadfilenum, const char *matchmd5);
+
+#ifdef FWAD
+void W_CloseFileLump(lumpnum_t lumpnum);
+#endif
 
 int W_VerifyNMUSlumps(const char *filename);
 

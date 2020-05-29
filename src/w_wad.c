@@ -126,6 +126,10 @@ void W_Shutdown(void)
 		{
 			Z_Free(wad->lumpinfo[wad->numlumps].longname);
 			Z_Free(wad->lumpinfo[wad->numlumps].fullname);
+			if (wad->lumpinfo[wad->numlumps].filename)
+				Z_Free(wad->lumpinfo[wad->numlumps].filename);
+			if (wad->lumpinfo[wad->numlumps].handle)
+				fclose(wad->lumpinfo[wad->numlumps].handle);
 		}
 
 		Z_Free(wad->lumpinfo);
@@ -363,6 +367,19 @@ static lumpinfo_t* ResGetLumpsStandalone (FILE* handle, UINT16* numlumps, const 
 	return lumpinfo;
 }
 
+#ifdef FWAD
+/** Closes file handle to a flat-file lump.
+ */
+void W_CloseFileLump (lumpnum_t lumpnum)
+{
+	if ((wadfiles[WADFILENUM(lumpnum)]->lumpinfo + LUMPNUM(lumpnum))->handle)
+	{
+		fclose((wadfiles[WADFILENUM(lumpnum)]->lumpinfo + LUMPNUM(lumpnum))->handle);
+		(wadfiles[WADFILENUM(lumpnum)]->lumpinfo + LUMPNUM(lumpnum))->handle = 0;
+	}
+}
+#endif
+
 /** Create a lumpinfo_t array for a WAD file.
  */
 static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filename)
@@ -371,6 +388,7 @@ static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filen
 	lumpinfo_t* lumpinfo;
 	size_t i;
 	INT32 compressed = 0;
+	INT32 flatfile = 0;
 
 	wadinfo_t header;
 	lumpinfo_t *lump_p;
@@ -386,6 +404,10 @@ static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filen
 
 	if (memcmp(header.identification, "ZWAD", 4) == 0)
 		compressed = 1;
+#ifdef FWAD
+	else if (memcmp(header.identification, "FWAD", 4) == 0)
+		flatfile = 1;
+#endif
 	else if (memcmp(header.identification, "IWAD", 4) != 0
 		&& memcmp(header.identification, "PWAD", 4) != 0
 		&& memcmp(header.identification, "SDLL", 4) != 0)
@@ -416,6 +438,44 @@ static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filen
 	{
 		lump_p->position = LONG(fileinfo->filepos);
 		lump_p->size = lump_p->disksize = LONG(fileinfo->size);
+		lump_p->filename = 0;
+		lump_p->handle = 0;
+#ifdef FWAD
+		if (flatfile)
+		{
+			// we assume that a lump exists as a file in ./_{wadname}/{i}_{lumpname}
+			// the filesize is stored in the wadfile itself.
+			long ofs = ftell(handle);
+			char *basefilename = malloc(MAX_WADPATH);
+			char *filesize = malloc(12); // 10 digits, sign, and null
+
+			// Read filesize
+			if (fseek(handle, lump_p->position, SEEK_SET)
+				|| !fread(filesize, sizeof(char), lump_p->size, handle))
+				I_Error("corrupt flat-file wad: %s; maybe %s",
+					filename, M_FileError(handle));
+			else
+			{
+				filesize[11] = 0;
+				lump_p->size = atoi(filesize);
+			}
+			fseek(handle, ofs, SEEK_SET);
+
+			// Build lump filename
+			strcpy(basefilename, filename);
+			nameonly(basefilename);
+
+			// Build file lump
+			lump_p->position = 0;
+			lump_p->filename = Z_Malloc(MAX_WADPATH * sizeof(char), PU_STATIC, NULL);
+			sprintf(lump_p->filename, "./_%s/%d_%.8s", basefilename, i, fileinfo->name);
+			lump_p->compression = CM_NOCOMPRESSION;
+
+			free(filesize);
+			free(basefilename);
+		}
+		else
+#endif
 		if (compressed) // wad is compressed, lump might be
 		{
 			UINT32 realsize = 0;
@@ -598,6 +658,8 @@ static lumpinfo_t* ResGetLumpsZip (FILE* handle, UINT16* nlmp)
 		lump_p->position = zentry.offset; // NOT ACCURATE YET: we still need to read the local entry to find our true position
 		lump_p->disksize = zentry.compsize;
 		lump_p->size = zentry.size;
+		lump_p->filename = 0;
+		lump_p->handle = 0;
 
 		fullname = malloc(zentry.namelen + 1);
 		if (fgets(fullname, zentry.namelen + 1, handle) != fullname)
@@ -1345,7 +1407,7 @@ size_t W_ReadLumpHeaderPwad(UINT16 wad, UINT16 lump, void *dest, size_t size, si
 {
 	size_t lumpsize;
 	lumpinfo_t *l;
-	FILE *handle;
+	FILE *handle = 0;
 
 	if (!TestValidLump(wad,lump))
 		return 0;
@@ -1362,6 +1424,19 @@ size_t W_ReadLumpHeaderPwad(UINT16 wad, UINT16 lump, void *dest, size_t size, si
 	// Let's get the raw lump data.
 	// We setup the desired file handle to read the lump data.
 	l = wadfiles[wad]->lumpinfo + lump;
+#ifdef FWAD
+	if (!l->position && l->filename) // flat-file
+	{
+		if(l->handle)
+			handle = l->handle;
+		else
+		{
+			if((l->handle = handle = fopen(l->filename, "rb")) == NULL)
+				return 0;
+		}
+	}
+	else
+#endif
 	handle = wadfiles[wad]->handle;
 	fseek(handle, (long)(l->position + offset), SEEK_SET);
 
