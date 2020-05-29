@@ -87,24 +87,25 @@ class WAD(object):
 		self.fn = fn
 		return self
 
-	def dump(self, path = None, md5 = False):
+	def dump(self, path = None, md5 = False, use_index = True):
 		# Dump lumps to files in subdir: ./_{wadfilename}
 		dump_path = path or os.path.join(os.path.dirname(self.fn) or '.', f'_{os.path.basename(self.fn)}')
 		os.makedirs(dump_path, exist_ok=True)
 		for i, lump in enumerate(self.lumps):
-			dump_name = os.path.join(dump_path, f'{i}_{lump.name}')
+			index = f'{i}_' if use_index else ''
+			dump_name = os.path.join(dump_path, f'{index}{lump.name}')
 			with open(dump_name, 'wb') as f:
 				f.write(lump.data)
 			if md5:
 				with open(f'{dump_name}.md5', 'w') as f:
 					f.write(hashlib.md5(lump.data).hexdigest())
 	
-	def save_fwad(self, fn, md5 = False):
+	def save_fwad(self, fn, md5 = False, use_index = True):
 		# Write the FWAD: Entries list the lump size
 		with open(fn, 'wb') as f:
 			directory_offset = self._WAD_HEADER.size
 			header = self._WAD_HEADER.pack({
-				'magic': b'FWAD',
+				'magic': b'FWAD' if use_index else b'EWAD',
 				'numlumps': len(self.lumps),
 				'infotableofs': self._WAD_HEADER.size,
 			})
@@ -142,9 +143,10 @@ if __name__ == '__main__':
 	parser.add_argument('out_file', type=str, help='Output FWAD file.')
 	parser.add_argument('-d', '--dump', type=str, help='Directory to output lump files. Defaults to subdirectory "./_in_file" where the input file is located.')
 	parser.add_argument('--md5', action='store_true', default=False, help='Output MD5 digests of lumps and output WAD as [file].md5')
+	parser.add_argument('--noindex', action='store_true', default=False, help='Do not name lump files with index number.')
 
 	args = parser.parse_args()
 	
 	a = WAD(args.in_file)
-	a.dump(args.dump, md5=args.md5)
-	a.save_fwad(args.out_file, md5=args.md5)
+	a.dump(args.dump, md5=args.md5, use_index=(not args.noindex))
+	a.save_fwad(args.out_file, md5=args.md5, use_index=(not args.noindex))

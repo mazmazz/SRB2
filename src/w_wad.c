@@ -406,7 +406,9 @@ static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filen
 		compressed = 1;
 #ifdef FWAD
 	else if (memcmp(header.identification, "FWAD", 4) == 0)
-		flatfile = 1;
+		flatfile = 1; // look for filename {i}_{lumpname}
+	else if (memcmp(header.identification, "EWAD", 4) == 0)
+		flatfile = 2; // look for filename {lumpname}
 #endif
 	else if (memcmp(header.identification, "IWAD", 4) != 0
 		&& memcmp(header.identification, "PWAD", 4) != 0
@@ -444,10 +446,13 @@ static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filen
 		if (flatfile)
 		{
 			// we assume that a lump exists as a file in ./_{wadname}/{i}_{lumpname}
+			// or, without index, then ./_{wadname}/{lumpname}
 			// the filesize is stored in the wadfile itself.
 			long ofs = ftell(handle);
 			char *basefilename = malloc(MAX_WADPATH);
+			char *dirname = malloc(MAX_WADPATH);
 			char *filesize = malloc(12); // 10 digits, sign, and null
+			size_t i;
 
 			// Read filesize
 			if (fseek(handle, lump_p->position, SEEK_SET)
@@ -465,13 +470,28 @@ static lumpinfo_t* ResGetLumpsWad (FILE* handle, UINT16* nlmp, const char* filen
 			strcpy(basefilename, filename);
 			nameonly(basefilename);
 
+			// Build base directory
+			strcpy(dirname, filename);
+			for (i = strlen(dirname)-1; i != (size_t)-1; i--)
+			{
+				if (dirname[i] == '\\' || dirname[i] == '/')
+				{
+					dirname[i] = 0;
+					break;
+				}
+			}
+
 			// Build file lump
 			lump_p->position = 0;
 			lump_p->filename = Z_Malloc(MAX_WADPATH * sizeof(char), PU_STATIC, NULL);
-			sprintf(lump_p->filename, "./_%s/%d_%.8s", basefilename, i, fileinfo->name);
+			if (flatfile == 2)
+				sprintf(lump_p->filename, "%s" PATHSEP "_%s" PATHSEP "%.8s", dirname, basefilename, fileinfo->name);
+			else
+				sprintf(lump_p->filename, "%s" PATHSEP "_%s" PATHSEP "%d_%.8s", dirname, basefilename, i, fileinfo->name);
 			lump_p->compression = CM_NOCOMPRESSION;
 
 			free(filesize);
+			free(dirname);
 			free(basefilename);
 		}
 		else
