@@ -362,6 +362,10 @@ ifdef PACKETDROP
 	OPTS+=-DPACKETDROP
 endif
 
+ifdef FWAD
+	OPTS+=-DFWAD
+endif
+
 ifdef DEBUGMODE
 
 	# build with debugging information

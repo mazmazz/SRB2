@@ -37,9 +37,6 @@ typedef struct
 #pragma pack()
 #endif
 
-// Enable flat-file lumps for WAD
-#define FWAD
-
 // ==============================================================
 //               WAD FILE STRUCTURE DEFINITIONS
 // ==============================================================
