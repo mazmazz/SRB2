@@ -338,6 +338,10 @@ void F_StartIntro(void)
 	S_StopMusic();
 	S_StopSounds();
 
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+
 	if (introtoplay)
 	{
 		if (!cutscenes[introtoplay - 1])
@@ -1346,6 +1350,10 @@ void F_StartCredits(void)
 	S_StopMusic();
 	S_StopSounds();
 
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+
 	S_ChangeMusicInternal("_creds", true);
 
 	finalecount = 0;
@@ -1850,6 +1858,10 @@ void F_StartEnding(void)
 	CON_ToggleOff();
 	S_StopMusic(); // todo: placeholder
 	S_StopSounds();
+
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
 
 	finalecount = -10; // what? this totally isn't a hack. why are you asking?
 
@@ -4023,6 +4035,10 @@ void F_StartCustomCutscene(INT32 cutscenenum, boolean precutscene, boolean reset
 	else
 		S_StopMusic();
 	S_StopSounds();
+
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
 }
 
 //

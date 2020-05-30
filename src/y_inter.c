@@ -1195,6 +1195,10 @@ void Y_StartIntermission(void)
 {
 	INT32 i;
 
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+
 	intertic = -1;
 
 #ifdef PARANOIA

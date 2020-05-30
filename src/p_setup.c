@@ -3509,6 +3509,10 @@ boolean P_LoadLevel(boolean fromnetsave)
 	// Clear pointers that would be left dangling by the purge
 	R_FlushTranslationColormapCache();
 
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+
 	Z_FreeTags(PU_LEVEL, PU_PURGELEVEL - 1);
 
 #if defined (WALLSPLATS) || defined (FLOORSPLATS)
@@ -3549,6 +3553,10 @@ boolean P_LoadLevel(boolean fromnetsave)
 
 	if (!P_LoadMapFromFile())
 		return false;
+
+#ifdef FWAD
+	S_PreloadMapMusic();
+#endif
 
 	// init gravity, tag lists,
 	// anything that P_SpawnSlopes/P_LoadThings needs to know

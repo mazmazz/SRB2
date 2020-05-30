@@ -2210,6 +2210,108 @@ static lumpnum_t S_GetMusicLumpNum(const char *mname)
 		return LUMPERROR;
 }
 
+#ifdef FWAD
+boolean S_CheckMusicLumpNum(UINT16 wad, UINT16 lump)
+{
+	return !(music_lumpnum == (lumpnum_t)((wad<<16) | lump));
+}
+
+static boolean S_CheckMusicDigital(UINT16 wad, UINT16 lump)
+{
+	return (S_CheckMusicLumpNum(wad, lump)
+			&& wadfiles[wad]->lumpinfo[lump].name[0] == 'O'
+			&& wadfiles[wad]->lumpinfo[lump].name[1] == '_');
+}
+
+static boolean S_CheckMusicMIDI(UINT16 wad, UINT16 lump)
+{
+	return (S_CheckMusicLumpNum(wad, lump)
+			&& wadfiles[wad]->lumpinfo[lump].name[0] == 'D'
+			&& wadfiles[wad]->lumpinfo[lump].name[1] == '_');
+}
+
+void S_PreloadMusic(const char *mname)
+{
+	lumpnum_t mlumpnum;
+
+	if (S_MusicDisabled())
+		return;
+
+	mlumpnum = S_GetMusicLumpNum(mname);
+
+	if (mlumpnum == LUMPERROR)
+		return;
+	W_OpenFileLump(WADFILENUM(mlumpnum), LUMPNUM(mlumpnum));
+}
+
+/** Opens file handles to relevant level music.
+  */
+void S_PreloadMapMusic(void)
+{
+	// Change Music lines are preloaded in P_LoadSidedefs.
+
+	player_t *player = &players[consoleplayer];
+	boolean has_shoes = false;
+	boolean has_inv = false;
+	size_t i;
+	mapthing_t *mt;
+	side_t *sd;
+
+	if ((!Playing() && !titlemapinaction) || S_MusicDisabled())
+		return;
+
+	// Preload Change Music lines
+	for (i = 0, sd = sides; i < numsides; i++, sd++)
+	{
+		if (sd->special == 413 && sd->text && sd->text[0])
+			S_PreloadMusic(sd->text);
+	}
+
+	if (titlemapinaction)
+		return;
+	
+	for (i = 0, mt = mapthings; i < nummapthings; i++, mt++)
+	{
+		if (mt->type == 407)
+			has_shoes = true;
+		else if (mt->type == 408)
+			has_inv = true;
+		if (has_shoes && has_inv)
+			break;
+	}
+
+	// Map Header
+	if (mapheaderinfo[gamemap-1]->musname[0])
+		S_PreloadMusic(mapheaderinfo[gamemap-1]->musname);
+	if (mapheaderinfo[gamemap-1]->muspostbossname[0])
+		S_PreloadMusic(mapheaderinfo[gamemap-1]->muspostbossname);
+
+	// Jingles
+	S_PreloadMusic(jingleinfo[JT_DROWN].musname);
+	S_PreloadMusic(jingleinfo[JT_GOVER].musname);
+	if (has_shoes)
+		S_PreloadMusic(jingleinfo[JT_SHOES].musname);
+	if (has_inv)
+	{
+		if (mapheaderinfo[gamemap-1]->typeoflevel & TOL_MARIO)
+			S_PreloadMusic(jingleinfo[JT_MINV].musname);
+		else
+			S_PreloadMusic(jingleinfo[JT_INV].musname);
+	}
+	if (!use1upSound && !cv_1upsound.value)
+		S_PreloadMusic(jingleinfo[JT_1UP].musname);
+	if (player->charflags & SF_SUPER)
+		S_PreloadMusic(jingleinfo[JT_SUPER].musname);
+	if (mapheaderinfo[gamemap-1]->typeoflevel & TOL_NIGHTS)
+	{
+		if (G_IsSpecialStage(gamemap))
+			S_PreloadMusic(jingleinfo[JT_SSTIMEOUT].musname);
+		else
+			S_PreloadMusic(jingleinfo[JT_NIGHTSTIMEOUT].musname);
+	}
+}
+#endif
+
 static boolean S_LoadMusic(const char *mname)
 {
 	lumpnum_t mlumpnum;
@@ -2262,8 +2364,6 @@ static void S_UnloadMusic(void)
 
 	Z_Free(music_data);
 	music_data = NULL;
-	if (wadfiles[WADFILENUM(music_lumpnum)]->lumpinfo[LUMPNUM(music_lumpnum)].handle)
-		W_CloseFileLump(music_lumpnum);
 	music_lumpnum = INT16_MAX;
 
 	music_name[0] = 0;
@@ -2669,6 +2769,10 @@ void GameDigiMusic_OnChange(void)
 		I_StartupSound(); // will return early if initialised
 		I_InitMusic();
 		S_StopMusic();
+#ifdef FWAD
+		W_CloseAllFileLumps(S_CheckMusicMIDI);
+		S_PreloadMapMusic();
+#endif
 		if (Playing())
 			P_RestoreMusic(&players[consoleplayer]);
 		else
@@ -2680,7 +2784,12 @@ void GameDigiMusic_OnChange(void)
 		if (S_MusicType() != MU_MID)
 		{
 			if (midi_disabled)
+			{
 				S_StopMusic();
+#ifdef FWAD
+				W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+			}
 			else
 			{
 				char mmusic[7];
@@ -2690,10 +2799,16 @@ void GameDigiMusic_OnChange(void)
 				if (S_MusicInfo(mmusic, &mflags, &looping) && S_MIDIExists(mmusic))
 				{
 					S_StopMusic();
+#ifdef FWAD
+					S_PreloadMapMusic();
+#endif
 					S_ChangeMusic(mmusic, mflags, looping);
 				}
 				else
 					S_StopMusic();
+#ifdef FWAD
+				W_CloseAllFileLumps(S_CheckMusicDigital);
+#endif
 			}
 		}
 	}
@@ -2711,6 +2826,10 @@ void GameMIDIMusic_OnChange(void)
 		midi_disabled = false;
 		I_StartupSound(); // will return early if initialised
 		I_InitMusic();
+#ifdef FWAD
+		W_CloseAllFileLumps(S_CheckMusicDigital);
+		S_PreloadMapMusic();
+#endif
 		if (Playing())
 			P_RestoreMusic(&players[consoleplayer]);
 		else
@@ -2722,7 +2841,12 @@ void GameMIDIMusic_OnChange(void)
 		if (S_MusicType() == MU_MID || S_MusicType() == MU_MID_EX)
 		{
 			if (digital_disabled)
+			{
 				S_StopMusic();
+#ifdef FWAD
+				W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+			}
 			else
 			{
 				char mmusic[7];
@@ -2732,10 +2856,16 @@ void GameMIDIMusic_OnChange(void)
 				if (S_MusicInfo(mmusic, &mflags, &looping) && S_DigExists(mmusic))
 				{
 					S_StopMusic();
+#ifdef FWAD
+					S_PreloadMapMusic();
+#endif
 					S_ChangeMusic(mmusic, mflags, looping);
 				}
 				else
 					S_StopMusic();
+#ifdef FWAD
+				W_CloseAllFileLumps(S_CheckMusicMIDI);
+#endif
 			}
 		}
 	}

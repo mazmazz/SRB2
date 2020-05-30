@@ -19,6 +19,7 @@
 #include "m_fixed.h"
 #include "command.h"
 #include "tables.h" // angle_t
+#include "w_wad.h" // FWAD
 
 #ifdef HAVE_OPENMPT
 #include "libopenmpt/libopenmpt.h"
@@ -275,6 +276,12 @@ boolean S_RecallMusic(UINT16 status, boolean fromfirst);
 //
 // Music Playback
 //
+
+#ifdef FWAD
+boolean S_CheckMusicLumpNum(UINT16 wad, UINT16 lump);
+void S_PreloadMusic(const char *mname);
+void S_PreloadMapMusic(void);
+#endif
 
 // Start music track, arbitrary, given its name, and set whether looping
 // note: music flags 12 bits for tracknum (gme, other formats with more than one track)
