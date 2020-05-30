@@ -138,6 +138,7 @@ typedef struct wadfile_s
 	UINT8 md5sum[16];
 
 	boolean important; // also network - !W_VerifyNMUSlumps
+	UINT8 flatfile;  // helps iterate lump files
 } wadfile_t;
 
 #define WADFILENUM(lumpnum) (UINT16)((lumpnum)>>16) // wad flumpnum>>16) // wad file number in upper word
@@ -221,7 +222,9 @@ void W_FlushCachedPatches(void);
 void W_VerifyFileMD5(UINT16 wadfilenum, const char *matchmd5);
 
 #ifdef FWAD
-void W_CloseFileLump(lumpnum_t lumpnum);
+FILE *W_OpenFileLump (UINT16 wad, UINT16 lump);
+void W_CloseFileLump (UINT16 wad, UINT16 lump);
+void W_CloseAllFileLumps (boolean (*callback)(UINT16, UINT16));
 #endif
 
 int W_VerifyNMUSlumps(const char *filename);
