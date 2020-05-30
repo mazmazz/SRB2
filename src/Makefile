@@ -101,6 +101,7 @@ NOHW=1
 NOHS=1
 NOOBJDUMP=1
 LOWMEMORY=1
+FWAD=1
 include emscripten/Makefile.cfg
 endif
 
@@ -381,6 +382,10 @@ endif
 
 ifdef LOWMEMORY
 	OPTS+=-DLOWMEMORY
+endif
+
+ifdef FWAD
+	OPTS+=-DFWAD
 endif
 
 ifdef DEBUGMODE
