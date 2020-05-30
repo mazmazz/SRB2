@@ -126,6 +126,10 @@ void W_Shutdown(void)
 		{
 			Z_Free(wad->lumpinfo[wad->numlumps].longname);
 			Z_Free(wad->lumpinfo[wad->numlumps].fullname);
+			if (wad->lumpinfo[wad->numlumps].filename)
+				Z_Free(wad->lumpinfo[wad->numlumps].filename);
+			if (wad->lumpinfo[wad->numlumps].handle)
+				fclose(wad->lumpinfo[wad->numlumps].handle);
 		}
 
 		Z_Free(wad->lumpinfo);
@@ -378,9 +382,60 @@ static lumpinfo_t* ResGetLumpsStandalone (void* handle, UINT16* numlumps, const 
 	return lumpinfo;
 }
 
+#ifdef FWAD
+/** Opens file handle to a flat-file lump.
+ */
+FILE *W_OpenFileLump (UINT16 wad, UINT16 lump)
+{
+	lumpinfo_t *l = (wadfiles[wad]->lumpinfo + LUMPNUM(lump));
+
+	if (!l->position && l->filename) // flat-file
+	{
+		if(!l->handle)
+		{
+			if ((l->handle = fopen(l->filename, "rb")) == NULL)
+				return NULL;
+			CONS_Debug(DBG_MEMORY, "W_OpenFileLump: Loaded %s at: %s\n", l->name, l->filename);
+		}
+	}
+	return l->handle;
+}
+
+/** Closes file handle to a flat-file lump.
+ */
+void W_CloseFileLump (UINT16 wad, UINT16 lump)
+{
+	if ((wadfiles[wad]->lumpinfo + lump)->handle)
+	{
+		fclose((wadfiles[wad]->lumpinfo + lump)->handle);
+		(wadfiles[wad]->lumpinfo + lump)->handle = 0;
+		CONS_Debug(DBG_MEMORY, "W_CloseFileLump: Closed %s\n", (wadfiles[wad]->lumpinfo + lump)->name);
+	}
+}
+
+/** Closes all file lump handles
+ *  Callback: True to close, False to skip
+ */
+void W_CloseAllFileLumps (boolean (*callback)(UINT16, UINT16))
+{
+	size_t i, j;
+	for (i = numwadfiles-1; i != (size_t)-1; i--)
+	{
+		wadfile_t *wad = wadfiles[i];
+		if (!wad->flatfile)
+			continue;
+		for (j = wad->numlumps-1; j != (size_t)-1; j--)
+		{
+			if ((callback && (*callback)(i, j)) || !callback)
+				W_CloseFileLump(i, j);
+		}
+	}
+}
+#endif
+
 /** Create a lumpinfo_t array for a WAD file.
  */
-static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, const char* filename)
+static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, UINT8* flatfile, const char* filename)
 {
 	UINT16 numlumps = *nlmp;
 	lumpinfo_t* lumpinfo;
@@ -392,6 +447,8 @@ static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, const char* filen
 	filelump_t *fileinfo;
 	void *fileinfov;
 
+	*flatfile = 0;
+
 	// read the header
 	if (File_Read(&header, 1, sizeof header, handle) < sizeof header)
 	{
@@ -401,6 +458,12 @@ static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, const char* filen
 
 	if (memcmp(header.identification, "ZWAD", 4) == 0)
 		compressed = 1;
+#ifdef FWAD
+	else if (memcmp(header.identification, "FWAD", 4) == 0)
+		*flatfile = 1; // look for filename {i}_{lumpname}
+	else if (memcmp(header.identification, "EWAD", 4) == 0)
+		*flatfile = 2; // look for filename {lumpname}
+#endif
 	else if (memcmp(header.identification, "IWAD", 4) != 0
 		&& memcmp(header.identification, "PWAD", 4) != 0
 		&& memcmp(header.identification, "SDLL", 4) != 0)
@@ -431,6 +494,62 @@ static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, const char* filen
 	{
 		lump_p->position = LONG(fileinfo->filepos);
 		lump_p->size = lump_p->disksize = LONG(fileinfo->size);
+		lump_p->filename = 0;
+		lump_p->handle = 0;
+#ifdef FWAD
+		if (*flatfile)
+		{
+			// we assume that a lump exists as a file in ./_{wadname}/{i}_{lumpname}
+			// or, without index, then ./_{wadname}/{lumpname}
+			// the filesize is stored in the wadfile itself.
+			long ofs = ftell(handle);
+			char *basefilename = malloc(MAX_WADPATH);
+			char *dirname = malloc(MAX_WADPATH);
+			char *filesize = malloc(12); // 10 digits, sign, and null
+			size_t i;
+
+			// Read filesize
+			if (fseek(handle, lump_p->position, SEEK_SET)
+				|| !fread(filesize, sizeof(char), lump_p->size, handle))
+				I_Error("corrupt flat-file wad: %s; maybe %s",
+					filename, M_FileError(handle));
+			else
+			{
+				filesize[11] = 0;
+				lump_p->size = atoi(filesize);
+			}
+			fseek(handle, ofs, SEEK_SET);
+
+			// Build lump filename
+			strcpy(basefilename, filename);
+			nameonly(basefilename);
+
+			// Build base directory
+			strcpy(dirname, filename);
+			for (i = strlen(dirname)-1; i != (size_t)-1; i--)
+			{
+				if (dirname[i] == '\\' || dirname[i] == '/')
+				{
+					dirname[i] = 0;
+					break;
+				}
+			}
+
+			// Build file lump
+			lump_p->position = 0;
+			lump_p->filename = Z_Malloc(MAX_WADPATH * sizeof(char), PU_STATIC, NULL);
+			if (*flatfile == 2)
+				sprintf(lump_p->filename, "%s" PATHSEP "_%s" PATHSEP "%.8s", dirname, basefilename, fileinfo->name);
+			else
+				sprintf(lump_p->filename, "%s" PATHSEP "_%s" PATHSEP "%d_%.8s", dirname, basefilename, i, fileinfo->name);
+			lump_p->compression = CM_NOCOMPRESSION;
+
+			free(filesize);
+			free(dirname);
+			free(basefilename);
+		}
+		else
+#endif
 		if (compressed) // wad is compressed, lump might be
 		{
 			UINT32 realsize = 0;
@@ -613,6 +732,8 @@ static lumpinfo_t* ResGetLumpsZip (void* handle, UINT16* nlmp)
 		lump_p->position = zentry.offset; // NOT ACCURATE YET: we still need to read the local entry to find our true position
 		lump_p->disksize = zentry.compsize;
 		lump_p->size = zentry.size;
+		lump_p->filename = 0;
+		lump_p->handle = 0;
 
 		fullname = malloc(zentry.namelen + 1);
 		if (File_GetString(fullname, zentry.namelen + 1, handle) != fullname)
@@ -728,6 +849,9 @@ UINT16 W_InitFile(const char *filename, fhandletype_t handletype, boolean mainfi
 	size_t packetsize;
 	UINT8 md5sum[16];
 	boolean important;
+#ifdef FWAD
+	UINT8 flatfile = 0;
+#endif
 
 	if (!(refreshdirmenu & REFRESHDIR_ADDFILE))
 		refreshdirmenu = REFRESHDIR_NORMAL|REFRESHDIR_ADDFILE; // clean out cons_alerts that happened earlier
@@ -808,7 +932,11 @@ UINT16 W_InitFile(const char *filename, fhandletype_t handletype, boolean mainfi
 		lumpinfo = ResGetLumpsZip(handle, &numlumps);
 		break;
 	case RET_WAD:
-		lumpinfo = ResGetLumpsWad(handle, &numlumps, filename);
+		lumpinfo = ResGetLumpsWad(handle, &numlumps,
+#ifdef FWAD
+								  &flatfile, 
+#endif
+								  filename);
 		break;
 	default:
 		CONS_Alert(CONS_ERROR, "Unsupported file format\n");
@@ -830,8 +958,12 @@ UINT16 W_InitFile(const char *filename, fhandletype_t handletype, boolean mainfi
 	wadfile->numlumps = (UINT16)numlumps;
 	wadfile->lumpinfo = lumpinfo;
 	wadfile->important = important;
+#ifdef FWAD
+	wadfile->flatfile = flatfile;
+#endif
 	File_Seek(handle, 0, SEEK_END);
 	wadfile->filesize = (unsigned)File_Tell(handle);
+	wadfile->type = type;
 
 	// already generated, just copy it over
 	M_Memcpy(&wadfile->md5sum, &md5sum, 16);
@@ -1384,6 +1516,10 @@ size_t W_ReadLumpHeaderPwad(UINT16 wad, UINT16 lump, void *dest, size_t size, si
 	// Let's get the raw lump data.
 	// We setup the desired file handle to read the lump data.
 	l = wadfiles[wad]->lumpinfo + lump;
+#ifdef FWAD
+	handle = W_OpenFileLump(wad, lump);
+	if (!handle)
+#endif
 	handle = wadfiles[wad]->handle;
 	File_Seek(handle, (long)(l->position + offset), SEEK_SET);
 

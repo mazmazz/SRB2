@@ -1199,6 +1199,10 @@ void Y_StartIntermission(void)
 	Z_ForceFlushPatches();
 #endif
 
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+
 	intertic = -1;
 
 #ifdef PARANOIA

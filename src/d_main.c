@@ -824,6 +824,10 @@ void D_StartTitle(void)
 
 	S_StopMusic();
 
+#ifdef FWAD
+	W_CloseAllFileLumps(S_CheckMusicLumpNum);
+#endif
+
 	if (netgame)
 	{
 		if (gametyperules & GTR_CAMPAIGN)
