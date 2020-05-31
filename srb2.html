@@ -358,7 +358,7 @@
               <button class="yellowButton">Full Install</button>
               <button class="blueButton" onclick="DownloadFS(); return false;">Download User Data</button>
               <button>Reset Program Data</button>
-              <button class="redButton">Delete User Data</button>
+              <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', _=>alert('User data deleted.')); return false;">Delete User Data</button>
             </details>
             <details id="advancedControls">
               <summary>Advanced</summary>
@@ -831,9 +831,9 @@
         return (new Promise((resolve, reject) => {
           if (typeof FS !== 'undefined')
             FS.syncfs(populate, (err) => {
-            console.log('Synced persistent storage');
-            console.log(err);
-          });
+              console.log('Synced persistent storage');
+              console.log(err);
+            });
           return resolve();
         }));
       };
@@ -883,7 +883,7 @@
 
         if (Module['calledRun'])
           PauseLoop();
-        
+
         return SyncFS()
         .then(_ => {
           return idbKeyval.keys(customStore);
@@ -917,9 +917,40 @@
         });
       };
 
+      var DeleteFS = (deletePath, callback) => {
+        // Emscripten file store is an IndexedDB, name /home/web_user, object FILE_DATA,
+        // version 21.
+        // idb-keyval doesn't take in a version parameter (forces 1),
+        // so use mazmazz/idb-keyval@idb-version to specify a version.
+        // Files are listed as [fullPath]: {timestamp, mode, contents}
+        if (typeof deletePath === 'undefined')
+          throw 'DeleteFS: Must specify a path';
         
+        let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
+
         if (Module['calledRun'])
-          ResumeLoop();
+          PauseLoop();
+
+        return SyncFS()
+        .then(_ => {
+          return idbKeyval.keys(customStore);
+        })
+        .then(keys => {
+          let promises = [];
+          keys.forEach(key => {
+            if (key.includes(deletePath))
+              promises.push(idbKeyval.del(key, customStore));
+          });
+          return Promise.all(promises)
+        })
+        .then(_ => SyncFS(true)) // commit changes to the memory FS
+        .catch(err => console.log(`DeleteFS: ${err}`))
+        .finally(_ => {
+          if (typeof callback === 'function')
+            callback();
+          if (Module['calledRun'])
+            ResumeLoop();
+        });
       };
 
       var ExtractZipFile = (destBaseDir, buffer) => {
