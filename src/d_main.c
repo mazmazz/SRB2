@@ -646,6 +646,12 @@ static void D_SRB2LoopIter(void)
 {
 	tic_t entertic = 0, realtics = 0, rendertimeout = INFTICS;
 
+#ifdef __EMSCRIPTEN__
+	EM_ASM({
+		InvalidateErrorChecks();
+	});
+#endif
+
 	if (lastwipetic)
 	{
 		oldentertics = lastwipetic;

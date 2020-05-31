@@ -1045,10 +1045,53 @@
         deleteNode(document.getElementById('content'));
       };
 
+      var ErrorHandler = (e, errorId) => {
+        let index = Module['aliveId'].indexOf(errorId);
+        if (index > -1) {
+          if (!Module['alive'][index]) {
+            let msg = `PROGRAM ERROR\n\n${userAgentIsMobile() ? "Tap" : "Click"} "${userAgentIsiOS() ? "Close" : "OK"}" to restart the app.\n\nDEVELOPER INFO`;
+            if (e && e.stack)
+              msg += `\n\n${e.stack}`;
+            else
+              msg += `\n\n${e}`;
+            msg += `\n\nSRB2 Version: {{{ PACKAGE_VERSION }}}\n\nWeb Version: {{{ VERSION_UX }}}\n\n${navigator.userAgent}`
+            console.error(msg);
+            pauseLoop();
+            try {
+              if ('SDL2' in Module !== 'undefined'
+                && 'audioContext' in Module['SDL2']
+                && Module['SDL2'].audioContext)
+                Module['SDL2'].audioContext.close();
+            } catch(e) { }
+            alert(msg);
+            window.location.reload();
+          }
+          Module['alive'].splice(index, 1);
+          Module['aliveId'].splice(index, 1);
+        }
+      };
+
+      var InitiateErrorCheck = (e) => {
+        if (e && typeof e === 'string' && e.includes('exception thrown:')) {
+          let errorId = (+new Date + Math.random().toString(36).slice(-5));
+          Module['alive'].push(false);
+          Module['aliveId'].push(errorId);
+          setTimeout(ErrorHandler, 1000/70, e, errorId); // NEWTICRATE*2
+        }
+      };
+
+      var InvalidateErrorChecks = () => {
+        Module['alive'].fill(true);
+      };
+
       var Module = {
         arguments: [],
 
         calledRun: false,
+
+        alive: [], // part of crash handler
+
+        aliveId: [],
 
         preRun: [() => {
           buildControlArguments();
@@ -1071,6 +1114,16 @@
           .finally(() => removeRunDependency('mount-filesystem'));
         }],
 
+        printErr: (e) => {
+          // HACK to catch errors thrown by runIter
+          console.error(e);
+          InitiateErrorCheck(e);
+        },
+
+        quit: (e) => {
+          InitiateErrorCheck(e);
+        },
+
         onExit: () => {
           window.location.reload();
         },
@@ -1090,10 +1143,10 @@
             }
           };
         })(),
-        printErr: function(text) {
-          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-          console.error(text);
-        },
+        // printErr: function(text) {
+        //   if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        //   console.error(text);
+        // },
         canvas: (function() {
           var canvas = document.getElementById('canvas');
 
