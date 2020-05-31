@@ -53,6 +53,8 @@
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
+    <script src="http://cdn.jsdelivr.net/gh/mazmazz/idb-keyval@idb-version/dist/idb-keyval-iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
     <!-- {{{ GTAG }}} -->
 
     <title>Sonic Robo Blast 2</title>
@@ -354,7 +356,7 @@
             <details id="storageControls">
               <summary>Storage</summary>
               <button class="yellowButton">Full Install</button>
-              <button class="blueButton">Download User Data</button>
+              <button class="blueButton" onclick="DownloadFS(); return false;">Download User Data</button>
               <button>Reset Program Data</button>
               <button class="redButton">Delete User Data</button>
             </details>
@@ -824,14 +826,15 @@
         return Promise.resolve();
       };
 
-      var SyncFS = () => {
+      var SyncFS = (populate = false) => {
         // commit to persistent storage
         return (new Promise((resolve, reject) => {
-          FS.syncfs((err) => {
+          if (typeof FS !== 'undefined')
+            FS.syncfs(populate, (err) => {
             console.log('Synced persistent storage');
             console.log(err);
-            resolve(err);
           });
+          return resolve();
         }));
       };
 
@@ -868,15 +871,52 @@
         .finally(() => removeRunDependency(dependencyId));
       };
 
-      var DownloadFS = () => {
+      var DownloadFS = (downloadPath, callback) => {
+        // Emscripten file store is an IndexedDB, name /home/web_user, object FILE_DATA,
+        // version 21.
+        // idb-keyval doesn't take in a version parameter (forces 1),
+        // so use mazmazz/idb-keyval@idb-version to specify a version.
+        // Files are listed as [fullPath]: {timestamp, mode, contents}
+        let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
+        if (typeof downloadPath === 'undefined')
+          downloadPath = '/home/web_user/.srb2';
+
         if (Module['calledRun'])
           PauseLoop();
         
-        InitializeFS()
-        .then(() => {
-          // TODO
+        return SyncFS()
+        .then(_ => {
+          return idbKeyval.keys(customStore);
         })
-        .catch((err) => console.log(err));
+        .then(keys => {
+          let promises = [];
+          let zip = new JSZip();
+          keys.forEach(key => {
+            if (key.includes(downloadPath))
+              promises.push(
+                idbKeyval.get(key, customStore)
+                .then(val => {
+                  // JSZip creates nested folders automatically.
+                  // Just iterate over files.
+                  if ('contents' in val && val.contents)
+                    return zip.file(key.replace('/home/web_user/',''), val.contents, {date: new Date(val.timestamp)});
+                })
+              );
+          });
+          return Promise.all(promises)
+          .then(_ => zip);
+        })
+        .then(zip => zip.generateAsync({type:'blob'}))
+        .then(blob => Promise.resolve(saveAs(blob, 'srb2-data.zip')))
+        .catch(err => console.log(`DownloadFS: ${err}`))
+        .finally(_ => {
+          if (typeof callback === 'function')
+            callback();
+          if (Module['calledRun'])
+            ResumeLoop();
+        });
+      };
+
         
         if (Module['calledRun'])
           ResumeLoop();
