@@ -357,8 +357,7 @@
               <summary>Storage</summary>
               <button class="yellowButton">Full Install</button>
               <button class="blueButton" onclick="DownloadFS(); return false;">Download User Data</button>
-              <button>Reset Program Data</button>
-              <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', _=>alert('User data deleted.')); return false;">Delete User Data</button>
+              <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
             </details>
             <details id="advancedControls">
               <summary>Advanced</summary>
@@ -871,7 +870,7 @@
         .finally(() => removeRunDependency(dependencyId));
       };
 
-      var DownloadFS = (downloadPath, callback) => {
+      var DownloadFS = (downloadPath, manageLoop = true, callback = null) => {
         // Emscripten file store is an IndexedDB, name /home/web_user, object FILE_DATA,
         // version 21.
         // idb-keyval doesn't take in a version parameter (forces 1),
@@ -881,7 +880,7 @@
         if (typeof downloadPath === 'undefined')
           downloadPath = '/home/web_user/.srb2';
 
-        if (Module['calledRun'])
+        if (manageLoop && Module['calledRun'])
           PauseLoop();
 
         return SyncFS()
@@ -912,12 +911,12 @@
         .finally(_ => {
           if (typeof callback === 'function')
             callback();
-          if (Module['calledRun'])
+          if (manageLoop && Module['calledRun'])
             ResumeLoop();
         });
       };
 
-      var DeleteFS = (deletePath, callback) => {
+      var DeleteFS = (deletePath, manageLoop = true, callback = null) => {
         // Emscripten file store is an IndexedDB, name /home/web_user, object FILE_DATA,
         // version 21.
         // idb-keyval doesn't take in a version parameter (forces 1),
@@ -928,7 +927,7 @@
         
         let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
 
-        if (Module['calledRun'])
+        if (manageLoop && Module['calledRun'])
           PauseLoop();
 
         return SyncFS()
@@ -948,7 +947,10 @@
         .finally(_ => {
           if (typeof callback === 'function')
             callback();
-          if (Module['calledRun'])
+          if (manageLoop && Module['calledRun'])
+            ResumeLoop();
+        });
+      };
             ResumeLoop();
         });
       };
