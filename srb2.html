@@ -53,7 +53,7 @@
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
-    <script src="http://cdn.jsdelivr.net/gh/mazmazz/idb-keyval@idb-version/dist/idb-keyval-iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mazmazz/idb-keyval@idb-version/dist/idb-keyval-iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
     <!-- {{{ GTAG }}} -->
 
@@ -357,6 +357,7 @@
               <summary>Storage</summary>
               <button class="yellowButton">Full Install</button>
               <button class="blueButton" onclick="DownloadFS(); return false;">Download User Data</button>
+              <button onclick="if (confirm('Are you sure?\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
               <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
             </details>
             <details id="advancedControls">
@@ -676,8 +677,9 @@
             if (data.trim() && data.trim() !== "{{{ PACKAGE_VERSION }}}") {
               console.log(`New Program Version Found: ${data}`);
               if (confirm(`SRB2 Version ${data} is released! Do you want to update this app?`)) {
-                resetProgramData = true;
-                alert('Your app will be updated when you play the game.');
+                ResetProgramData(true, _ => {
+                  alert('Your app will be updated when you play the game.');
+                });
               } else
                 forceOffline = true;
               localStorage.setItem('srb2program_update', (1).toString());
@@ -951,6 +953,43 @@
             ResumeLoop();
         });
       };
+
+      var ResetProgramData = (manageLoop = true, callback = null) => {
+        // Delete specific files in IndexedDB /home/web_user -> FILE_DATA
+        // and delete everything in EM_PRELOAD_CACHE -> METADATA, PACKAGES
+
+        let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
+        let customStoreEmMetadata = new idbKeyval.Store('EM_PRELOAD_CACHE', 'METADATA', 1);
+        let customStoreEmPackages = new idbKeyval.Store('EM_PRELOAD_CACHE', 'PACKAGES', 1);
+
+        if (manageLoop && Module['calledRun'])
+          PauseLoop();
+
+        // Let these fail silently in case the keys do not exist.
+        var silentCatch = _ => {return;};
+        return SyncFS()
+        .then (_ => idbKeyval.clear(customStoreEmMetadata).catch(silentCatch))
+        .then (_ => idbKeyval.clear(customStoreEmPackages).catch(silentCatch))
+        .then (_ => {
+          // Files as of 2.2.4
+          let promises = [
+            idbKeyval.del('/srb2.pk3', customStore).catch(silentCatch),
+            idbKeyval.del('/player.dta', customStore).catch(silentCatch),
+            idbKeyval.del('/zones.pk3', customStore).catch(silentCatch),
+            idbKeyval.del('/patch.pk3', customStore).catch(silentCatch),
+            idbKeyval.del('/music.dta', customStore).catch(silentCatch),
+            idbKeyval.del('/patch_music.pk3', customStore).catch(silentCatch),
+            idbKeyval.del('/emscripten.pk3', customStore).catch(silentCatch),
+            DeleteFS('/_music.dta', false).catch(silentCatch)
+          ];
+          return Promise.all(promises);
+        })
+        .then (_ => SyncFS(true))
+        .catch (err => console.log("ResetProgramData: " + err))
+        .finally(_ => {
+          if (typeof callback === 'function')
+            callback();
+          if (manageLoop && Module['calledRun'])
             ResumeLoop();
         });
       };
