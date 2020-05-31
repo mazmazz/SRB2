@@ -91,21 +91,6 @@
         color: #7f6bd1;
       }
 
-      #content {
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-        text-align: center;
-        display: grid;
-      }
-
-      #status-cont {
-        display: inline-block;
-        font-weight: bold;
-        text-align: center;
-        margin: auto 10%;
-      }
-
       @media (min-width: 320px) {
         #logo {
           width: 120%;
@@ -152,21 +137,16 @@
         }
       }
 
+      #status-cont {
+        display: inline-block;
+        font-weight: bold;
+        text-align: center;
+        margin: auto 10%;
+      }
+
       #progress {
         height: 20px;
         width: 256px;
-      }
-
-      #startbtn {
-        width: 160px;
-        height: 48px;
-        background-color: yellow;
-        color: black;
-        background-image: linear-gradient(yellow, orange);
-        border: 0.1em orange solid;
-        font-weight: bolder;
-        font-size: 1.1em;
-        cursor: pointer;
       }
 
       #canvas, #keyCapture {
@@ -204,6 +184,57 @@
         width: 6.66em;
       }
 
+      #content {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        text-align: center;
+        display: grid;
+      }
+
+      button, .button {
+        width: 160px;
+        height: 48px;
+        margin: 0.1em;
+        background-color: darkgray;
+        background-image: linear-gradient(black, darkgray);
+        border: 0.1em gray solid;
+        border-radius: 2px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        line-height: 2.5em;
+        display: inline-block;
+        cursor: default;
+      }
+
+      .blueButton {
+        background-color: mediumblue;
+        background-image: linear-gradient(black, mediumblue);
+        border-color: mediumblue;
+      }
+
+      .yellowButton {
+        background-color: goldenrod;
+        background-image: linear-gradient(black, goldenrod);
+        border-color: goldenrod;
+      }
+
+      .redButton {
+        background-image: linear-gradient(black, crimson);
+        border-color: crimson;
+      }
+
+      #startbtn {
+        background-color: yellow;
+        color: black;
+        background-image: linear-gradient(yellow, orange);
+        border: 0.1em orange solid;
+        font-weight: bolder;
+        font-size: 1.1em;
+        cursor: pointer;
+      }
+
       #notes {
         display: inline-block;
         text-align: start;
@@ -223,50 +254,41 @@
         margin: 0.1em 0;
       }
 
-      .addonFilesField label,
-      .addonFilesField .addonButton,
-      #addonButtonAdd,
       #resetbtn {
-        width: 2.5em;
-        background-color: darkgray;
-        background-image: linear-gradient(black, darkgray);
-        color: white;
-        border: 0.1em gray solid;
-        display: inline-block;
-        line-height: 2.5em;
-        cursor: default;
-        text-align: center;
+        display: none;
       }
 
-      #resetbtn {
-        width: 160px;
-        height: 48px;
-        font-weight: bold;
-        display: none;
+      .addonFilesField .addonButton {
+        width: 2.5em;
       }
 
       .addonFilesField label,
       .addonFilesField input[type=file] {
         width: 12.5em;
         height: 2.5em;
+        margin: 0;
         cursor: pointer;
       }
 
       .addonFilesField input[type=file] {
         font-size: 1em;
-      }
-
-      .addonFilesField .addonDelete {
-        margin-left: 0.1em;
-      }
-
-      .addonFilesField input[type=file] {
         display: none;
       }
 
+      .addonFilesField .addonDelete {
+        width: 2.5em;
+        height: 2.5em;
+        margin: 0 0 0 0.1em;
+      }
+
       #addonButtonAdd {
-        width: 15.3em;
+        width: 15.4em;
+        height: 2.5em;
         margin: 0.1em 0;
+      }
+
+      #androidNotice {
+        display: none;
       }
     </style>
   </head>
@@ -285,7 +307,7 @@
           </p>
           <progress value="0" max="100" id="progress" hidden=1></progress>
           <p>
-            <button id="resetbtn" onclick="javascript:window.location.reload()">Cancel</button>
+            <button id="resetbtn" class="button" onclick="javascript:window.location.reload()">Cancel</button>
           </p>
         </div>
         <form id="controlsForm" action="javascript:void(0);">
@@ -293,28 +315,35 @@
             <summary>Mods</summary>
             <div id="addonFilesContainer">
               <div class="addonFilesField" id="addonFilesTemplate">
-                <input type="file" id="addonFiles"/>
-                <label for="addonFiles">Load File</label><!--
-                --><div class="addonButton addonDelete">-</div>
+                <input type="file" id="addonFiles" class="button"/>
+                <label for="addonFiles" class="button yellowButton">Load File</label><!--
+                --><div class="addonButton addonDelete button redButton">-</div>
               </div>
             </div>
-            <div id="addonButtonAdd">+</div>
+            <div id="addonButtonAdd" class="button blueButton">+</div>
+            <p>
+              <input type="checkbox" id="addonStartup" checked/>
+              <label for="addonStartup">Load Mods on Startup</label>
+            </p>
             <details id="addonsHelp">
               <summary>Mod Help</summary>
               <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
               <p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
-              <p>To load savegames and gamedata, place them in a folder titled <code>.srb2/</code> within the ZIP file.</p>
-              <p>Your stored gamedata will be overwritten.</p>
-              <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may find mods here</a>.</p>
+              <p>To load savegames and gamedata, place them in a folder titled <code>.srb2/</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
+              <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
             </details>
           </details>
           <details id="controls">
             <summary>Settings</summary>
             <p>
               <label for="resizeHeight">Resolution</label>
-            <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
+              <input type="range" id="resizeHeight" name="resizeHeight" oninput="showValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
                 min="200" max="900" value="400" step="100"/>
               <span id="resizeHeightValue"></span>
+            </p>
+            <p id="fullscreenRow">
+              <input type="checkbox" id="fullscreen" checked/>
+              <label for="fullscreen">Fullscreen</label>
             </p>
             <p>
               <input type="checkbox" id="playMusic" checked/>
@@ -322,11 +351,22 @@
               <input type="checkbox" id="playSound" checked/>
               <label for="playSound">Play Sounds</label>
             </p>
+            <details id="storageControls">
+              <summary>Storage</summary>
+              <button class="yellowButton">Full Install</button>
+              <button class="blueButton">Download User Data</button>
+              <button>Reset Program Data</button>
+              <button class="redButton">Delete User Data</button>
+            </details>
             <details id="advancedControls">
               <summary>Advanced</summary>
               <p>
-                <input type="checkbox" id="skipIntro"/>
-                <label for="skipIntro">Skip Intro</label>
+                <p>
+                  <label for="drawDistance">Draw Distance</label>
+                  <input type="range" id="drawDistance" name="drawDistance" oninput="showValueRange(this, '', drawDistanceRange);"
+                    min="0" max="10" value="5" step="1"/>
+                  <span id="drawDistanceValue"></span>
+                </p>
                 <input type="checkbox" id="shadow" checked/>
                 <label for="shadow">Render Shadows</label>
               </p>
@@ -338,15 +378,16 @@
             </details>
           </details>
         </form>
+        <details id="help">
+          <summary>Help</summary>
+          <p>Game Notes:</p>
+          <p>No online multiplayer: to play netgames, download the PC version at <a href="//www.srb2.org" target="_blank">srb2.org</a>.</p>
+          <p>Game controllers should work.</p>
+          <p>If this page crashes, try closing background apps or restarting your browser.</p>
+          <p id="androidNotice">There is a native Android port available on <a href="https://github.com/Jimita/SRB2/releases" target="_blank">GitHub</a>.</p>
+        </details>
         <details id="footer">
           <summary>About</summary>
-          <ul id="notes">
-            <lh>Game Notes:</lh>
-            <li>No network play</li>
-            <li>Config/Save games DO work</li>
-            <li>Controllers DO work</li>
-            <li>If this page crashes, try closing background apps or restarting your browser.</li>
-          </ul>
           <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
           <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
           <p><a href="https://git.magicalgirl.moe/digiku/SRB2/issues/2">View issues</a> / <a href="https://github.com/Jimita/SRB2/compare/android-port-dynres...mazmazz:emscripten-touch">View source</a></p>
@@ -355,7 +396,10 @@
           <p>Follow SRB2:</p>
           <p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
           <p style="font-size:xx-small;">
-            Version: {{{ VERSION_UX }}}
+            SRB2 Version: v{{{ PACKAGE_VERSION }}}
+          </p>
+          <p style="font-size:xx-small;">
+            Web Version: {{{ VERSION_UX }}}
           </p>
           <span id="newVersion"></span>
           <p style="font-size:xx-small;">
@@ -408,13 +452,21 @@
         script.setAttribute('src','./srb2.js');
         document.head.appendChild(script);
         statusElement.hidden = false;
-        document.getElementById('startbtn').hidden = true;
+        document.getElementById('startbtn').style.display = "none";
         document.getElementById('addons').style.display = "none";
         document.getElementById('controls').style.display = "none";
+        document.getElementById('help').style.display = "none";
         document.getElementById('footer').style.display = "none";
         document.getElementById('copyright').style.display = "none";
         document.getElementById('resetbtn').style.display = "inline-block";
         document.body.classList.add('calledRun');
+        window.removeEventListener('focus', checkVersion, false);
+      };
+
+      var drawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
+
+      var showValueRange = (elem, suffix, rangeValues) => {
+        document.getElementById(`${elem.id}Value`).innerText = `${rangeValues[elem.value]}${suffix}`;
       };
 
       var showValue = (elem, suffix, overrideTest, override) => {
@@ -525,10 +577,20 @@
         
         showValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
 
+        showValueRange(document.getElementById('drawDistance'), '', drawDistanceRange);
+
         addFormEventListeners(controlsFormElement, 'input', handleInput, false);
 
         buildControlArguments();
         document.getElementById("systemArguments").value = systemArgumentsToString();
+
+        if (userAgentIsAndroid())
+          document.getElementById("androidNotice").style.display = "block";
+
+        if (userAgentIsiOS() && isStandalone()) {
+          document.getElementById("fullscreenRow").style.display = "none";
+          document.getElementById("fullscreen").checked = true;
+        }
       };
 
       var initializeAddons = () => {
@@ -577,30 +639,61 @@
       ////////////////////////////////
       // Version Check - For PWA
       ////////////////////////////////
-      window.addEventListener('load', () => {
-        fetch("version.txt")
-        .then(response => response.text())
-        .then(data => {
-          console.log(`SRB2 Web Version: ${data}`);
-          if (data.trim() !== "{{{ VERSION }}}") {
-            console.log(`New Version Found: ${data}`);
-            // Don't refresh page more than once in a row.
-            let updateCount = localStorage.getItem('srb2web_update');
-            if (isStandalone() && (!updateCount || !parseInt(updateCount))) {
-              localStorage.setItem('srb2web_update', (1).toString());
-              window.location.reload(true);
-              return Promise.resolve();
-            } else
-              document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
-          }
-          localStorage.setItem('srb2web_update', (0).toString());
-        })
-        .catch(err => {
-          console.log(`Error Checking New Version:`)
-          console.log(err);
-          localStorage.setItem('srb2web_update', (0).toString());
-        });
-      }, {once: true});
+
+      var checkVersion = () => {
+        if (!document.body.classList.contains('calledRun')) {
+          // Check Web Version
+          fetch("version.txt")
+          .then(response => response.text())
+          .then(data => {
+            console.log(`SRB2 Web Version: {{{ VERSION }}}`);
+            if (data.trim() && data.trim() !== "{{{ VERSION_UX }}}") {
+              console.log(`New Web Version Found: ${data}`);
+              // Don't refresh page more than once in a row.
+              let updateCount = localStorage.getItem('srb2web_update');
+              if (isStandalone() && (!updateCount || !parseInt(updateCount))) {
+                localStorage.setItem('srb2web_update', (1).toString());
+                window.location.reload(true);
+                return Promise.resolve();
+              } else
+                document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
+            }
+            localStorage.setItem('srb2web_update', (0).toString());
+          })
+          // Check Program Version
+          .then(() => {
+            // Don't check program version more than once a page load
+            let updateCount = localStorage.getItem('srb2program_update');
+            if (!updateCount || !parseInt(updateCount))
+              return fetch("version-program.txt")
+            else
+              return Promise.reject("Already checked program version.");
+          })
+          .then(response => response.text())
+          .then(data => {
+            console.log(`SRB2 Program Version: {{{ PACKAGE_VERSION }}}`);
+            if (data.trim() && data.trim() !== "{{{ PACKAGE_VERSION }}}") {
+              console.log(`New Program Version Found: ${data}`);
+              if (confirm(`SRB2 Version ${data} is released! Do you want to update this app?`)) {
+                resetProgramData = true;
+                alert('Your app will be updated when you play the game.');
+              } else
+                forceOffline = true;
+              localStorage.setItem('srb2program_update', (1).toString());
+            }
+          })
+          .catch(err => {
+            console.log(`Error Checking New Version:`)
+            console.log(err);
+            localStorage.setItem('srb2web_update', (0).toString());
+            localStorage.setItem('srb2program_update', (0).toString());
+          });
+        }
+      };
+
+      localStorage.setItem('srb2program_update', (0).toString()); // reset on page load
+      window.addEventListener('load', checkVersion, {once: true});
+      window.addEventListener('focus', checkVersion, false);
 
       ////////////////////////////////
       // Utilities
@@ -867,15 +960,17 @@
 
         // do files first, so we can use the '-file' operator from systemArguments
         let validFile = false;
-        files.forEach(input => {
-          if (input.files.length && !input.files[0].name.endsWith('.zip')) {
-            if (!validFile) {
-              args.push('-file');
-              validFile = true;
+        if (document.getElementById('addonStartup').checked) {
+          files.forEach(input => {
+            if (input.files.length && !input.files[0].name.endsWith('.zip')) {
+              if (!validFile) {
+                args.push('-file');
+                validFile = true;
+              }
+              args.push(`/addons/${input.files[0].name.replace(' ', '_')}`);
             }
-            args.push(`/addons/${input.files[0].name.replace(' ', '_')}`);
-          }
-        });
+          });
+        }
 
         inputs.forEach(input => {
           switch(input.id) {
@@ -908,10 +1003,10 @@
               );
               break;
             }
-            case 'skipIntro':
-              if(input.checked)
-                args.push('-skipintro');
+            case 'drawDistance': {
+              args.push('+drawdist',drawDistanceRange[input.value]);
               break;
+            }
             case 'shadow': {
               let val = (input.checked ? 'on' : 'off');
               args.push(
@@ -1186,6 +1281,9 @@
           textCaptureElement.parentElement.style.zIndex = '100000';
           textCaptureElement.parentElement.style.opacity = '1.0';
           textCaptureElement.disabled = false;
+          textCaptureElement.addEventListener('keydown', HandleKey, true);
+          textCaptureElement.addEventListener('keyup', HandleKey, true);
+          textCaptureElement.addEventListener('keypress', HandleKey, true);
         } else
           activeCaptureElement = keyCaptureElement;
         keyCaptureElement.value = ".";
@@ -1214,6 +1312,11 @@
       var HandleTouchKeyboard = () => {
         if (closeDelay-- <= 0)
           I_CloseScreenKeyboard();
+      };
+
+      var HandleKey = (e) => {
+        // Android: Don't let any key events pass to the program
+        e.stopPropagation();
       };
 
       var InjectText = () => {

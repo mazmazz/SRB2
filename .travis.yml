@@ -94,9 +94,12 @@ matrix:
                 sed -e "s@<!-- {{{ GTAG }}} -->@$GTAG_DECODED@" -i "bin/Emscripten/${BUILD}/index.html";
               fi;
             # Output version string
-            - echo "$TRAVIS_COMMIT" > "bin/Emscripten/${BUILD}/version.txt"
+            - VERSION_UX="$(date +"%Y/%m/%d %r") - $TRAVIS_COMMIT"
+            - echo "$VERSION_UX" > "bin/Emscripten/${BUILD}/version.txt"
+            - echo "$PACKAGE_VERSION" > "bin/Emscripten/${BUILD}/version-program.txt"
             - sed -e "s@{{{ VERSION }}}@$TRAVIS_COMMIT@g" -i "bin/Emscripten/${BUILD}/index.html";
-            - sed -e "s@{{{ VERSION_UX }}}@$(date +"%Y/%m/%d %r") - $TRAVIS_COMMIT@g" -i "bin/Emscripten/${BUILD}/index.html";
+            - sed -e "s@{{{ VERSION_UX }}}@$VERSION_UX@g" -i "bin/Emscripten/${BUILD}/index.html";
+            - sed -e "s@{{{ PACKAGE_VERSION }}}@$PACKAGE_VERSION@g" -i "bin/Emscripten/${BUILD}/index.html";
             # Package for GitHub Releases
             - OLDPWD="$PWD"
             - cd bin/Emscripten/${BUILD}
