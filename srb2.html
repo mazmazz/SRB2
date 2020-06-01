@@ -317,7 +317,7 @@
             <summary>Mods</summary>
             <div id="addonFilesContainer">
               <div class="addonFilesField" id="addonFilesTemplate">
-                <input type="file" id="addonFiles" class="button"/>
+                <input type="file" id="addonFiles" class="button yellowButton"/>
                 <label for="addonFiles" class="button yellowButton">Load File</label><!--
                 --><div class="addonButton addonDelete button redButton">-</div>
               </div>
@@ -343,10 +343,10 @@
                 min="200" max="900" value="400" step="100"/>
               <span id="resizeHeightValue"></span>
             </p>
-            <p id="fullscreenRow">
+            <!--<p id="fullscreenRow">
               <input type="checkbox" id="fullscreen" checked/>
               <label for="fullscreen">Fullscreen</label>
-            </p>
+            </p>-->
             <p>
               <input type="checkbox" id="playMusic" checked/>
               <label for="playMusic">Play Music</label>
@@ -355,10 +355,10 @@
             </p>
             <details id="storageControls">
               <summary>Storage</summary>
-              <button class="yellowButton">Full Install</button>
-              <button class="blueButton" onclick="DownloadFS(); return false;">Download User Data</button>
-              <button onclick="if (confirm('Are you sure?\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
-              <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
+              <button class="blueButton" onclick="UXInstallProgram(true, '{{{ PACKAGE_VERSION }}}'); return false;">Full Install</button>
+              <button class="yellowButton" onclick="DownloadFS(); return false;">Download User Data</button>
+              <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
+              <button onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
             </details>
             <details id="advancedControls">
               <summary>Advanced</summary>
