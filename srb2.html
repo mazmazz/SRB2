@@ -55,6 +55,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mazmazz/idb-keyval@idb-version/dist/idb-keyval-iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise-pool@2.5.0/es6-promise-pool.min.js"></script>
     <!-- {{{ GTAG }}} -->
 
     <title>Sonic Robo Blast 2</title>
@@ -448,12 +449,9 @@
         node.remove();
       };
 
-      var StartLoad = () => {
-        SaveFormToStorage(ControlsFormElement);
-        var script = document.createElement('script');
-        script.setAttribute('src','./srb2.js');
-        document.head.appendChild(script);
+      var HideContent = () => {
         StatusElement.hidden = false;
+        ProgressElement.hidden = false;
         document.getElementById('startbtn').style.display = "none";
         document.getElementById('addons').style.display = "none";
         document.getElementById('controls').style.display = "none";
@@ -461,8 +459,29 @@
         document.getElementById('footer').style.display = "none";
         document.getElementById('copyright').style.display = "none";
         document.getElementById('resetbtn').style.display = "inline-block";
-        document.body.classList.add('calledRun');
+      };
+
+      var ShowContent = () => {
+        StatusElement.hidden = true;
+        ProgressElement.hidden = true;
+        document.getElementById('startbtn').style.display = "inline-block";
+        document.getElementById('addons').style.display = "block";
+        document.getElementById('controls').style.display = "block";
+        document.getElementById('help').style.display = "block";
+        document.getElementById('footer').style.display = "block";
+        document.getElementById('copyright').style.display = "block";
+        document.getElementById('resetbtn').style.display = "none";
+      };
+
+      var StartLoad = async () => {
+        SaveFormToStorage(ControlsFormElement);
         window.removeEventListener('focus', CheckVersion, false);
+        await UXInstallProgram(false); // hides the UI
+        await GetWasm();
+        var script = document.createElement('script');
+        script.setAttribute('src','./srb2.js');
+        document.head.appendChild(script);
+        document.body.classList.add('calledRun');
       };
 
       var DrawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
@@ -564,6 +583,7 @@
             document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
             document.getElementById("addons").style.display = "none";
             document.getElementById("controls").style.display = "none";
+            document.getElementById("help").style.display = "none";
             document.getElementById("notes").style.display = "none";
             return true;
           }
@@ -676,12 +696,7 @@
             console.log(`SRB2 Program Version: {{{ PACKAGE_VERSION }}}`);
             if (data.trim() && data.trim() !== "{{{ PACKAGE_VERSION }}}") {
               console.log(`New Program Version Found: ${data}`);
-              if (confirm(`SRB2 Version ${data} is released! Do you want to update this app?`)) {
-                ResetProgramData(true, _ => {
-                  alert('Your app will be updated when you play the game.');
-                });
-              } else
-                forceOffline = true;
+              alert(`SRB2 Version ${data} is released! The game will be updated when you ${userAgentIsMobile() ? 'tap' : 'click'} "Play".`);
               localStorage.setItem('srb2program_update', (1).toString());
             }
           })
@@ -756,6 +771,10 @@
         return {x:x, y:y};
       };
 
+      ////////////////////////////////
+      // Base FS Functions
+      ////////////////////////////////
+
       var GetBasenameFromPath = (path) => path.split('\\').pop().split('/').pop();
       var GetDirnameFromPath = (path) => {
         let arr = path.split('\\').pop().split('/');
@@ -824,7 +843,7 @@
         try { FS.mkdirTree(parents); } catch(err) { console.log('WriteFS(): mkdirTree info'); console.log(err); }
         try { FS.unlink(`${baseDir}/${fn}`); } catch(err) { console.log('WriteFS(): unlink info'); console.log(err); }
         FS.createDataFile(baseDir, fn, data, true, true);
-        return Promise.resolve();
+        return Promise.resolve(true);
       };
 
       var SyncFS = (populate = false) => {
@@ -837,39 +856,6 @@
             });
           return resolve();
         }));
-      };
-
-      var CheckDownloadFileToFS = (url, destBaseDir) => {
-        let dependencyId = `download-${GetBasenameFromPath(url)}`;
-        let baseDir = (destBaseDir === undefined ? '/home/web_user/.srb2' : destBaseDir);
-        let name = `${GetBasenameFromPath(url)}`;
-        addRunDependency(dependencyId);
-        console.log(`Checking ${name}...`);
-
-        return fetch(url, {
-          method: 'HEAD'
-        })
-        .then((response) => {
-          let remote_size = parseInt(response.headers.get('Content-Length'));
-
-          try {
-            let local_size = parseInt(FS.stat(`${baseDir}/${name}`)['size']);
-            if (remote_size == local_size)
-              return resolve(`${name} already loaded`);
-            FS.unlink(`${baseDir}/${name}`);
-            console.log(`Downloading ${GetBasenameFromPath(url)}...`);
-          } catch(e) { /* File doesn't exist */ }
-
-          return fetch(url);
-        })
-        .then((response) => response.arrayBuffer())
-        .then((buffer) => {
-          data = new Uint8Array(buffer);
-          FS.createDataFile(baseDir, name, data, true, true);
-          return SyncFS;
-        })
-        .catch((reason) => console.error(reason))
-        .finally(() => removeRunDependency(dependencyId));
       };
 
       var DownloadFS = (downloadPath, manageLoop = true, callback = null) => {
@@ -954,11 +940,101 @@
         });
       };
 
-      var ResetProgramData = (manageLoop = true, callback = null) => {
+      ////////////////////////////////
+      // Program Data
+      ////////////////////////////////
+
+      var InstallFiles = [
+        'srb2.wasm', 'srb2.pk3', 'player.dta', 'zones.pk3', 'patch.pk3', 'music.dta', 'patch_music.pk3', 'emscripten.pk3',
+        '_music.dta/MUSICDEF',
+        // Menus
+        '_music.dta/O__NITAT',
+        '_music.dta/O__RECAT',
+        '_music.dta/O__STJR',
+        '_music.dta/O__INTRO',
+        '_music.dta/O__TITLE',
+        '_music.dta/O__CHSEL',
+        // First Levels
+        '_music.dta/O_GFZ1',
+        '_music.dta/O_TUTORL',
+        // Jingles
+        '_music.dta/O__1UP',
+        '_music.dta/O__CLEAR',
+        '_music.dta/O__CONTI',
+        '_music.dta/O__DROWN',
+        '_music.dta/O__GOVER',
+        '_music.dta/O__INV',
+        '_music.dta/O__SHOES',
+        '_music.dta/O__SUPER'
+      ];
+
+      var FullInstallFiles = [
+        '_music.dta/D_ACZ1','_music.dta/D_ACZ2','_music.dta/D_AGZ','_music.dta/D_AGZALT','_music.dta/D_APZ1','_music.dta/D_APZ2','_music.dta/D_ATZ','_music.dta/D_BCZ1','_music.dta/D_BHZ','_music.dta/D_CCZ','_music.dta/D_CEZ1','_music.dta/D_CEZ2','_music.dta/D_DCZ','_music.dta/D_DHZ','_music.dta/D_DISCO','_music.dta/D_DSZ1','_music.dta/D_DSZ2','_music.dta/D_ERZ1','_music.dta/D_ERZ2','_music.dta/D_GFZ1','_music.dta/D_GFZ2','_music.dta/D_GFZALT','_music.dta/D_HAUNTD','_music.dta/D_MARIO1','_music.dta/D_MARIO2','_music.dta/D_MP_0RI','_music.dta/D_MP_AIR','_music.dta/D_MP_COA','_music.dta/D_MP_DES','_music.dta/D_MP_DOM','_music.dta/D_MP_FIR','_music.dta/D_MP_FOR','_music.dta/D_MP_FR2','_music.dta/D_MP_GHZ','_music.dta/D_MP_GL2','_music.dta/D_MP_GLZ','_music.dta/D_MP_ICE','_music.dta/D_MP_MED','_music.dta/D_MP_MIN','_music.dta/D_MP_MRZ','_music.dta/D_MP_RAI','_music.dta/D_MP_SUN','_music.dta/D_MP_WT2','_music.dta/D_MP_WTR','_music.dta/D_OINTRO','_music.dta/D_OSPEC','_music.dta/D_OSPEC2','_music.dta/D_RVZ1','_music.dta/D_SPEC1','_music.dta/D_SPEC2','_music.dta/D_SPEC3','_music.dta/D_SPEC4','_music.dta/D_SPEC5','_music.dta/D_SPEC6','_music.dta/D_SPEC7','_music.dta/D_SPEC8','_music.dta/D_THZ1','_music.dta/D_THZ2','_music.dta/D_THZALT','_music.dta/D_VSALT','_music.dta/D_VSBOSS','_music.dta/D_VSBRAK','_music.dta/D_VSMETL','_music.dta/D__1UP','_music.dta/D__CHSEL','_music.dta/D__CLEAR','_music.dta/D__CONTI','_music.dta/D__CREDS','_music.dta/D__DROWN','_music.dta/D__GOVER','_music.dta/D__INTER','_music.dta/D__INTRO','_music.dta/D__INV','_music.dta/D__MINV','_music.dta/D__NITAT','_music.dta/D__SHOES','_music.dta/D__STJR','_music.dta/D__SUPER','_music.dta/D__TITLE','_music.dta/O_ACZ1','_music.dta/O_ACZ2','_music.dta/O_AGZ','_music.dta/O_AGZALT','_music.dta/O_APZ1','_music.dta/O_APZ2','_music.dta/O_ATZ','_music.dta/O_BCZ1','_music.dta/O_BCZ2','_music.dta/O_BHZ','_music.dta/O_CCZ','_music.dta/O_CEZ1','_music.dta/O_CEZ2','_music.dta/O_CEZR','_music.dta/O_DCZ','_music.dta/O_DHZ','_music.dta/O_DISCO','_music.dta/O_DSZ1','_music.dta/O_DSZ2','_music.dta/O_ERZ1','_music.dta/O_ERZ2','_music.dta/O_FHZ','_music.dta/O_GFZ2','_music.dta/O_GFZALT','_music.dta/O_HAUNTD','_music.dta/O_MARIO1','_music.dta/O_MARIO2','_music.dta/O_MP_0RI','_music.dta/O_MP_AIR','_music.dta/O_MP_COA','_music.dta/O_MP_DES','_music.dta/O_MP_DOM','_music.dta/O_MP_FIR','_music.dta/O_MP_FOR','_music.dta/O_MP_FR2','_music.dta/O_MP_GHZ','_music.dta/O_MP_GL2','_music.dta/O_MP_GLZ','_music.dta/O_MP_ICE','_music.dta/O_MP_MED','_music.dta/O_MP_MIN','_music.dta/O_MP_MRZ','_music.dta/O_MP_RAI','_music.dta/O_MP_SUN','_music.dta/O_MP_WT2','_music.dta/O_MP_WTR','_music.dta/O_OINTRO','_music.dta/O_OSPEC','_music.dta/O_OSPEC2','_music.dta/O_RVZ1','_music.dta/O_RVZ2','_music.dta/O_RVZALT','_music.dta/O_SPEC1','_music.dta/O_SPEC2','_music.dta/O_SPEC3','_music.dta/O_SPEC4','_music.dta/O_SPEC5','_music.dta/O_SPEC6','_music.dta/O_SPEC7','_music.dta/O_SPEC8','_music.dta/O_THZ1','_music.dta/O_THZ2','_music.dta/O_THZALT','_music.dta/O_VSALT','_music.dta/O_VSBOSS','_music.dta/O_VSBRAK','_music.dta/O_VSFANG','_music.dta/O_VSMETL','_music.dta/O__CREDS','_music.dta/O__ENDB','_music.dta/O__ENDG','_music.dta/O__INTER','_music.dta/O__NTIME','_music.dta/O__MINV'
+      ];
+
+      // Don't delete these files on lump unload
+      var PersistentLumpFiles = [
+        '_music.dta/O__1UP',
+        '_music.dta/O__CLEAR',
+        '_music.dta/O__CONTI',
+        '_music.dta/O__DROWN',
+        '_music.dta/O__GOVER',
+        '_music.dta/O__INV',
+        '_music.dta/O__SHOES',
+        '_music.dta/O__SUPER'
+      ];
+
+      var StartupFiles = [
+        'srb2.pk3', 'player.dta', 'zones.pk3', 'patch.pk3', 'music.dta', 'patch_music.pk3', 'emscripten.pk3',
+        ...PersistentLumpFiles
+      ];
+
+      var RequiredFiles = [
+        'srb2.wasm', 'srb2.pk3', 'player.dta', 'zones.pk3', 'patch.pk3', 'emscripten.pk3'
+      ];
+
+      var CompositeKey = (fn, version) => `data/${version}/${fn}`;
+
+      // !!!!!!!!!! OLD, DEPRECATED !!!!!!!!!!
+      var CheckDownloadFileToFS = (url, destBaseDir) => {
+        let dependencyId = `download-${GetBasenameFromPath(url)}`;
+        let baseDir = (destBaseDir === undefined ? '/home/web_user/.srb2' : destBaseDir);
+        let name = `${GetBasenameFromPath(url)}`;
+        addRunDependency(dependencyId);
+        console.log(`Checking ${name}...`);
+
+        return fetch(url, {
+          method: 'HEAD'
+        })
+        .then((response) => {
+          let remote_size = parseInt(response.headers.get('Content-Length'));
+
+          try {
+            let local_size = parseInt(FS.stat(`${baseDir}/${name}`)['size']);
+            if (remote_size == local_size)
+              return resolve(`${name} already loaded`);
+            FS.unlink(`${baseDir}/${name}`);
+            console.log(`Downloading ${GetBasenameFromPath(url)}...`);
+          } catch(e) { /* File doesn't exist */ }
+
+          return fetch(url);
+        })
+        .then((response) => response.arrayBuffer())
+        .then((buffer) => {
+          data = new Uint8Array(buffer);
+          FS.createDataFile(baseDir, name, data, true, true);
+          return SyncFS;
+        })
+        .catch((reason) => console.error(reason))
+        .finally(() => removeRunDependency(dependencyId));
+      };
+
+      var ResetProgramData = async (manageLoop = true, callback = null) => {
         // Delete specific files in IndexedDB /home/web_user -> FILE_DATA
         // and delete everything in EM_PRELOAD_CACHE -> METADATA, PACKAGES
 
         let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
+        let customStoreData = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
         let customStoreEmMetadata = new idbKeyval.Store('EM_PRELOAD_CACHE', 'METADATA', 1);
         let customStoreEmPackages = new idbKeyval.Store('EM_PRELOAD_CACHE', 'PACKAGES', 1);
 
@@ -967,32 +1043,294 @@
 
         // Let these fail silently in case the keys do not exist.
         var silentCatch = _ => {return;};
-        return SyncFS()
-        .then (_ => idbKeyval.clear(customStoreEmMetadata).catch(silentCatch))
-        .then (_ => idbKeyval.clear(customStoreEmPackages).catch(silentCatch))
-        .then (_ => {
-          // Files as of 2.2.4
-          let promises = [
-            idbKeyval.del('/srb2.pk3', customStore).catch(silentCatch),
-            idbKeyval.del('/player.dta', customStore).catch(silentCatch),
-            idbKeyval.del('/zones.pk3', customStore).catch(silentCatch),
-            idbKeyval.del('/patch.pk3', customStore).catch(silentCatch),
-            idbKeyval.del('/music.dta', customStore).catch(silentCatch),
-            idbKeyval.del('/patch_music.pk3', customStore).catch(silentCatch),
-            idbKeyval.del('/emscripten.pk3', customStore).catch(silentCatch),
-            DeleteFS('/_music.dta', false).catch(silentCatch)
-          ];
-          return Promise.all(promises);
+
+        await idbKeyval.clear(customStoreEmMetadata).catch(silentCatch);
+        await idbKeyval.clear(customStoreEmPackages).catch(silentCatch);
+        // TODO reliable recursive way to clear multiple versions of data?
+        // because later versions may use older versions as a BASE
+        await idbKeyval.clear(customStoreData).catch(silentCatch);
+        // We don't store game assets in the user folder
+        await idbKeyval.del('/home/web_user/.srb2/music.dta', customStore).catch(silentCatch);
+
+        if (typeof callback === 'function')
+          callback();
+        if (manageLoop && Module['calledRun'])
+          ResumeLoop();
+        
+        return Promise.resolve();
+      };
+
+      var InstallProgramFileReferences = async (name, version, fullBase) => {
+        let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+        // Slice all parent bases of the current version, so we don't
+        // overwrite parents' files.
+        let fullBase2 = fullBase.slice(0, fullBase.indexOf(version));
+
+        return Promise.all(fullBase2.map(async base => {
+          if (base && base !== version) {
+            let baseFile = await idbKeyval.get(CompositeKey(name, base), customStore);
+            if (!(baseFile instanceof Object))
+              baseFile = {};
+            if (!('contents' in baseFile)) {
+              if (!('base' in baseFile && baseFile['base'] != version)) {
+                baseFile['base'] = version;
+                console.log(`InstallProgramFileReferences: Logging base ${version} for ${name} (${base})`);
+                return idbKeyval.set(CompositeKey(name, base), baseFile, customStore);
+              } else
+                return Promise.resolve(); // nothing to update
+            } 
+            // IF AN ENTRY EXISTS IN A PARENT BASE: Be wary. Don't log anything,
+            // in case the parent file was in error.
+            return Promise.reject('While logging parent base references, parent ${base} already has a file.');
+          }
+        }));
+      };
+
+      var InstallProgramFile = async (name, version, md5 = null, fullBase = []) => {
+        let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+
+        try {
+          let remoteFile = await fetch(`data/${version}/${name}`);
+
+          if (!remoteFile.ok)
+            throw remoteFile;
+          
+          remoteFile = await remoteFile.arrayBuffer();
+          remoteFile = new Uint8Array(remoteFile);
+
+          // Log a reference to this version in all the parent bases
+          await InstallProgramFileReferences(name, version, fullBase);
+
+          // Log to persistent storage
+          let idbFile = await idbKeyval.get(CompositeKey(name, version), customStore);
+          if (!idbFile)
+            idbFile = {};
+          idbFile['contents'] = remoteFile;
+          idbFile['md5'] = md5;
+          await idbKeyval.set(CompositeKey(name, version), idbFile, customStore);
+          console.log(`Downloaded ${name} (${version}) from server.`);
+          return Promise.resolve(idbFile);
+        } catch (e) {
+          // fetch connection error or other throw from above
+          throw `CheckInstallProgramFile: data/${version}/${name} - ${e}`;
+        }
+      };
+
+      var CheckInstallProgramFile = async (name, version, base = [], fullBase = [], checkMd5IfFileExists = false) => {
+        // Every data file on the server has a corresponding *.md5 file.
+        // Check the server for a file in the given version.
+        // If it doesn't exist in the given version, then try the "base" version.
+
+        if (typeof version === 'undefined' || !version) {
+          if (base && base.length)
+            return CheckInstallProgramFile(name, base.shift(), base, fullBase, checkMd5IfFileExists);
+          else
+            throw `CheckInstallProgramFile: ${name} - No version to fetch from!`;
+        }
+
+        let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+
+        // First, see if we can get a base reference in IDB
+        try {
+          let localFile = await idbKeyval.get(CompositeKey(name, version), customStore);
+          if (localFile && localFile instanceof Object) {
+            if ('base' in localFile)
+              return await CheckInstallProgramFile(name, localFile['base'], [], fullBase, checkMd5IfFileExists);
+            else if (!checkMd5IfFileExists) {
+              console.log(`Retrieved ${name} (${version}) from storage.`);
+              // Don't log a base reference (InstallProgramFileReferences),
+              // because we want to verify with server before doing so.
+              return Promise.resolve(localFile);
+            }
+          }
+        } catch (e) { } // fail silently; oh well, we tried.
+
+        try {
+          // Check server's MD5 file for the current version.
+          let remoteMd5 = await fetch(`data/${version}/${name}.md5`);
+          if (!remoteMd5.ok) {
+            // Server's MD5 was not found: check the "base" version for the file.
+            if (base && base.length && base[0])
+              return await CheckInstallProgramFile(name, base.shift(), base, fullBase, checkMd5IfFileExists);
+            else if (!RequiredFiles.includes(name))
+              return Promise.resolve(); // shrug, we don't need this file.
+            else
+              throw 'Cannot retrieve MD5';
+          } else {
+            // Server's MD5 was found: compare it to our local MD5 for the file.
+            let idbFile = await idbKeyval.get(CompositeKey(name, version), customStore);
+            remoteMd5 = await remoteMd5.text();
+
+            if (idbFile && 'md5' in idbFile
+                && remoteMd5 && remoteMd5 == idbFile['md5']) {
+              // The MD5's match: we're done, don't download anything.
+              // Log a reference to this version in all the parent bases
+              await InstallProgramFileReferences(name, version, fullBase);
+              console.log(`Retrieved ${name} (${version}) from storage.`);
+              return Promise.resolve(idbFile);
+            }
+            else if (remoteMd5 && remoteMd5.length == 32) { // sanity check
+              // The MD5's do not match: store the server's MD5, and download
+              // the file for the current version.
+              return await InstallProgramFile(name, version, remoteMd5, fullBase);
+            } else {
+              // Edge case where remote MD5 is not valid: see if there's an older file.
+              if (base && base.length && base[0])
+                return await CheckInstallProgramFile(name, base.shift(), base, fullBase, checkMd5IfFileExists);
+              else if (!RequiredFiles.includes(name))
+                return Promise.resolve(); // shrug, we don't need this file.
+              else
+                throw 'Cannot retrieve remote MD5.';
+            }
+          }
+        } catch (e) {
+          // fetch() connection error, or thrown from above code.
+          throw `CheckInstallProgramFile: data/${version}/${name}.md5 - ${e}`;
+        }
+      };
+
+      var VersionBases = {};
+
+      var GetVersionBases = async (version = '{{{ PACKAGE_VERSION }}}') => {
+        // Build BASE dependency list
+        // TODO Do MD5 checks on the remote _BASE files, in the
+        // rare event that the base version should change.
+        if (VersionBases instanceof Object && version in VersionBases)
+          return VersionBases[version];
+        let base = [version]; // initialize with our own version, so we can shift() from step 1.
+        let baseVer = version;
+        try {
+          // On a brand-new setup, the store SHOULD be first created here.
+          let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+          do {
+            // Check IDB first
+            childBaseVer = await idbKeyval.get(CompositeKey('_BASE', baseVer), customStore);
+            if (childBaseVer) {
+              if (!base.includes(childBaseVer)) {
+                base.push(childBaseVer);
+                baseVer = childBaseVer;
+              } else
+                break; // no circular references, thanks
+            } else {
+              // If IDB doesn't have the _BASE, then check the server
+              childBaseVer = await fetch(`data/${baseVer}/_BASE`);
+              if (!childBaseVer.ok)
+                // assume no base version, but don't store anything
+                // in case this was an error.
+                break;
+              else {
+                childBaseVer = await childBaseVer.text();
+                if (childBaseVer) {
+                  if (!base.includes(childBaseVer)) {
+                    console.log(`GetVersionBases: Logging Base ${childBaseVer} for version ${baseVer}`);
+                    await idbKeyval.set(CompositeKey('_BASE', baseVer), childBaseVer, customStore);
+                    base.push(childBaseVer);
+                    baseVer = childBaseVer;
+                  } else {
+                    await idbKeyval.set(CompositeKey('_BASE', baseVer), '', customStore);
+                    break; // no circular references, thanks
+                  }
+                } else {
+                  await idbKeyval.set(CompositeKey('_BASE', baseVer), '', customStore);
+                  break; // no further bases
+                }
+              }
+            }
+          } while(baseVer);
+        } catch (e) {
+          // connection error, don't log anything or continue
+          console.error(`GetVersionBases: ${version} (baseVer: ${baseVer}) - ${e}`);
+          throw e;
+        }
+        if (!(VersionBases instanceof Object))
+          VersionBases = {};
+        VersionBases[version] = [...base];
+        return base;
+      };
+
+      var InstallProgram = async (full = false, version = '{{{ PACKAGE_VERSION }}}', checkServer = false, progressCallback = null, finishedCallback = null) => {
+        let bases = await GetVersionBases(version);
+        let files = full ? [...InstallFiles, ...FullInstallFiles] : [...InstallFiles];
+
+        // Using es6-promise-pool to rate-limit file requests.
+        // This works like a loop: when the Pool requests a promise,
+        // it produces promises based on the count index.
+        let count = 0;
+        let promiseProducer = () => {
+          if (count < files.length) {
+            let basesRecursive = [...bases]; // first entry is our own version
+            return CheckInstallProgramFile(files[count++], basesRecursive.shift(), basesRecursive, [...bases], checkServer)
+            .then(_ => { 
+              if (typeof progressCallback === 'function')
+                progressCallback(files[count], count, files.length);
+            });
+          } else
+            return null;
+        };
+
+        // Prime the progress callback with the first file
+        if (typeof progressCallback === 'function')
+          progressCallback(files[count], count, files.length);
+
+        let pool = new PromisePool(promiseProducer, 3);
+
+        return pool.start()
+        .then(_ => {
+          if (typeof finishedCallback === 'function')
+            finishedCallback();
         })
-        .then (_ => SyncFS(true))
-        .catch (err => console.log("ResetProgramData: " + err))
-        .finally(_ => {
-          if (typeof callback === 'function')
-            callback();
-          if (manageLoop && Module['calledRun'])
-            ResumeLoop();
+        .catch(e => { console.error(`InstallProgram: ${e}`); throw e; });
+      };
+
+      // UX Function
+      var UXInstallProgram = (full, version = '{{{ PACKAGE_VERSION }}}') => {
+        HideContent();
+        // TODO checkServer -- check for internet connection
+        return InstallProgram(full, version, true, (name, curVal, maxVal) => {
+          // Progress callback
+          let percent = Math.round(curVal/maxVal*100);
+          if (typeof name === 'undefined') {
+            console.log(`InstallProgram: Finished install (${curVal}/${maxVal}`);
+            StatusElement.innerText = `Finishing...`;
+          } else {
+            console.log(`InstallProgram: Retrieving ${name} (${curVal}/${maxVal})`)
+            StatusElement.innerText = `${full ? 'Installing' : 'Verifying'} ${name.split('/').pop()}...`;
+          }
+          ProgressElement.value = percent;
+        },
+        () => {
+          // Finished callback
+          if (full) {
+            alert('Finished install.');
+            window.location.reload();
+          } else {
+            StatusElement.innerText = '';
+            ProgressElement.value = 0;
+          }
         });
       };
+
+      var RetrieveInstalledFile = async (fn, version = '{{{ PACKAGE_VERSION }}}', checkServer = false) => {
+        // If IDB file exists, will return the IDB file without checking
+        // the web server.
+        let bases = await GetVersionBases(version);
+        return CheckInstallProgramFile(fn, version, [...bases], [...bases], checkServer);
+      };
+
+      var WriteInstalledFileToFS = async (fn, version = '{{{ PACKAGE_VERSION }}}', checkServer = false) => {
+        let idbFile = await RetrieveInstalledFile(fn, version, checkServer);
+          if (idbFile instanceof Object && 'contents' in idbFile && idbFile['contents'])
+            return WriteFS('/', fn, idbFile['contents']);
+      };
+
+      var DeleteInstalledFileFromFS = async (fn, persistentFilenames = []) => {
+        if (!persistentFilenames.includes(fn))
+          return DeleteFS(fn);
+      };
+
+      ////////////////////////////////
+      // Addons
+      ////////////////////////////////
 
       var ExtractZipFile = (destBaseDir, buffer) => {
         return JSZip.loadAsync(buffer)
@@ -1199,6 +1537,18 @@
         Module['alive'].fill(true);
       };
 
+      var GetWasm = async (version = '{{{ PACKAGE_VERSION }}}') => {
+        let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+        let wasm = await idbKeyval.get(CompositeKey('srb2.wasm', version), customStore);
+        if (!(wasm instanceof Object) || !('contents' in wasm) || !wasm['contents']) {
+          let msg = 'Runtime Error: Program not found!\n\nIf you see this error again, try resetting your program data under Settings > Storage.';
+          console.log(msg);
+          alert(msg);
+          window.location.reload();
+        } else
+          Module['wasmBinary'] = wasm['contents'];
+      };
+
       var Module = {
         arguments: [],
 
@@ -1207,6 +1557,8 @@
         alive: [], // part of crash handler
 
         aliveId: [],
+
+        wasmBinary: null,
 
         preRun: [() => {
           BuildControlArguments();
@@ -1220,10 +1572,17 @@
           addRunDependency('mount-filesystem');
           InitializeFS()
           .then(()=>{
-            if (!UserAgentIsiOS())
-              return CheckDownloadFileToFS('assets/music.dta');
-            else
-              Promise.resolve();
+            return Promise.all(StartupFiles.map(async fn => {
+              try {
+                await WriteInstalledFileToFS(fn, '{{{ PACKAGE_VERSION }}}', false);
+              } catch (e) {
+                let msg = `Runtime Error: File ${fn} not found!\n\nIf you see this error again, try resetting your program data.`;
+                console.error(msg);
+                alert(msg);
+                window.location.reload();
+                return Promise.reject();
+              }
+            }));
           })
           .then(LoadAddons)
           .finally(() => removeRunDependency('mount-filesystem'));
