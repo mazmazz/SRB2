@@ -2229,11 +2229,7 @@ void I_StartupTimer(void)
 void I_Sleep(void)
 {
 	if (cv_sleep.value != -1)
-#ifdef __EMSCRIPTEN__
-		emscripten_sleep(cv_sleep.value);
-#else
 		SDL_Delay(cv_sleep.value);
-#endif
 }
 
 #ifdef NEWSIGNALHANDLER
@@ -2327,10 +2323,7 @@ INT32 I_StartupSystem(void)
 	SDL_version SDLlinked;
 	SDL_VERSION(&SDLcompiled)
 	SDL_GetVersion(&SDLlinked);
-#ifdef __EMSCRIPTEN__
-	// Dodges an "unreachable executed" in ASYNCIFY
-	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0");
-#endif
+
 	I_StartupConsole();
 	I_SetupSignalHandler();
 	I_OutputMsg("Compiled for SDL version: %d.%d.%d\n",

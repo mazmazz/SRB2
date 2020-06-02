@@ -102,6 +102,9 @@ NOHS=1
 NOOBJDUMP=1
 LOWMEMORY=1
 FWAD=1
+ifndef NOASYNCIFY
+HAVE_ASYNCIFY=1
+endif
 include emscripten/Makefile.cfg
 endif
 

@@ -474,12 +474,18 @@
       };
 
       var StartLoad = async () => {
+        // TODO multiple binaries
+        ActiveVersion = '{{{ PACKAGE_VERSION }}}';
+
         SaveFormToStorage(ControlsFormElement);
         window.removeEventListener('focus', CheckVersion, false);
         await UXInstallProgram(false); // hides the UI
         await GetWasm();
-        var script = document.createElement('script');
-        script.setAttribute('src','./srb2.js');
+        //let scriptSrc = await GetJs(ActiveVersion);
+        //let scriptSrc = `data/${ActiveVersion}/srb2.js?v={{{ VERSION }}}`;
+        let scriptSrc = 'srb2.js';
+        let script = document.createElement('script');
+        script.setAttribute('src',scriptSrc);
         document.head.appendChild(script);
         document.body.classList.add('calledRun');
       };
@@ -696,7 +702,7 @@
             console.log(`SRB2 Program Version: {{{ PACKAGE_VERSION }}}`);
             if (data.trim() && data.trim() !== "{{{ PACKAGE_VERSION }}}") {
               console.log(`New Program Version Found: ${data}`);
-              alert(`SRB2 Version ${data} is released! The game will be updated when you ${userAgentIsMobile() ? 'tap' : 'click'} "Play".`);
+              alert(`SRB2 Version ${data} is released! The game will be updated when you ${UserAgentIsMobile() ? 'tap' : 'click'} "Play".`);
               localStorage.setItem('srb2program_update', (1).toString());
             }
           })
@@ -912,6 +918,21 @@
         // Files are listed as [fullPath]: {timestamp, mode, contents}
         if (typeof deletePath === 'undefined')
           throw 'DeleteFS: Must specify a path';
+
+        if (FS) {
+          try {
+            FS.unlink(`${deletePath}`);
+          } catch (e) { 
+            console.error(`DeleteFS: ${deletePath} - `, e);
+          }
+          
+          return SyncFS().then(_ => {
+            if (typeof callback === 'function')
+              callback();
+            if (manageLoop && Module['calledRun'])
+              ResumeLoop();
+          });
+        }
         
         let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
 
@@ -994,6 +1015,8 @@
       ];
 
       var CompositeKey = (fn, version) => `data/${version}/${fn}`;
+
+      var StripLeadingSeparators = (fn) => fn.replace(/^\/*/, '');
 
       // !!!!!!!!!! OLD, DEPRECATED !!!!!!!!!!
       var CheckDownloadFileToFS = (url, destBaseDir) => {
@@ -1304,7 +1327,7 @@
             alert('Finished install.');
             window.location.reload();
           } else {
-            StatusElement.innerText = '';
+            StatusElement.innerText = 'Loading...';
             ProgressElement.value = 0;
           }
         });
@@ -1537,6 +1560,20 @@
         Module['alive'].fill(true);
       };
 
+      var GetJs = async (version = '{{{ PACKAGE_VERSION }}}') => {
+        let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+        let js = await idbKeyval.get(CompositeKey('srb2.js', version), customStore);
+        if (!(js instanceof Object) || !('contents' in js) || !js['contents']) {
+          let msg = 'Runtime Error: Program JS not found!\n\nIf you see this error again, try resetting your program data under Settings > Storage.';
+          console.log(msg);
+          alert(msg);
+          window.location.reload();
+        } else {
+          let string = new TextDecoder('utf-8').decode(js['contents']);
+          return `data:text/javascript;base64,${btoa(string)}`;
+        }
+      };
+
       var GetWasm = async (version = '{{{ PACKAGE_VERSION }}}') => {
         let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
         let wasm = await idbKeyval.get(CompositeKey('srb2.wasm', version), customStore);
@@ -1549,6 +1586,8 @@
           Module['wasmBinary'] = wasm['contents'];
       };
 
+      var ActiveVersion;
+
       var Module = {
         arguments: [],
 
@@ -1559,6 +1598,11 @@
         aliveId: [],
 
         wasmBinary: null,
+
+        StripLeadingSeparators: StripLeadingSeparators,
+        WriteInstalledFileToFS: WriteInstalledFileToFS,
+        DeleteInstalledFileFromFS: DeleteInstalledFileFromFS,
+        PersistentLumpFiles: PersistentLumpFiles,
 
         preRun: [() => {
           BuildControlArguments();
@@ -1717,6 +1761,22 @@
       ////////////////////////////////
       // Pause/Resume
       ////////////////////////////////
+
+      var SuspendAudioContext = () => {
+        if ('SDL2' in Module 
+            && Module['SDL2'] instanceof object 
+            && 'audioContext' in Module['SDL2'] 
+            && Module['SDL2'].audioContext)
+          Module['SDL2'].audioContext.suspend();
+      };
+
+      var ResumeAudioContext = () => {
+        if ('SDL2' in Module 
+            && Module['SDL2'] instanceof object 
+            && 'audioContext' in Module['SDL2'] 
+            && Module['SDL2'].audioContext)
+          Module['SDL2'].audioContext.resume();
+      };
 
       var PauseLoop = () => {
         if (Module['calledRun'])

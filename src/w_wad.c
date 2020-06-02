@@ -33,6 +33,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #define ZWAD
 
 #ifdef ZWAD
@@ -393,6 +397,28 @@ FILE *W_OpenFileLump (UINT16 wad, UINT16 lump)
 	{
 		if(!l->handle)
 		{
+#if defined(__EMSCRIPTEN__) && defined(HAVE_ASYNCIFY)
+			// Retrieve the file from IDB or server
+			EM_ASM({
+				// Strip leading path separators
+				Module['fsDone'] = false;
+				let fn = Module['StripLeadingSeparators'](UTF8ToString($0));
+				if (Module['PersistentLumpFiles'].includes(fn))
+					Module['fsDone'] = true;
+				else
+					Module['WriteInstalledFileToFS'](fn, ActiveVersion, true)
+					.then(_ => { Module['fsDone'] = true; });
+			}, l->filename);
+
+			for(;;)
+			{
+				INT32 x = EM_ASM_INT({ return Module['fsDone']; });
+				if (x)
+					break;
+				I_Sleep();
+			}
+#endif
+
 			if ((l->handle = fopen(l->filename, "rb")) == NULL)
 				return NULL;
 			CONS_Debug(DBG_MEMORY, "W_OpenFileLump: Loaded %s at: %s\n", l->name, l->filename);
@@ -410,6 +436,28 @@ void W_CloseFileLump (UINT16 wad, UINT16 lump)
 		fclose((wadfiles[wad]->lumpinfo + lump)->handle);
 		(wadfiles[wad]->lumpinfo + lump)->handle = 0;
 		CONS_Debug(DBG_MEMORY, "W_CloseFileLump: Closed %s\n", (wadfiles[wad]->lumpinfo + lump)->name);
+
+#if defined(__EMSCRIPTEN__) && defined(HAVE_ASYNCIFY)
+		// Delete the file from IDB or server
+		EM_ASM({
+			// Strip leading path separators
+			Module['fsDone'] = false;
+			let fn = Module['StripLeadingSeparators'](UTF8ToString($0));
+			if (Module['PersistentLumpFiles'].includes(fn))
+				Module['fsDone'] = true;
+			else
+				Module['DeleteInstalledFileFromFS'](fn, PersistentLumpFiles)
+				.then(_ => { Module['fsDone'] = true; });
+		}, (wadfiles[wad]->lumpinfo + lump)->filename);
+
+		for(;;)
+		{
+			INT32 x = EM_ASM_INT({ return Module['fsDone']; });
+			if (x)
+				break;
+			I_Sleep();
+		}
+#endif
 	}
 }
 
