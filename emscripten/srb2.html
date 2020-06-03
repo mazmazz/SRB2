@@ -356,7 +356,7 @@
             </p>
             <details id="storageControls">
               <summary>Storage</summary>
-              <button class="blueButton" onclick="UXInstallProgram(true, '{{{ PACKAGE_VERSION }}}'); return false;">Full Install</button>
+              <button class="blueButton" onclick="UXInstallProgram(true, GetSelectedPackageVersion()); return false;">Full Install</button>
               <button class="yellowButton" onclick="DownloadFS(); return false;">Download User Data</button>
               <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
               <button onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
@@ -372,6 +372,12 @@
                 </p>
                 <input type="checkbox" id="shadow" checked/>
                 <label for="shadow">Render Shadows</label>
+              </p>
+              <p id="packageVersionRow">
+                <label for="packageVersion">Version</label>
+                <select id="packageVersion">
+                  <!-- {{{ PACKAGE_VERSION_LIST }}} -->
+                </select>
               </p>
               <p>
                 <label for="userArguments">Command Line</label><br/>
@@ -399,10 +405,7 @@
           <p>Follow SRB2:</p>
           <p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
           <p style="font-size:xx-small;">
-            SRB2 Version: v{{{ PACKAGE_VERSION }}}
-          </p>
-          <p style="font-size:xx-small;">
-            Web Version: {{{ VERSION_UX }}}
+            SRB2 Web Version: {{{ SHELL_VERSION }}}
           </p>
           <span id="newVersion"></span>
           <p style="font-size:xx-small;">
@@ -442,7 +445,17 @@
       var StatusElement = document.getElementById('status');
       var ProgressElement = document.getElementById('progress');
       var ControlsFormElement = document.getElementById('controlsForm');
+      var PackageVersionElement = document.getElementById('packageVersion');
       var AddonFields = 0;
+
+      var GetSelectedPackageVersion = _ => {
+        let val = '';
+        if (PackageVersionElement.selectedIndex > -1)
+          val = PackageVersionElement.options[PackageVersionElement.selectedIndex].value;
+        else
+          val = '{{{ PACKAGE_VERSION }}}';
+        return val;
+      };
 
       var DeleteNode = (node) => {
         node.querySelectorAll('*').forEach(n => n.remove());
@@ -474,16 +487,13 @@
       };
 
       var StartLoad = async () => {
-        // TODO multiple binaries
-        ActiveVersion = '{{{ PACKAGE_VERSION }}}';
+        PackageVersion = GetSelectedPackageVersion();
 
         SaveFormToStorage(ControlsFormElement);
         window.removeEventListener('focus', CheckVersion, false);
-        await UXInstallProgram(false); // hides the UI
-        await GetWasm();
-        //let scriptSrc = await GetJs(ActiveVersion);
-        //let scriptSrc = `data/${ActiveVersion}/srb2.js?v={{{ VERSION }}}`;
-        let scriptSrc = 'srb2.js';
+        await UXInstallProgram(false, PackageVersion); // hides the UI
+        await GetWasm(PackageVersion);
+        let scriptSrc = `data/${PackageVersion}/srb2.js`;
         let script = document.createElement('script');
         script.setAttribute('src',scriptSrc);
         document.head.appendChild(script);
@@ -504,22 +514,31 @@
       };
 
       var SaveFormToStorage = (form) => {
-        let inputs = form.querySelectorAll('input, textarea');
+        let inputs = form.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
           if (input.type !== 'file')
             localStorage.setItem(`${form.id}_${input.id}`, 
                                   input.type === 'checkbox' ? input.checked
+                                  : input.type === 'select-one' ? (input.selectedIndex > -1 ? input.options[input.selectedIndex].value : '')
                                   : input.value);
         });
       };
 
       var LoadFormFromStorage = (form) => {
-        let inputs = form.querySelectorAll('input, textarea');
+        let inputs = form.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
           let val = localStorage.getItem(`${form.id}_${input.id}`);
           if (val !== null && !input.readOnly && input.type !== 'file') {
             if (input.type === 'checkbox')
               input.checked = (val === "true");
+            else if (input.type === 'select-one')
+              for (let i = 0; i < input.length; i++) {
+                let option = input.options[i];
+                if (option.value === val) {
+                  input.selectedIndex = i;
+                  break;
+                }
+              }
             else
               input.value = val;
           }
@@ -537,7 +556,7 @@
       };
 
       var AddFormEventListeners = (form, event, callback, settings) => {
-        let inputs = form.querySelectorAll('input, textarea');
+        let inputs = form.querySelectorAll('input, textarea, select');
         inputs.forEach(input => input.addEventListener(event, callback, settings));
       };
 
@@ -609,6 +628,9 @@
 
         AddFormEventListeners(ControlsFormElement, 'input', HandleInput, false);
 
+        if (PackageVersionElement.length < 2)
+          document.getElementById('packageVersionRow').style.display = 'none';
+
         BuildControlArguments();
         document.getElementById("systemArguments").value = SystemArgumentsToString();
 
@@ -671,11 +693,11 @@
       var CheckVersion = () => {
         if (!document.body.classList.contains('calledRun')) {
           // Check Web Version
-          fetch("version.txt")
+          fetch("version-shell.txt")
           .then(response => response.text())
           .then(data => {
-            console.log(`SRB2 Web Version: {{{ VERSION }}}`);
-            if (data.trim() && data.trim() !== "{{{ VERSION_UX }}}") {
+            console.log(`SRB2 Web Version: {{{ SHELL_VERSION }}}`);
+            if (data.trim() && data.trim() !== "{{{ SHELL_VERSION }}}") {
               console.log(`New Web Version Found: ${data}`);
               // Don't refresh page more than once in a row.
               let updateCount = localStorage.getItem('srb2web_update');
@@ -683,8 +705,10 @@
                 localStorage.setItem('srb2web_update', (1).toString());
                 window.location.reload(true);
                 return Promise.resolve();
-              } else
-                document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
+              } else {
+                if (document.getElementById('newVersion'))
+                  document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
+              }
             }
             localStorage.setItem('srb2web_update', (0).toString());
           })
@@ -693,24 +717,32 @@
             // Don't check program version more than once a page load
             let updateCount = localStorage.getItem('srb2program_update');
             if (!updateCount || !parseInt(updateCount))
-              return fetch("version-program.txt")
+              return fetch("version-package.txt")
             else
               return Promise.reject("Already checked program version.");
           })
           .then(response => response.text())
           .then(data => {
-            console.log(`SRB2 Program Version: {{{ PACKAGE_VERSION }}}`);
-            if (data.trim() && data.trim() !== "{{{ PACKAGE_VERSION }}}") {
-              console.log(`New Program Version Found: ${data}`);
-              alert(`SRB2 Version ${data} is released! The game will be updated when you ${UserAgentIsMobile() ? 'tap' : 'click'} "Play".`);
-              localStorage.setItem('srb2program_update', (1).toString());
+            let previousDefaultPackageVersion = localStorage.getItem('srb2program_defaultversion');
+            console.log(`SRB2 Default Program Version: {{{ PACKAGE_VERSION }}}`);
+            if (data.trim() && previousDefaultPackageVersion && data.trim() !== previousDefaultPackageVersion) {
+              console.log(`New Default Program Version Found: ${data}`);
+              if (PackageVersionElement.length > 1 && confirm(`SRB2 Version ${data} is released! Do you want to switch to the new version?`)) {
+                for (let i = 0; i < PackageVersionElement.length; i++) {
+                  if (PackageVersionElement.options[i].value === data) {
+                    PackageVersionElement.selectedIndex = i;
+                    SaveFormToStorage(ControlsFormElement);
+                    alert(`The new version will run when you ${UserAgentIsMobile() ? 'tap' : 'click'} "Play".`);
+                    break;
+                  }
+                }
+              }
             }
+            localStorage.setItem('srb2program_defaultversion', data);
           })
           .catch(err => {
-            console.log(`Error Checking New Version:`)
-            console.log(err);
+            console.log(`Error Checking New Version:`,err);
             localStorage.setItem('srb2web_update', (0).toString());
-            localStorage.setItem('srb2program_update', (0).toString());
           });
         }
       };
@@ -874,7 +906,7 @@
         if (typeof downloadPath === 'undefined')
           downloadPath = '/home/web_user/.srb2';
 
-        if (manageLoop && Module['calledRun'])
+        if (manageLoop && StartedMainLoop)
           PauseLoop();
 
         return SyncFS()
@@ -905,7 +937,7 @@
         .finally(_ => {
           if (typeof callback === 'function')
             callback();
-          if (manageLoop && Module['calledRun'])
+          if (manageLoop && StartedMainLoop)
             ResumeLoop();
         });
       };
@@ -929,14 +961,14 @@
           return SyncFS().then(_ => {
             if (typeof callback === 'function')
               callback();
-            if (manageLoop && Module['calledRun'])
+            if (manageLoop && StartedMainLoop)
               ResumeLoop();
           });
         }
         
         let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
 
-        if (manageLoop && Module['calledRun'])
+        if (manageLoop && StartedMainLoop)
           PauseLoop();
 
         return SyncFS()
@@ -956,7 +988,7 @@
         .finally(_ => {
           if (typeof callback === 'function')
             callback();
-          if (manageLoop && Module['calledRun'])
+          if (manageLoop && StartedMainLoop)
             ResumeLoop();
         });
       };
@@ -1061,7 +1093,7 @@
         let customStoreEmMetadata = new idbKeyval.Store('EM_PRELOAD_CACHE', 'METADATA', 1);
         let customStoreEmPackages = new idbKeyval.Store('EM_PRELOAD_CACHE', 'PACKAGES', 1);
 
-        if (manageLoop && Module['calledRun'])
+        if (manageLoop && StartedMainLoop)
           PauseLoop();
 
         // Let these fail silently in case the keys do not exist.
@@ -1077,7 +1109,7 @@
 
         if (typeof callback === 'function')
           callback();
-        if (manageLoop && Module['calledRun'])
+        if (manageLoop && StartedMainLoop)
           ResumeLoop();
         
         return Promise.resolve();
@@ -1511,9 +1543,11 @@
       // Emscripten Module -- Runtime Parameters
       ////////////////////////////////
 
+      var StartedMainLoop = false;
       var StartedMainLoopCallback = () => {
         document.getElementById('canvas').style.zIndex = "9999";
         document.body.classList.add('startedMainLoop');
+        StartedMainLoop = true;
         // go scorched earth to save memory
         DeleteNode(document.getElementById('content'));
       };
@@ -1530,7 +1564,7 @@
               msg += `\n\n${e.stack}`;
             else
               msg += `\n\n${e}`;
-            msg += `\n\nSRB2 Version: {{{ PACKAGE_VERSION }}}\n\nWeb Version: {{{ VERSION_UX }}}\n\n${navigator.userAgent}`
+            msg += `\n\nSRB2 Version: ${PackageVersion}\n\nSRB2 Web Version: {{{ SHELL_VERSION }}}\n\n${navigator.userAgent}`
             console.error(msg);
             PauseLoop();
             try {
@@ -1586,7 +1620,7 @@
           Module['wasmBinary'] = wasm['contents'];
       };
 
-      var ActiveVersion;
+      var PackageVersion;
 
       var Module = {
         arguments: [],
@@ -1618,7 +1652,7 @@
           .then(()=>{
             return Promise.all(StartupFiles.map(async fn => {
               try {
-                await WriteInstalledFileToFS(fn, '{{{ PACKAGE_VERSION }}}', false);
+                await WriteInstalledFileToFS(fn, PackageVersion, false);
               } catch (e) {
                 let msg = `Runtime Error: File ${fn} not found!\n\nIf you see this error again, try resetting your program data.`;
                 console.error(msg);

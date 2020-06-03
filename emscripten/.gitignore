@@ -1,0 +1,6 @@
+data
+gtag.txt
+landing/*
+!landing/assets
+*.zip
+__pycache__

@@ -406,7 +406,7 @@ FILE *W_OpenFileLump (UINT16 wad, UINT16 lump)
 				if (Module['PersistentLumpFiles'].includes(fn))
 					Module['fsDone'] = true;
 				else
-					Module['WriteInstalledFileToFS'](fn, ActiveVersion, true)
+					Module['WriteInstalledFileToFS'](fn, PackageVersion, true)
 					.then(_ => { Module['fsDone'] = true; });
 			}, l->filename);
 

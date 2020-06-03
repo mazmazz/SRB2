@@ -136,6 +136,11 @@ def fwad_fn(fn):
 	fwad_name = f'{split_name[0]}-f{ext}'
 	return os.path.join(os.path.dirname(fn) or '.', fwad_name)
 
+def convert_fwad(in_file, out_file, dump=None, md5=False, noindex=False):
+	a = WAD(in_file)
+	a.dump(dump, md5=md5, use_index=(not noindex))
+	a.save_fwad(out_file, md5=md5, use_index=(not noindex))
+
 if __name__ == '__main__':
 	import argparse
 	parser = argparse.ArgumentParser(description='Convert a WAD to a flat-file WAD.')
@@ -147,6 +152,4 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 	
-	a = WAD(args.in_file)
-	a.dump(args.dump, md5=args.md5, use_index=(not args.noindex))
-	a.save_fwad(args.out_file, md5=args.md5, use_index=(not args.noindex))
+	convert_fwad(**vars(args))
