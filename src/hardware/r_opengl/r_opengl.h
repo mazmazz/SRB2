@@ -27,6 +27,10 @@
 #pragma warning(disable : 4214 4244)
 #endif
 
+#ifdef HAVE_REGAL
+#include <GL/Regal.h>
+#endif
+
 #include "SDL_opengl.h" //Alam_GBC: Simple, yes?
 
 #ifdef _MSC_VER

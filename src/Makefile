@@ -77,6 +77,7 @@
 #     Compile without libopenmpt, add 'NOOPENMPT=1'
 #     Compile with S_FMOD3D, add 'FMOD=1' (WIP)
 #     Compile with S_OPENAL, add 'OPENAL=1' (WIP)
+#     Compile with REGAL, add 'REGAL=1' (WIP)
 #     To link with the whole SDL_Image lib to load Icons, add 'SDL_IMAGE=1' but it isn't not realy needed
 #     To link with SDLMain to hide console or make on a console-less binary, add 'SDLMAIN=1'
 #
@@ -193,6 +194,9 @@ ifdef LINUX
 UNIXCOMMON=1
 ifndef NOGME
 HAVE_LIBGME=1
+endif
+ifdef REGAL
+HAVE_REGAL=1
 endif
 endif
 
@@ -315,6 +319,20 @@ LIBS+=$(PNG_LDFLAGS)
 CFLAGS+=$(PNG_CFLAGS)
 
 OBJS+=$(OBJDIR)/apng.o
+endif
+
+ifdef HAVE_REGAL
+OPTS+=-DHAVE_REGAL
+OPTS+=-DREGAL_DECL_EXPORT=0
+OPTS+=-DREGAL_SYS_WGL_DECLARE_WGL=0
+
+# TODO not sure if REGAL is available on pkgconfig?
+REGAL_PKGCONFIG?=regal
+REGAL_CFLAGS?=$(shell $(PKG_CONFIG) $(REGAL_PKGCONFIG) --cflags)
+REGAL_LDFLAGS?=$(shell $(PKG_CONFIG) $(REGAL_PKGCONFIG) --libs)
+
+LIBS+=$(REGAL_LDFLAGS)
+CFLAGS+=$(REGAL_CFLAGS)
 endif
 
 ifdef HAVE_LIBGME
