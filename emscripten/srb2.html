@@ -448,6 +448,8 @@
       var PackageVersionElement = document.getElementById('packageVersion');
       var AddonFields = 0;
 
+      var URLParams;
+
       var GetSelectedPackageVersion = _ => {
         let val = '';
         if (PackageVersionElement.selectedIndex > -1)
@@ -516,18 +518,24 @@
       var SaveFormToStorage = (form) => {
         let inputs = form.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
-          if (input.type !== 'file')
-            localStorage.setItem(`${form.id}_${input.id}`, 
-                                  input.type === 'checkbox' ? input.checked
-                                  : input.type === 'select-one' ? (input.selectedIndex > -1 ? input.options[input.selectedIndex].value : '')
-                                  : input.value);
+          let val = input.type === 'checkbox' ? input.checked
+                    : input.type === 'select-one' ? (input.selectedIndex > -1 ? input.options[input.selectedIndex].value : '')
+                    : input.value
+          // Don't save the field if it's specified in the URL query string,
+          // because that's a forced override.
+          if (input.type !== 'file' && (!URLParams.has(input.id) || URLParams.get(input.id) != val))
+            localStorage.setItem(`${form.id}_${input.id}`, val);
         });
       };
 
       var LoadFormFromStorage = (form) => {
         let inputs = form.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
-          let val = localStorage.getItem(`${form.id}_${input.id}`);
+          let val;
+          if(URLParams.has(input.id))
+            val = URLParams.get(input.id);
+          else
+            val = localStorage.getItem(`${form.id}_${input.id}`);
           if (val !== null && !input.readOnly && input.type !== 'file') {
             if (input.type === 'checkbox')
               input.checked = (val === "true");
@@ -546,11 +554,13 @@
       };
 
       var HandleInput = (e) => {
-        if (e.target.type !== 'file') {
-          localStorage.setItem(`${ControlsFormElement.id}_${e.target.id}`, 
-                              e.target.type === 'checkbox' ? e.target.checked
-                              : e.target.value);
-        }
+        let val = e.target.type === 'checkbox' ? e.target.checked
+                  : e.target.type === 'select-one' ? (e.target.selectedIndex > -1 ? e.target.options[e.target.selectedIndex].value : '')
+                  : e.target.value
+        // Don't save the field if it's specified in the URL query string,
+        // because that's a forced override.
+        if (e.target.type !== 'file' && (!URLParams.has(e.target.id) || URLParams.get(e.target.id) != val))
+          localStorage.setItem(`${ControlsFormElement.id}_${e.target.id}`, val);
         BuildControlArguments();
         document.getElementById("systemArguments").value = SystemArgumentsToString();
       };
@@ -616,6 +626,8 @@
       };
 
       var InitializeFormFields = () => {
+        URLParams = new URLSearchParams(window.location.search);
+
         LoadFormFromStorage(ControlsFormElement);
 
         // By default, mobile phones should run at 200p.
