@@ -801,7 +801,15 @@ Rloadflats (INT32 i, INT32 w)
 			patch->lump = texstart + j;
 			patch->flip = 0;
 
+#ifdef LOWMEMORY
+			// This may present a performance issue with adding wadfiles
+			// because this method is called at each ADDFILE.
+			// If there's a way to only do this during game startup,
+			// then do so.
+			Z_Free(flatlump);
+#else
 			Z_Unlock(flatlump);
+#endif
 
 			texturewidth[i] = texture->width;
 			textureheight[i] = texture->height << FRACBITS;
@@ -902,7 +910,14 @@ Rloadtextures (INT32 i, INT32 w)
 			patch->lump = texstart + j;
 			patch->flip = 0;
 
+#ifdef LOWMEMORY
+			// Consider Z_ChangeTag PU_LEVEL instead.
+			// This may present a performance issue with adding wadfiles
+			// because this method is called at each ADDFILE.
+			Z_Free(patchlump);
+#else
 			Z_Unlock(patchlump);
+#endif
 
 			texturewidth[i] = texture->width;
 			textureheight[i] = texture->height << FRACBITS;
