@@ -130,10 +130,12 @@ void W_Shutdown(void)
 		{
 			Z_Free(wad->lumpinfo[wad->numlumps].longname);
 			Z_Free(wad->lumpinfo[wad->numlumps].fullname);
+#ifdef FWAD
 			if (wad->lumpinfo[wad->numlumps].filename)
 				Z_Free(wad->lumpinfo[wad->numlumps].filename);
 			if (wad->lumpinfo[wad->numlumps].handle)
 				fclose(wad->lumpinfo[wad->numlumps].handle);
+#endif
 		}
 
 		Z_Free(wad->lumpinfo);
@@ -483,7 +485,11 @@ void W_CloseAllFileLumps (boolean (*callback)(UINT16, UINT16))
 
 /** Create a lumpinfo_t array for a WAD file.
  */
-static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, UINT8* flatfile, const char* filename)
+static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, 
+#ifdef FWAD
+								   UINT8* flatfile,
+#endif
+								   const char* filename)
 {
 	UINT16 numlumps = *nlmp;
 	lumpinfo_t* lumpinfo;
@@ -495,7 +501,9 @@ static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, UINT8* flatfile, 
 	filelump_t *fileinfo;
 	void *fileinfov;
 
+#ifdef FWAD
 	*flatfile = 0;
+#endif
 
 	// read the header
 	if (File_Read(&header, 1, sizeof header, handle) < sizeof header)
@@ -542,9 +550,10 @@ static lumpinfo_t* ResGetLumpsWad (void* handle, UINT16* nlmp, UINT8* flatfile, 
 	{
 		lump_p->position = LONG(fileinfo->filepos);
 		lump_p->size = lump_p->disksize = LONG(fileinfo->size);
+#ifdef FWAD
 		lump_p->filename = 0;
 		lump_p->handle = 0;
-#ifdef FWAD
+
 		if (*flatfile)
 		{
 			// we assume that a lump exists as a file in ./_{wadname}/{i}_{lumpname}
@@ -780,8 +789,10 @@ static lumpinfo_t* ResGetLumpsZip (void* handle, UINT16* nlmp)
 		lump_p->position = zentry.offset; // NOT ACCURATE YET: we still need to read the local entry to find our true position
 		lump_p->disksize = zentry.compsize;
 		lump_p->size = zentry.size;
+#ifdef FWAD
 		lump_p->filename = 0;
 		lump_p->handle = 0;
+#endif
 
 		fullname = malloc(zentry.namelen + 1);
 		if (File_GetString(fullname, zentry.namelen + 1, handle) != fullname)
