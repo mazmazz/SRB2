@@ -832,6 +832,8 @@
         return arr.join('/');
       };
 
+      let TypedArrayToBuffer = (array) => array.buffer.slice(array.byteOffset, array.byteLength + array.byteOffset);
+
       // iOS Safari does not implement Blob.arrayBuffer(), so let's
       // do it ourselves.
       // https://gist.github.com/hanayashiki/8dac237671343e7f0b15de617b0051bd
@@ -936,7 +938,7 @@
                   // JSZip creates nested folders automatically.
                   // Just iterate over files.
                   if ('contents' in val && val.contents)
-                    return zip.file(key.replace('/home/web_user/',''), val.contents, {date: new Date(val.timestamp)});
+                    return zip.file(key.replace('/home/web_user/',''), TypedArrayToBuffer(val.contents), {date: new Date(val.timestamp)});
                 })
               );
           });
