@@ -31,6 +31,9 @@
 #include "r_patch.h"
 #include "r_sky.h"
 #include "r_draw.h"
+#ifdef LOWMEMORY
+#include "r_bsp.h" // cleardrawsegs
+#endif
 
 #include "s_sound.h"
 #include "st_stuff.h"
@@ -3511,6 +3514,8 @@ boolean P_LoadLevel(boolean fromnetsave)
 
 #ifdef LOWMEMORY
 	Z_ForceFlushPatches();
+	cleardrawsegs = CLEARDRAWSEGSINTERVAL; // forces realloc of drawsegs
+	ds_p = drawsegs;
 #endif
 
 #ifdef FWAD

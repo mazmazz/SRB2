@@ -34,6 +34,10 @@ sector_t *backsector;
 drawseg_t *curdrawsegs = NULL; /**< This is used to handle multiple lists for masked drawsegs. */
 drawseg_t *drawsegs = NULL;
 drawseg_t *ds_p = NULL;
+size_t maxdrawsegs = 0;
+#ifdef LOWMEMORY
+UINT8 cleardrawsegs = 0;
+#endif
 
 // indicates doors closed wrt automap bugfix:
 INT32 doorclosed;
@@ -43,6 +47,15 @@ INT32 doorclosed;
 //
 void R_ClearDrawSegs(void)
 {
+#ifdef LOWMEMORY
+	// Decrease segs allocation to the next highest current interval
+	if (cleardrawsegs++ == CLEARDRAWSEGSINTERVAL)
+	{
+		maxdrawsegs = (((ds_p-drawsegs)/MAXDRAWSEGSINTERVAL)+1)*MAXDRAWSEGSINTERVAL;
+		drawsegs = Z_Realloc(drawsegs, maxdrawsegs*sizeof (*drawsegs), PU_STATIC, NULL);
+		cleardrawsegs = 0;
+	}
+#endif
 	ds_p = drawsegs;
 }
 

@@ -32,6 +32,12 @@ extern INT32 checkcoord[12][4];
 extern drawseg_t *curdrawsegs;
 extern drawseg_t *drawsegs;
 extern drawseg_t *ds_p;
+extern size_t maxdrawsegs;
+#ifdef LOWMEMORY
+extern UINT8 cleardrawsegs;
+#define CLEARDRAWSEGSINTERVAL 5
+#define MAXDRAWSEGSINTERVAL 64
+#endif
 extern INT32 doorclosed;
 
 // BSP?

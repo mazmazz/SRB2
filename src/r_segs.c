@@ -1620,7 +1620,6 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 	INT32 range;
 	vertex_t segleft, segright;
 	fixed_t ceilingfrontslide, floorfrontslide, ceilingbackslide, floorbackslide;
-	static size_t maxdrawsegs = 0;
 
 	maskedtextureheight = NULL;
 	//initialize segleft and segright
@@ -1633,7 +1632,11 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 	{
 		size_t curpos = curdrawsegs - drawsegs;
 		size_t pos = ds_p - drawsegs;
+#ifdef LOWMEMORY
+		size_t newmax = (maxdrawsegs+=MAXDRAWSEGSINTERVAL);
+#else
 		size_t newmax = maxdrawsegs ? maxdrawsegs*2 : 128;
+#endif
 		if (firstseg)
 			firstseg = (drawseg_t *)(firstseg - drawsegs);
 		drawsegs = Z_Realloc(drawsegs, newmax*sizeof (*drawsegs), PU_STATIC, NULL);
