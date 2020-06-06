@@ -47,7 +47,7 @@ class NamedStruct(object):
 		data = f.read(self._struct.size)
 		return self.unpack(data)
 
-class WAD(object):
+class FWAD(object):
 	_WAD_HEADER = NamedStruct((
 		('4s', 'magic'),
 		('l', 'numlumps'),
@@ -137,7 +137,7 @@ def fwad_fn(fn):
 	return os.path.join(os.path.dirname(fn) or '.', fwad_name)
 
 def convert_fwad(in_file, out_file, dump=None, md5=False, noindex=False):
-	a = WAD(in_file)
+	a = FWAD(in_file)
 	a.dump(dump, md5=md5, use_index=(not noindex))
 	a.save_fwad(out_file, md5=md5, use_index=(not noindex))
 
