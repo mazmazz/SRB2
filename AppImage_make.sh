@@ -9,6 +9,7 @@ set -e
 
 __BUILD_DIR=${1:-$PWD}
 __OUTPUT_FILENAME=${2:-$__PROGRAM_FILENAME.AppImage}
+__MAKE=${__MAKE:-make}
 __PROGRAM_NAME=${PROGRAM_NAME:-Sonic Robo Blast 2}
 __PROGRAM_DESCRIPTION=${PROGRAM_DESCRIPTION:-A 3D Sonic the Hedgehog fangame inspired by the original Sonic games on the Sega Genesis.}
 __PROGRAM_FILENAME=${PROGRAM_FILENAME:-lsdlsrb2}
@@ -40,7 +41,7 @@ mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
 # Copy program data
 echo "Packaging program data..."
 echo "Assuming executable name $__PROGRAM_FILENAME"
-cp -r staging/* AppDir/usr/bin/
+cp -fr staging/* AppDir/usr/bin/
 
 # Copy required dependencies
 __LDD_LIST=$(python3 "$__BUILD_DIR/../AppImage_prunedepends.py" "$__BUILD_DIR/bin/$__PROGRAM_FILENAME")
@@ -49,7 +50,7 @@ for path in "${paths[@]}";
 do
     if [ -f "$path" ]; then
         echo "Packaging dependency $(basename $path)...";
-        cp "$path" AppDir/lib/;
+        cp -f "$path" AppDir/lib/;
     else
         echo "Dependency $(basename $path) not found";
     fi;
@@ -59,9 +60,9 @@ cd AppDir
 
 # Copy icons
 echo "Packaging resources..."
-cp ../../srb2.png ./usr/share/icons/hicolor/256x256/apps/$__PROGRAM_FILENAME.png
-ln -s ./usr/share/icons/hicolor/256x256/apps/$__PROGRAM_FILENAME.png ./.DirIcon
-ln -s ./usr/share/icons/hicolor/256x256/apps/$__PROGRAM_FILENAME.png ./$__PROGRAM_FILENAME.png
+cp -f ../../srb2.png ./usr/share/icons/hicolor/256x256/apps/$__PROGRAM_FILENAME.png
+ln -sf ./usr/share/icons/hicolor/256x256/apps/$__PROGRAM_FILENAME.png ./.DirIcon
+ln -sf ./usr/share/icons/hicolor/256x256/apps/$__PROGRAM_FILENAME.png ./$__PROGRAM_FILENAME.png
 
 # Make desktop descriptor
 cat > ./usr/share/applications/$__PROGRAM_FILENAME.desktop <<EOF
@@ -73,16 +74,16 @@ Icon=${__PROGRAM_FILENAME}
 Exec=AppRun %F
 Categories=Game;
 EOF
-ln -s ./usr/share/applications/$__PROGRAM_FILENAME.desktop ./$__PROGRAM_FILENAME.desktop
+ln -sf ./usr/share/applications/$__PROGRAM_FILENAME.desktop ./$__PROGRAM_FILENAME.desktop
 
 # Make entry point
-echo -e \#\!$(dirname $SHELL)/sh >> ./AppRun
+echo -e \#\!$(dirname $SHELL)/sh > ./AppRun
 echo -e 'HERE="$(dirname "$(readlink -f "${0}")")"' >> ./AppRun
 echo -e 'SRB2WADDIR=$HERE/usr/bin LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/lib exec $HERE/usr/bin/'$__PROGRAM_FILENAME' "$@"' >> ./AppRun
 chmod +x ./AppRun
 
 cd ..
-mkdir package
+mkdir -p package 
 
 # Package AppImage
 echo "Packing AppImage $__OUTPUT_FILENAME"
