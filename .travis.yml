@@ -112,7 +112,8 @@ matrix:
           - CXXFLAGS="-march=nocona -mtune=haswell"
           - WFLAGS="-Wno-tautological-compare -Wno-error=implicit-fallthrough -Wno-implicit-fallthrough -Wno-error=format-overflow -Wno-error=format-truncation"
           - GCC81=1
-          - DPL_UPLOAD_ASSETS_FTP="${DPL_UPLOAD_ASSETS_FTP:-1}"
+          #- DPL_UPLOAD_ASSETS_FTP="${DPL_UPLOAD_ASSETS_FTP:-1}"
+          - DPL_UPLOAD_INSTALLER_FTP="${DPL_UPLOAD_INSTALLER_FTP:-1}"
           deploy:
           - provider: releases
             skip_cleanup: true
@@ -226,6 +227,23 @@ matrix:
           compiler: gcc-7
           env: WFLAGS="-Wno-tautological-compare -Wno-error=implicit-fallthrough -Wno-implicit-fallthrough" GCC72=1
           #gcc-7 (Ubuntu 7.2.0-1ubuntu1~14.04) 7.2.0 20170802
+        - os: linux
+          addons:
+            apt:
+              sources:
+              - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:stjr/srb2'
+              packages:
+              - libsdl2-mixer-dev
+              - libpng-dev
+              - libgl1-mesa-dev
+              - libgme-dev
+              - libopenmpt-dev
+              - p7zip-full
+              - gcc-8
+          compiler: gcc-8
+          env: WFLAGS="-Wno-tautological-compare -Wno-error=implicit-fallthrough -Wno-implicit-fallthrough -Wno-error=format-overflow -Wno-error=format-truncation" GCC81=1
+          #gcc-8 (Ubuntu 7.2.0-1ubuntu1~14.04) 8.1.0
         - os: linux
           compiler: clang
           #clang version 3.5.0 (tags/RELEASE_350/final)

@@ -229,7 +229,9 @@ if [[ "$__DPL_UPLOAD_INSTALLER" == "1" ]]; then
     7z a -sfx7z.sfx "../package/${DPL_PACKAGE_NAME}.exe" ./*;
     cd ..;
   else
-    echo "Building an installer is not supported on $TRAVIS_OS_NAME.";
+    # Get the binary filename by finding first file in bin/
+    PROGRAM_FILENAME=$(echo $(basename $(find ./bin ! -name *.debug -type f -print -quit)));
+    source "$TRAVIS_BUILD_DIR/AppImage_make.sh" "$PWD" "./package/$DPL_PACKAGE_NAME.AppImage";
   fi;
   if [ -d "package" ]; then
     if [[ "$__DPL_UPLOAD_INSTALLER_GITHUB" == "1" ]]; then

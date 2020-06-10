@@ -59,7 +59,7 @@
 : ${PROGRAM_NAME:=Sonic Robo Blast 2}
 : ${PROGRAM_VENDOR:=Sonic Team Junior}
 : ${PROGRAM_VERSION:=2.2.0}
-: ${PROGRAM_DESCRIPTION:=A free 3D Sonic the Hedgehog fangame closely inspired by the original Sonic games on the Sega Genesis.}
+: ${PROGRAM_DESCRIPTION:=A 3D Sonic the Hedgehog fangame inspired by the original Sonic games on the Sega Genesis.}
 : ${PROGRAM_FILENAME:=srb2}
 
 # Export Asset and Package Parameters for envsubst templating
