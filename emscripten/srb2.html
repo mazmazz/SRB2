@@ -341,7 +341,7 @@
             <p>
               <label for="resizeHeight">Resolution</label>
               <input type="range" id="resizeHeight" name="resizeHeight" oninput="ShowValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
-                min="200" max="900" value="400" step="100"/>
+                min="200" max="900" value="200" step="100"/>
               <span id="resizeHeightValue"></span>
             </p>
             <!--<p id="fullscreenRow">
@@ -630,9 +630,9 @@
 
         LoadFormFromStorage(ControlsFormElement);
 
-        // By default, mobile phones should run at 200p.
-        if (localStorage.getItem('controlsForm_resizeHeight') === null && UserAgentIsMobile())
-            document.getElementById('resizeHeight').value = 200;
+        // By default, mobile devices should run at 200p.
+        if (localStorage.getItem('controlsForm_resizeHeight') === null && !UserAgentIsMobile())
+            document.getElementById('resizeHeight').value = 400;
         
         ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
 
