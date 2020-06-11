@@ -46,7 +46,7 @@ def populate_shell_template(shell_version, gtag, package_versions, default_packa
 
     shell_data = shell_data.replace('{{{ PACKAGE_VERSION }}}', default_package_version)
     shell_data = shell_data.replace('{{{ SHELL_VERSION }}}', shell_version)
-    shell_data = shell_data.replace('<!-- {{{ GTAG }}} -->', gtag)
+    shell_data = shell_data.replace('<!-- {{{ GTAG }}} -->', gtag if gtag else '')
     shell_data = shell_data.replace('<!-- {{{ PACKAGE_VERSION_LIST }}} -->', '\n'.join(package_version_list))
 
     with open(landing_fn, 'w') as f:

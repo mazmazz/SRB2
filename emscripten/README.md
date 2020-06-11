@@ -6,6 +6,44 @@ game and handle system events.
 The shell is designed to be an entirely flat-file implementation. No server-side scripting is
 required to host the shell.
 
+# Quick Start
+
+Refer to this script to compile the game binary and package it for web.
+
+```sh
+# Install emscripten
+# https://emscripten.org/docs/getting_started/downloads.html
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+
+# Get repo source -- if starting from scratch
+git clone https://github.com/mazmazz/SRB2.git
+cd SRB2
+git checkout emscripten-new
+
+# Or, if you already have SRB2 source
+cd SRB2
+git remote add mazmazz https://github.com/mazmazz/SRB2.git
+git checkout mazmazz/emscripten-new
+
+# Build
+emmake make -C src/
+
+# Download assets into staging folder
+cd emscripten
+mkdir data
+wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-assets.7z
+wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-optional-assets-em.7z
+7z x ./srb2-2.2.4-assets.7z -o./data
+7z x ./srb2-2.2.4-optional-assets-em.7z -o./data
+
+# Run packaging script
+python3 ./emscripten-package.py 2.2.4 --ewad music.dta --out-zip srb2-web.zip
+```
+
 # File Structure
 
 ```
