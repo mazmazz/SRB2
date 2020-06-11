@@ -354,6 +354,10 @@
               <input type="checkbox" id="playSound" checked/>
               <label for="playSound">Play Sounds</label>
             </p>
+            <p>
+              <input type="checkbox" id="useMouse" checked/>
+              <label for="useMouse">Use Mouse</label>
+            </p>
             <details id="storageControls">
               <summary>Storage</summary>
               <button class="blueButton" onclick="UXInstallProgram(true, GetSelectedPackageVersion()); return false;">Full Install</button>
@@ -1522,6 +1526,13 @@
               );
               break;
             }
+            case 'useMouse': {
+              if (!input.checked)
+                args.push(
+                  '-nomouse'
+                );
+              break;
+            }
             case 'drawDistance': {
               args.push('+drawdist',DrawDistanceRange[input.value]);
               break;
@@ -1564,6 +1575,8 @@
         StartedMainLoop = true;
         // go scorched earth to save memory
         DeleteNode(document.getElementById('content'));
+        // unlock mouse by default
+        UnlockMouse(true);
       };
 
       var ErrorCrashed = false;
@@ -2008,6 +2021,23 @@
           document.documentElement.clientHeight > document.documentElement.clientWidth ||
           document.documentElement.clientWidth / document.documentElement.clientHeight <= 2.167);
       };
+
+      var LockMouse = () => {
+        if (StartedMainLoop)
+          Module.ccall('lock_mouse', null, [], []);
+      };
+      
+      var UnlockMouse = (force = false) => {
+        if (StartedMainLoop) {
+          if (force && document.pointerLockElement)
+            document.exitPointerLock(); // this method should fire again, so don't unlock_mouse right now
+          else if (!document.pointerLockElement)
+            Module.ccall('unlock_mouse', null, [], []);
+        }
+      }
+
+      window.addEventListener('mousedown', LockMouse, false);
+      document.addEventListener('pointerlockchange', _=>UnlockMouse(), false);
     </script>
     <!-- {{{ SCRIPT }}} -->
   </body>

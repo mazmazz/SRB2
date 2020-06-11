@@ -84,4 +84,8 @@ void SDLforceUngrabMouse(void);
 // Needed for some WIN32 functions
 extern SDL_Window *window;
 
+#ifdef __EMSCRIPTEN__
+void unlock_mouse(void);
+void lock_mouse(void);
+#endif
 #endif

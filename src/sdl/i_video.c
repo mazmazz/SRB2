@@ -123,11 +123,15 @@ static SDL_bool disable_fullscreen = SDL_FALSE;
 #ifdef __EMSCRIPTEN__
 // Fullscreen reacts weirdly to browser resize events
 #define USE_FULLSCREEN 0
+// use non-cvars for programmatic handling
+static boolean alwaysgrabmouse = false;
+static boolean usemouse = false;
+#define USE_MOUSEINPUT (!disable_mouse && cv_usemouse.value && usemouse && havefocus)
 #else
 #define USE_FULLSCREEN (disable_fullscreen||!allow_fullscreen)?0:cv_fullscreen.value
+#define USE_MOUSEINPUT (!disable_mouse && cv_usemouse.value && havefocus)
 #endif
 static SDL_bool disable_mouse = SDL_FALSE;
-#define USE_MOUSEINPUT (!disable_mouse && cv_usemouse.value && havefocus)
 #define MOUSE_MENU false //(!disable_mouse && cv_usemouse.value && menuactive && !USE_FULLSCREEN)
 #define MOUSEBUTTONS_MAX MOUSEBUTTONS
 
@@ -397,6 +401,10 @@ static boolean IgnoreMouse(void)
 {
 	if (cv_alwaysgrabmouse.value)
 		return false;
+#ifdef __EMSCRIPTEN__
+	if (alwaysgrabmouse)
+		return false;
+#endif
 	if (menuactive)
 		return !M_MouseNeeded();
 	if (paused || con_destlines || chat_on)
@@ -439,6 +447,28 @@ void I_UpdateMouseGrab(void)
 	&& USE_MOUSEINPUT && !IgnoreMouse())
 		SDLdoGrabMouse();
 }
+
+#ifdef __EMSCRIPTEN__
+void lock_mouse(void)
+{
+	if (!disable_mouse)
+	{
+		alwaysgrabmouse = true;
+		usemouse = true;
+		I_UpdateMouseGrab();
+	}
+}
+
+void unlock_mouse(void)
+{
+	if (!disable_mouse)
+	{
+		alwaysgrabmouse = false;
+		usemouse = false;
+		SDLforceUngrabMouse();
+	}
+}
+#endif
 
 static void VID_Command_NumModes_f (void)
 {
@@ -729,6 +759,11 @@ static void Impl_HandleKeyboardEvent(SDL_KeyboardEvent evt, Uint32 type)
 		return;
 	}
 	event.key = Impl_SDL_Scancode_To_Keycode(evt.keysym.scancode);
+#ifdef __EMSCRIPTEN__
+	// workaround for web browsers mapping escape to mouse unlock/exit fullscreen
+	if (event.key == '\\')
+		event.key = KEY_ESCAPE;
+#endif
 	if (event.key) D_PostEvent(&event);
 }
 
@@ -1335,7 +1370,11 @@ void I_StartupMouse(void)
 	}
 	else
 		firsttimeonmouse = SDL_FALSE;
-	if (cv_usemouse.value && !IgnoreMouse())
+	if (cv_usemouse.value && !IgnoreMouse()
+#ifdef __EMSCRIPTEN__
+		&& usemouse
+#endif
+	)
 		SDLdoGrabMouse();
 	else
 		SDLdoUngrabMouse();
