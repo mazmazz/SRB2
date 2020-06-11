@@ -1349,7 +1349,10 @@ enum
 static menuitem_t OP_VideoOptionsMenu[] =
 {
 	{IT_HEADER, NULL, "Screen", NULL, 0},
+#ifndef __EMSCRIPTEN__
+	// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 	{IT_STRING | IT_CALL,  NULL, "Set Resolution...",       M_VideoModeMenu,          6},
+#endif
 
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	{IT_STRING|IT_CVAR,      NULL, "Fullscreen",             &cv_fullscreen,         11},
@@ -3498,9 +3501,12 @@ boolean M_Responder(event_t *ev)
 			case KEY_F5: // Video Mode
 				if (modeattacking)
 					return true;
+#ifndef __EMSCRIPTEN__
+				// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 				M_StartControlPanel();
 				M_Options(0);
 				M_VideoModeMenu(0);
+#endif
 				return true;
 
 			case KEY_F6: // Empty
@@ -12516,6 +12522,8 @@ static void M_VideoModeMenu(INT32 choice)
 static void M_DrawMainVideoMenu(void)
 {
 	M_DrawGenericScrollMenu();
+#ifndef __EMSCRIPTEN__
+	// No video mode menu in emscripten
 	if (itemOn < 8) // where it starts to go offscreen; change this number if you change the layout of the video menu
 	{
 		INT32 y = currentMenu->y+currentMenu->menuitems[1].alphaKey*2;
@@ -12525,6 +12533,7 @@ static void M_DrawMainVideoMenu(void)
 		(SCR_IsAspectCorrect(vid.width, vid.height) ? V_GREENMAP : V_YELLOWMAP)|V_ALLOWLOWERCASE,
 			va("%dx%d", vid.width, vid.height));
 	}
+#endif
 }
 
 // Draw the video modes list, a-la-Quake

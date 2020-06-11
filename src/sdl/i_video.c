@@ -572,12 +572,14 @@ static void VID_Command_Mode_f (void)
 		return;
 	}
 
+#ifndef __EMSCRIPTEN__
 	modenum = atoi(COM_Argv(1));
 
 	if (modenum >= VID_NumModes())
 		CONS_Printf(M_GetText("Video mode not present\n"));
 	else
 		setmodeneeded = modenum+1; // request vid mode change
+#endif
 }
 
 #if defined(__ANDROID__)
