@@ -673,13 +673,13 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 				}))
 					break;
 
-				// viewport reporting is inconsistent between browsers.
-				// documentElement is the most consistent.
+				// viewport reporting is inconsistent between browsers,
+				// so get it from JS-side.
 				x = EM_ASM_INT({
-					return document.documentElement.clientWidth;
+					return GetViewportWidth();
 				});
 				y = EM_ASM_INT({
-					return document.documentElement.clientHeight;
+					return GetViewportHeight();
 				});
 #else
 				x = evt.data1;
@@ -2127,6 +2127,10 @@ void I_StartupGraphics(void)
 	}
 	if (graphics_started)
 		return;
+
+#ifdef __EMSCRIPTEN__
+	cv_vidwait.defaultvalue = "off";
+#endif
 
 	COM_AddCommand ("vid_nummodes", VID_Command_NumModes_f);
 	COM_AddCommand ("vid_info", VID_Command_Info_f);
