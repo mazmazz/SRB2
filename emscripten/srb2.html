@@ -158,6 +158,7 @@
           left: 0;
           width: 100% !important;
           height: 100% !important;
+          display: none;
       }
 
       #keyCapture {
@@ -234,7 +235,8 @@
         background-image: linear-gradient(yellow, orange);
         border: 0.1em orange solid;
         font-weight: bolder;
-        font-size: 1.1em;
+        font-size: 1.25em;
+        line-height: normal;
         cursor: pointer;
       }
 
@@ -245,6 +247,7 @@
 
       summary {
         margin: 0.75em 0;
+        font-size: 1.2em;
       }
 
       #addonFilesTemplate {
@@ -1580,6 +1583,7 @@
       var StartedMainLoop = false;
       var StartedMainLoopCallback = () => {
         document.getElementById('canvas').style.zIndex = "9999";
+        document.getElementById('canvas').style.display = "block";
         document.body.classList.add('startedMainLoop');
         StartedMainLoop = true;
         // go scorched earth to save memory
@@ -1834,7 +1838,7 @@
 
       var SuspendAudioContext = () => {
         if ('SDL2' in Module 
-            && Module['SDL2'] instanceof object 
+            && Module['SDL2'] instanceof Object 
             && 'audioContext' in Module['SDL2'] 
             && Module['SDL2'].audioContext)
           Module['SDL2'].audioContext.suspend();
@@ -1842,7 +1846,7 @@
 
       var ResumeAudioContext = () => {
         if ('SDL2' in Module 
-            && Module['SDL2'] instanceof object 
+            && Module['SDL2'] instanceof Object 
             && 'audioContext' in Module['SDL2'] 
             && Module['SDL2'].audioContext)
           Module['SDL2'].audioContext.resume();
@@ -1874,7 +1878,7 @@
 
           if (typeof(SDL2.audioContext) === 'undefined'
               || !SDL2
-              || !(SDL2 instanceof object)
+              || !(SDL2 instanceof Object)
               || !('audioContext' in SDL2)
               || !SDL2.audioContext 
               || SDL2.audioContext.status === 'closed') {
