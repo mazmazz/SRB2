@@ -1352,10 +1352,10 @@ static menuitem_t OP_VideoOptionsMenu[] =
 #ifndef __EMSCRIPTEN__
 	// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 	{IT_STRING | IT_CALL,  NULL, "Set Resolution...",       M_VideoModeMenu,          6},
-#endif
 
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	{IT_STRING|IT_CVAR,      NULL, "Fullscreen",             &cv_fullscreen,         11},
+#endif
 #endif
 	{IT_STRING | IT_CVAR, NULL, "Vertical Sync",                &cv_vidwait,         16},
 #ifdef HWRENDER
@@ -1365,7 +1365,11 @@ static menuitem_t OP_VideoOptionsMenu[] =
 #endif
 
 	{IT_HEADER, NULL, "Color Profile", NULL, 30},
+#ifdef __EMCSRIPTEN__
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Brightness (F5)", &cv_globalgamma,36},
+#else
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Brightness (F11)", &cv_globalgamma,36},
+#endif
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Saturation", &cv_globalsaturation, 41},
 	{IT_SUBMENU|IT_STRING, NULL, "Advanced Settings...",     &OP_ColorOptionsDef,  46},
 
@@ -3498,16 +3502,16 @@ boolean M_Responder(event_t *ev)
 				M_SetupNextMenu(&OP_SoundOptionsDef);
 				return true;
 
+#ifndef __EMSCRIPTEN__
 			case KEY_F5: // Video Mode
 				if (modeattacking)
 					return true;
-#ifndef __EMSCRIPTEN__
 				// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 				M_StartControlPanel();
 				M_Options(0);
 				M_VideoModeMenu(0);
-#endif
 				return true;
+#endif
 
 			case KEY_F6: // Empty
 				return true;
@@ -3527,7 +3531,11 @@ boolean M_Responder(event_t *ev)
 				M_QuitSRB2(0);
 				return true;
 
+#ifdef __EMSCRIPTEN__ // free F11 for browser fullscreen
+			case KEY_F5:
+#else
 			case KEY_F11: // Gamma Level
+#endif
 				CV_AddValue(&cv_globalgamma, 1);
 				return true;
 

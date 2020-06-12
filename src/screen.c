@@ -491,6 +491,9 @@ void SCR_SetDefaultMode(void)
 // Change fullscreen on/off according to cv_fullscreen
 void SCR_ChangeFullscreen(void)
 {
+#ifdef __EMSCRIPTEN__
+	return;
+#endif
 #ifdef DIRECTFULLSCREEN
 	// allow_fullscreen is set by VID_PrepareModeList
 	// it is used to prevent switching to fullscreen during startup

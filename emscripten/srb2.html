@@ -394,6 +394,7 @@
         <details id="help">
           <summary>Help</summary>
           <p>Game Notes:</p>
+          <p id="fullscreenNotice">Toggle fullscreen by pressing F11, which should enter your browser's fullscreen mode.</p>
           <p>No online multiplayer: to play netgames, download the PC version at <a href="//www.srb2.org" target="_blank">srb2.org</a>.</p>
           <p>Game controllers should work.</p>
           <p>If this page crashes, try closing background apps or restarting your browser.</p>
@@ -652,6 +653,13 @@
 
         if (UserAgentIsAndroid())
           document.getElementById("androidNotice").style.display = "block";
+        
+        if (UserAgentIsMobile()) {
+          if (IsStandalone())
+            document.getElementById("fullscreenNotice").style.display = "none";
+          else
+            document.getElementById("fullscreenNotice").innerText = "To play in fullscreen, try adding this web page to your Home Screen.";
+        }
 
         if (UserAgentIsiOS() && IsStandalone()) {
           document.getElementById("fullscreenRow").style.display = "none";
@@ -2056,8 +2064,19 @@
           return document.documentElement.clientHeight;
       };
 
+      var CaptureFullscreenKey = (e) => {
+        // Let F11 do fullscreen
+        if (e instanceof KeyboardEvent && e.key === 'F11')
+          e.stopPropagation();
+      };
+
       window.addEventListener('mousedown', LockMouse, false);
       document.addEventListener('pointerlockchange', _=>UnlockMouse(), false);
+      window.addEventListener('load', _=>{
+        document.addEventListener('keydown', CaptureFullscreenKey, true);
+        document.addEventListener('keyup', CaptureFullscreenKey, true);
+        document.addEventListener('keypress', CaptureFullscreenKey, true);
+      }, {once:true});
     </script>
     <!-- {{{ SCRIPT }}} -->
   </body>
