@@ -71,6 +71,9 @@
 #if SDL_VERSION_ATLEAST(2,0,0)
 #include "sdl/sdlmain.h" // JOYSTICK_HOTPLUG
 #endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #endif
 
 #ifdef PC_DOS
@@ -3498,16 +3501,15 @@ boolean M_Responder(event_t *ev)
 				M_SetupNextMenu(&OP_SoundOptionsDef);
 				return true;
 
+#ifndef __EMSCRIPTEN__ // switching keys around
 			case KEY_F5: // Video Mode
 				if (modeattacking)
 					return true;
-#ifndef __EMSCRIPTEN__
-				// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 				M_StartControlPanel();
 				M_Options(0);
 				M_VideoModeMenu(0);
-#endif
 				return true;
+#endif
 
 			case KEY_F6: // Empty
 				return true;
@@ -3527,7 +3529,11 @@ boolean M_Responder(event_t *ev)
 				M_QuitSRB2(0);
 				return true;
 
+#ifdef __EMSCRIPTEN__
+			case KEY_F5: // switching F11 to fullscreen
+#else
 			case KEY_F11: // Gamma Level
+#endif
 				CV_AddValue(&cv_globalgamma, 1);
 				return true;
 
@@ -3551,6 +3557,16 @@ boolean M_Responder(event_t *ev)
 		CON_Toggle();
 		return true;
 	}
+#ifdef __EMSCRIPTEN__
+	// Re-use as a fullscreen key
+	if (ch == KEY_F11)
+	{
+		EM_ASM({
+			ToggleFullscreen();
+		});
+		return true;
+	}
+#endif
 #endif
 
 	// Handle menuitems which need a specific key handling

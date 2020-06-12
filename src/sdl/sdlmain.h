@@ -87,5 +87,6 @@ extern SDL_Window *window;
 #ifdef __EMSCRIPTEN__
 void unlock_mouse(void);
 void lock_mouse(void);
+void update_fullscreen_status(boolean);
 #endif
 #endif

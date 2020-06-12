@@ -33,6 +33,9 @@
 #include "g_game.h" // ditto
 #include "p_local.h" // P_AutoPause()
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #if defined (USEASM) && !defined (NORUSEASM)//&& (!defined (_MSC_VER) || (_MSC_VER <= 1200))
 #define RUSEASM //MSC.NET can't patch itself
@@ -253,7 +256,7 @@ void SCR_SetResolution(void)
 	setrenderneeded = 0;
 }
 
-#if !defined(__ANDROID__) || defined(__EMSCIRPTEN__)
+#if !defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 void SCR_ResizeDimensions(INT32 *x, INT32 *y, INT32 resizeHeight)
 {
 	boolean portrait = (*x < *y);
@@ -491,6 +494,21 @@ void SCR_SetDefaultMode(void)
 // Change fullscreen on/off according to cv_fullscreen
 void SCR_ChangeFullscreen(void)
 {
+#ifdef __EMSCRIPTEN__
+	// This really needs to go in i_video.c
+	if (!M_CheckParm("-win") && allow_fullscreen && graphics_started)
+	{
+		if (cv_fullscreen.value)
+			EM_ASM({
+				EnterFullscreen();
+			});
+		else
+			EM_ASM({
+				ExitFullscreen();
+			});
+	}
+	return;
+#endif
 #ifdef DIRECTFULLSCREEN
 	// allow_fullscreen is set by VID_PrepareModeList
 	// it is used to prevent switching to fullscreen during startup

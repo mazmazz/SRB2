@@ -156,8 +156,10 @@
           position: fixed;
           top: 0;
           left: 0;
+          /* !important: Say NO to emscripten's fullscreen "magic" */
           width: 100% !important;
           height: 100% !important;
+          padding: 0 !important;
       }
 
       #keyCapture {
@@ -344,10 +346,6 @@
                 min="200" max="900" value="200" step="100"/>
               <span id="resizeHeightValue"></span>
             </p>
-            <!--<p id="fullscreenRow">
-              <input type="checkbox" id="fullscreen" checked/>
-              <label for="fullscreen">Fullscreen</label>
-            </p>-->
             <p>
               <input type="checkbox" id="playMusic" checked/>
               <label for="playMusic">Play Music</label>
@@ -355,6 +353,10 @@
               <label for="playSound">Play Sounds</label>
             </p>
             <p>
+              <span id="fullscreenRow">
+                <input type="checkbox" id="fullscreen" checked/>
+                <label for="fullscreen">Use Fullscreen</label>
+              </span>
               <input type="checkbox" id="useMouse" checked/>
               <label for="useMouse">Use Mouse</label>
             </p>
@@ -504,6 +506,9 @@
         script.setAttribute('src',scriptSrc);
         document.head.appendChild(script);
         document.body.classList.add('calledRun');
+
+        if (document.getElementById('fullscreen').checked)
+          EnterFullscreen(true);
       };
 
       var DrawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
@@ -1527,6 +1532,13 @@
               );
               break;
             }
+            case 'fullscreen': {
+              if (!input.checked)
+                args.push(
+                  '-win'
+                );
+              break;
+            }
             case 'useMouse': {
               if (!input.checked)
                 args.push(
@@ -1868,7 +1880,7 @@
               || !SDL2
               || !(SDL2 instanceof object)
               || !('audioContext' in SDL2)
-              || !SDL2.audioContext 
+              || !SDL2.audioContext
               || SDL2.audioContext.status === 'closed') {
             SDL2.audioContext = null;
             if (UserAgentIsiOS())
@@ -2034,7 +2046,46 @@
           else if (!document.pointerLockElement)
             Module.ccall('unlock_mouse', null, [], []);
         }
-      }
+      };
+
+      var EnterFullscreen = async (force = false) => {
+        // Don't bother with standalone, because they're already fullscreen
+        if (!IsStandalone() && (StartedMainLoop || force)) {
+          try {
+            await document.documentElement.requestFullscreen();
+          } catch (err) { 
+            console.log('EnterFullscreen error, passing...', err);
+          } // sometimes fails, but the viewport actually resizes
+        }
+      };
+
+      var ExitFullscreen = async (force = false) => {
+        if (!IsStandalone() && (StartedMainLoop || force)) {
+          try {
+            await document.exitFullscreen();
+          } catch (err) { 
+            console.log('ExitFullscreen error, passing...', err);
+          } // sometimes fails, but the viewport actually resizes
+        }
+      };
+
+      var ToggleFullscreen = async () => {
+        if (document.fullscreenElement === null)
+          await EnterFullscreen();
+        else
+          await ExitFullscreen();
+      };
+
+      var UpdateFullscreenStatus = () => {
+        Module.ccall('update_fullscreen_status', null, ['number'], [(document.fullscreenElement !== null)]);
+      };
+
+      var HandleFullscreenChange = () => {
+        if (StartedMainLoop) {
+          if (AllowWindowResize())
+            ChangeResolution();
+          UpdateFullscreenStatus();
+        }
       };
 
       var GetViewportWidth = () => {
@@ -2058,7 +2109,8 @@
       };
 
       window.addEventListener('mousedown', LockMouse, false);
-      document.addEventListener('pointerlockchange', _=>UnlockMouse(), false);
+      document.addEventListener('pointerlockchange', _=>UnlockMouse(), false); // don't send e
+      document.addEventListener('fullscreenchange', HandleFullscreenChange, false);
     </script>
     <!-- {{{ SCRIPT }}} -->
   </body>

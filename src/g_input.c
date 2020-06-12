@@ -1680,6 +1680,14 @@ void G_TouchNavigationPreset(void)
 		touchnavigation[KEY_CONSOLE].h = 24 * FRACUNIT;
 		touchnavigation[KEY_CONSOLE].hidden = false;
 	}
+
+#ifdef __EMSCRIPTEN__
+	// Fullscreen
+	touchnavigation[KEY_F11].w = 24 * FRACUNIT;
+	touchnavigation[KEY_F11].h = 24 * FRACUNIT;
+	touchnavigation[KEY_F11].x = touchnavigation[KEY_ENTER].x;
+	touchnavigation[KEY_F11].y = touchnavigation[KEY_ENTER].y + touchnavigation[KEY_ENTER].h + (8 * FRACUNIT);
+#endif
 }
 
 void G_DefineTouchButtons(void)

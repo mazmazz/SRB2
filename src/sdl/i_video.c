@@ -121,7 +121,7 @@ INT32 vid_opengl_state = 0;
 boolean allow_fullscreen = false;
 static SDL_bool disable_fullscreen = SDL_FALSE;
 #ifdef __EMSCRIPTEN__
-// Fullscreen reacts weirdly to browser resize events
+// controlled on JS-side
 #define USE_FULLSCREEN 0
 // use non-cvars for programmatic handling
 static boolean alwaysgrabmouse = false;
@@ -467,6 +467,11 @@ void unlock_mouse(void)
 		usemouse = false;
 		SDLforceUngrabMouse();
 	}
+}
+
+void update_fullscreen_status(boolean value)
+{
+	CV_StealthSetValue(&cv_fullscreen, value);
 }
 #endif
 
