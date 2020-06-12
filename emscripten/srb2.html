@@ -159,7 +159,7 @@
           left: 0;
           width: 100% !important;
           height: 100% !important;
-          display: none;
+          opacity: 0;
       }
 
       #keyCapture {
@@ -1584,7 +1584,7 @@
       var StartedMainLoop = false;
       var StartedMainLoopCallback = () => {
         document.getElementById('canvas').style.zIndex = "9999";
-        document.getElementById('canvas').style.display = "block";
+        document.getElementById('canvas').style.opacity = "1.0";
         document.body.classList.add('startedMainLoop');
         StartedMainLoop = true;
         // go scorched earth to save memory
