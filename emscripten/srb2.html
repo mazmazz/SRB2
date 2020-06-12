@@ -156,8 +156,8 @@
           position: fixed;
           top: 0;
           left: 0;
-          width: 100%;
-          height: 100%;
+          width: 100% !important;
+          height: 100% !important;
       }
 
       #keyCapture {
@@ -782,8 +782,9 @@
       var UserAgentIsiPhone = () => /iPhone|iPod/.test(navigator.userAgent);
 
       var IsStandalone = () => (
-        ("standalone" in window.navigator) &&
-        window.navigator.standalone
+        (window.matchMedia('(display-mode: standalone)').matches) || 
+          (("standalone" in window.navigator) &&
+           window.navigator.standalone)
       );
 
       // https://stackoverflow.com/a/11381730
@@ -1500,8 +1501,8 @@
             case 'resizeHeight': {
               let resizeHeight = input.value > 800 ? 0 : input.value;
               let dims = ResizeDimensions(
-                document.documentElement.clientWidth,
-                document.documentElement.clientHeight,
+                GetViewportWidth(),
+                GetViewportHeight(),
                 resizeHeight
               );
               args.push(
@@ -1996,9 +1997,9 @@
       var ChangeResolution = (x, y) => {
         if (Module['calledRun']) {
           if (typeof x === 'undefined')
-            x = document.documentElement.clientWidth;
+            x = GetViewportWidth();
           if (typeof y === 'undefined')
-            y = document.documentElement.clientHeight;
+            y = GetViewportHeight();
           Module.ccall('change_resolution',
             'number',
             ['number', 'number'],
@@ -2015,8 +2016,10 @@
           // However, landscape is dangerous because the keyboard may take most of the
           // screen, resulting in a viewport ratio that's way too wide,
           // resulting in a big window size that can crash the game. So do a sanity check.
-          document.documentElement.clientHeight > document.documentElement.clientWidth ||
-          document.documentElement.clientWidth / document.documentElement.clientHeight <= 2.167);
+          //
+          // iPhone X  = 2.167 ratio
+          GetViewportHeight() > GetViewportWidth() ||
+          GetViewportWidth() / GetViewportHeight() <= 2.2);
       };
 
       var LockMouse = () => {
@@ -2031,7 +2034,27 @@
           else if (!document.pointerLockElement)
             Module.ccall('unlock_mouse', null, [], []);
         }
-      }
+      };
+
+      var GetViewportWidth = () => {
+        // if (UserAgentIsAndroid()) {
+        //   if (document.fullscreenElement) // chrome android weirdness
+        //     return screen.width;
+        //   else
+        //     return window.innerWidth;
+        // } else
+          return document.documentElement.clientWidth;
+      };
+
+      var GetViewportHeight = () => {
+        // if (UserAgentIsAndroid()) {
+        //   if (document.fullscreenElement) // chrome android weirdness
+        //     return screen.height;
+        //   else
+        //     return window.innerHeight;
+        // } else
+          return document.documentElement.clientHeight;
+      };
 
       window.addEventListener('mousedown', LockMouse, false);
       document.addEventListener('pointerlockchange', _=>UnlockMouse(), false);
