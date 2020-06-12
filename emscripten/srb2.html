@@ -1864,6 +1864,9 @@
             SDL2 = Module['SDL2'];
 
           if (typeof(SDL2.audioContext) === 'undefined'
+              || !SDL2
+              || !(SDL2 instanceof object)
+              || !('audioContext' in SDL2)
               || !SDL2.audioContext 
               || SDL2.audioContext.status === 'closed') {
             SDL2.audioContext = null;
@@ -1872,7 +1875,7 @@
             else
               ActivateAudio();
           } else
-            SDL2.audioContext.resume();
+            ResumeAudioContext();
           ResumeLoop();
           ChangeResolution();
         }
@@ -1883,17 +1886,11 @@
 
       var HandleVisibilityChange = (e) => {
         if (Module['calledRun']) {
-          let SDL2 = null;
-          if (typeof (Module['SDL2']) !== 'undefined')
-            SDL2 = Module['SDL2'];
-
           if (e.type === 'focus')
             DoResume();
           else {
             PauseLoop();
-            if (typeof(SDL2.audioContext) !== 'undefined'
-                && SDL2.audioContext)
-              SDL2.audioContext.suspend();
+            SuspendAudioContext();
             // just in case the browser does not fire a 'focus'
             // event upon our return, allow the user to touch to wake
             window.addEventListener('touchend', DoResume, {once: true});
