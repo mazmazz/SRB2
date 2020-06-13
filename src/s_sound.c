@@ -311,7 +311,7 @@ void S_RegisterSoundStuff(void)
 #endif
 #ifdef __EMSCRIPTEN__
 	// https://musical-artifacts.com/artifacts/400
-	cv_midisoundfontpath.defaultValue = "/florestan.sf2";
+	cv_midisoundfontpath.defaultvalue = "/florestan.sf2";
 #endif
 	CV_RegisterVar(&cv_midisoundfontpath);
 
