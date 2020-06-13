@@ -2384,6 +2384,12 @@ death:
 #ifdef __EMSCRIPTEN__
 	emscripten_cancel_main_loop();
 	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+	EM_ASM({
+		SuspendAudioContext(); // stop the stuttering
+		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+	});
+#endif
 #endif
 	exit(0);
 }
@@ -2460,6 +2466,12 @@ void I_Error(const char *error, ...)
 #ifdef __EMSCRIPTEN__
 			emscripten_cancel_main_loop();
 			EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+			EM_ASM({
+				SuspendAudioContext(); // stop the stuttering
+				ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+			});
+#endif
 #endif
 			exit(-1); // recursive errors detected
 		}
@@ -2513,6 +2525,12 @@ void I_Error(const char *error, ...)
 #ifdef __EMSCRIPTEN__
 	emscripten_cancel_main_loop();
 	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+	EM_ASM({
+		SuspendAudioContext(); // stop the stuttering
+		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+	});
+#endif
 #endif
 
 #if defined (PARANOIA) && defined (__CYGWIN__)
