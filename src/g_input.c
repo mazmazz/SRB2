@@ -1362,7 +1362,17 @@ void G_TouchControlPreset(void)
 
 	fixed_t x, y, w, h;
 	fixed_t dx, dy, dw, dh;
-	fixed_t corneroffset = 4 * FRACUNIT;
+#ifdef __EMSCRIPTEN__
+	fixed_t corneroffsetxcon = 16 * FRACUNIT;
+	fixed_t corneroffsetycon = 4 * FRACUNIT;
+	fixed_t corneroffsetxnav = 4 * FRACUNIT;
+	fixed_t corneroffsetynav = 4 * FRACUNIT;
+#else
+	fixed_t corneroffsetxcon = 4 * FRACUNIT;
+	fixed_t corneroffsetycon = 4 * FRACUNIT;
+	fixed_t corneroffsetxnav = 4 * FRACUNIT;
+	fixed_t corneroffsetynav = 4 * FRACUNIT;
+#endif
 	fixed_t rightcorner = ((vid.width / vid.dupx) * FRACUNIT);
 	fixed_t bottomcorner = ((vid.height / vid.dupy) * FRACUNIT);
 	fixed_t jsoffs = G_RingSlingerGametype() ? (-4 * FRACUNIT) : 0, jumph;
@@ -1384,15 +1394,27 @@ void G_TouchControlPreset(void)
 
 	if (touch_tinycontrols)
 	{
+#ifdef __EMSCRIPTEN__
+		// offset more center because the video takes the entire screen
+		dx = 36 * FRACUNIT;
+		dy = 120 * FRACUNIT;
+#else
 		dx = 24 * FRACUNIT;
 		dy = 128 * FRACUNIT;
+#endif
 		dw = 32 * FRACUNIT;
 		dh = 32 * FRACUNIT;
 	}
 	else
 	{
+#ifdef __EMSCRIPTEN__
+		// offset more center because the video takes the entire screen
+		dx = 36 * FRACUNIT;
+		dy = 84 * FRACUNIT;
+#else
 		dx = 24 * FRACUNIT;
 		dy = 92 * FRACUNIT;
+#endif
 		dw = 64 * FRACUNIT;
 		dh = 64 * FRACUNIT;
 	}
@@ -1409,8 +1431,8 @@ void G_TouchControlPreset(void)
 		h = jumph = 32 * FRACUNIT;
 		touchcontrols[gc_jump].w = SCALECOORD(w);
 		touchcontrols[gc_jump].h = SCALECOORD(h);
-		touchcontrols[gc_jump].x = (rightcorner - touchcontrols[gc_jump].w - corneroffset - (12 * FRACUNIT));
-		touchcontrols[gc_jump].y = (bottomcorner - touchcontrols[gc_jump].h - corneroffset - (12 * FRACUNIT)) + jsoffs + offs + nonjoyoffs;
+		touchcontrols[gc_jump].x = (rightcorner - touchcontrols[gc_jump].w - corneroffsetxcon - (12 * FRACUNIT));
+		touchcontrols[gc_jump].y = (bottomcorner - touchcontrols[gc_jump].h - corneroffsetycon - (12 * FRACUNIT)) + jsoffs + offs + nonjoyoffs;
 
 		// Spin
 		w = 32 * FRACUNIT;
@@ -1427,8 +1449,8 @@ void G_TouchControlPreset(void)
 		h = jumph = 48 * FRACUNIT;
 		touchcontrols[gc_jump].w = SCALECOORD(w);
 		touchcontrols[gc_jump].h = SCALECOORD(h);
-		touchcontrols[gc_jump].x = (rightcorner - touchcontrols[gc_jump].w - corneroffset - (12 * FRACUNIT));
-		touchcontrols[gc_jump].y = (bottomcorner - touchcontrols[gc_jump].h - corneroffset - (12 * FRACUNIT)) + jsoffs + offs + nonjoyoffs;
+		touchcontrols[gc_jump].x = (rightcorner - touchcontrols[gc_jump].w - corneroffsetxcon - (12 * FRACUNIT));
+		touchcontrols[gc_jump].y = (bottomcorner - touchcontrols[gc_jump].h - corneroffsetycon - (12 * FRACUNIT)) + jsoffs + offs + nonjoyoffs;
 
 		// Spin
 		w = 40 * FRACUNIT;
@@ -1522,8 +1544,8 @@ void G_TouchControlPreset(void)
 	// Menu
 	touchcontrols[gc_systemmenu].w = SCALECOORD(32 * FRACUNIT);
 	touchcontrols[gc_systemmenu].h = SCALECOORD(32 * FRACUNIT);
-	touchcontrols[gc_systemmenu].x = (rightcorner - touchcontrols[gc_systemmenu].w - corneroffset);
-	touchcontrols[gc_systemmenu].y = corneroffset;
+	touchcontrols[gc_systemmenu].x = (rightcorner - touchcontrols[gc_systemmenu].w - corneroffsetxnav);
+	touchcontrols[gc_systemmenu].y = corneroffsetynav;
 
 	// Pause
 	touchcontrols[gc_pause].x = touchcontrols[gc_systemmenu].x;
@@ -1590,7 +1612,7 @@ void G_TouchControlPreset(void)
 	{
 		touchcontrols[gc_talkkey].w = SCALECOORD(32 * FRACUNIT);
 		touchcontrols[gc_talkkey].h = SCALECOORD(24 * FRACUNIT);
-		touchcontrols[gc_talkkey].x = (rightcorner - touchcontrols[gc_talkkey].w - corneroffset);
+		touchcontrols[gc_talkkey].x = (rightcorner - touchcontrols[gc_talkkey].w - corneroffsetxnav);
 		touchcontrols[gc_talkkey].y = (touchcontrols[gc_systemmenu].y + touchcontrols[gc_systemmenu].h + offs);
 		touchcontrols[gc_talkkey].hidden = false;
 
@@ -1652,32 +1674,42 @@ void G_TouchControlPreset(void)
 
 void G_TouchNavigationPreset(void)
 {
-	INT32 corneroffset = 4 * FRACUNIT;
+#ifdef __EMSCRIPTEN__
+	INT32 corneroffsetxnav = 8 * FRACUNIT;
+	INT32 corneroffsetynav = 8 * FRACUNIT;
+	INT32 wnav = 32 * FRACUNIT;
+	INT32 hnav = 32 * FRACUNIT;
+#else
+	INT32 corneroffsetxnav = 4 * FRACUNIT;
+	INT32 corneroffsetynav = 4 * FRACUNIT;
+	INT32 wnav = 24 * FRACUNIT;
+	INT32 hnav = 24 * FRACUNIT;
+#endif
 
 	// clear all
 	memset(touchnavigation, 0x00, sizeof(touchconfig_t) * NUMKEYS);
 
 	// Back
-	touchnavigation[KEY_ESCAPE].x = corneroffset;
-	touchnavigation[KEY_ESCAPE].y = corneroffset;
-	touchnavigation[KEY_ESCAPE].w = 24 * FRACUNIT;
-	touchnavigation[KEY_ESCAPE].h = 24 * FRACUNIT;
+	touchnavigation[KEY_ESCAPE].x = corneroffsetxnav;
+	touchnavigation[KEY_ESCAPE].y = corneroffsetynav;
+	touchnavigation[KEY_ESCAPE].w = wnav;
+	touchnavigation[KEY_ESCAPE].h = hnav;
 
 	// Confirm
-	touchnavigation[KEY_ENTER].w = 24 * FRACUNIT;
-	touchnavigation[KEY_ENTER].h = 24 * FRACUNIT;
-	touchnavigation[KEY_ENTER].x = (((vid.width / vid.dupx) * FRACUNIT) - touchnavigation[KEY_ENTER].w - corneroffset);
-	touchnavigation[KEY_ENTER].y = corneroffset;
+	touchnavigation[KEY_ENTER].w = wnav;
+	touchnavigation[KEY_ENTER].h = hnav;
+	touchnavigation[KEY_ENTER].x = (((vid.width / vid.dupx) * FRACUNIT) - touchnavigation[KEY_ENTER].w - corneroffsetxnav);
+	touchnavigation[KEY_ENTER].y = corneroffsetynav;
 
 	// Console
 	if (touchnavigationstatus.canopenconsole)
 		touchnavigation[KEY_CONSOLE].hidden = true;
 	else
 	{
-		touchnavigation[KEY_CONSOLE].x = corneroffset;
+		touchnavigation[KEY_CONSOLE].x = corneroffsetxnav;
 		touchnavigation[KEY_CONSOLE].y = touchnavigation[KEY_ENTER].y + touchnavigation[KEY_ENTER].h + (8 * FRACUNIT);
-		touchnavigation[KEY_CONSOLE].w = 24 * FRACUNIT;
-		touchnavigation[KEY_CONSOLE].h = 24 * FRACUNIT;
+		touchnavigation[KEY_CONSOLE].w = wnav;
+		touchnavigation[KEY_CONSOLE].h = hnav;
 		touchnavigation[KEY_CONSOLE].hidden = false;
 	}
 }

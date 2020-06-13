@@ -563,9 +563,7 @@ static menuitem_t MPauseMenu[] =
 	{IT_STRING | IT_CALL,    NULL, "Options",                   M_Options,             64},
 
 	{IT_STRING | IT_CALL,    NULL, "Return to Title",           M_EndGame,             80},
-#ifndef __EMSCRIPTEN__
 	{IT_STRING | IT_CALL,    NULL, "Quit Game",                 M_QuitSRB2,            88},
-#endif
 };
 
 typedef enum
