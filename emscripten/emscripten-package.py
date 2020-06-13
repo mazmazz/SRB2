@@ -162,7 +162,10 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
             for folderName, subfolders, filenames in os.walk(landing_dir):
                 for filename in filenames:
                     if 'data' in folderName:
-                        if not ('.js' in filename or '.wasm' in filename or '_BASE' in filename):
+                        if not ('.js' in filename or '.wasm' in filename 
+                                or '_BASE' in filename or '_FULLINSTALL' in filename
+                                or '_INSTALL' in filename or '_PERSISTENT' in filename
+                                or '_REQUIRED' in filename or '_STARTUP' in filename):
                             continue
                     fn = os.path.join(folderName, filename)
                     fn_relative = os.path.normpath(fn).replace(f'{os.path.commonprefix([os.path.normpath(fn), os.path.abspath(landing_dir)])}{os.path.sep}', '')
