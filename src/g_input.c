@@ -1192,28 +1192,28 @@ void G_DefineDefaultControls(void)
 		gamecontroldefault[i][gc_viewpoint  ][0] = KEY_F12;
 
 		// Gamepad controls -- same for both schemes
-		gamecontroldefault[i][gc_weaponnext ][1] = KEY_JOY1+1; // B
-		gamecontroldefault[i][gc_weaponprev ][1] = KEY_JOY1+2; // X
-		gamecontroldefault[i][gc_tossflag   ][1] = KEY_JOY1+0; // A
-		gamecontroldefault[i][gc_use        ][1] = KEY_JOY1+4; // LB
+		gamecontroldefault[i][gc_weaponnext ][1] = KEY_JOY1+5; // RB
+		gamecontroldefault[i][gc_weaponprev ][1] = KEY_JOY1+4; // LB
+		gamecontroldefault[i][gc_tossflag   ][1] = KEY_JOY1+1; // B
+		gamecontroldefault[i][gc_use        ][1] = KEY_JOY1+2; // X
 		gamecontroldefault[i][gc_camtoggle  ][1] = KEY_HAT1+0; // D-Pad Up
 		gamecontroldefault[i][gc_camreset   ][1] = KEY_JOY1+3; // Y
 		gamecontroldefault[i][gc_centerview ][1] = KEY_JOY1+9; // Right Stick
 		gamecontroldefault[i][gc_talkkey    ][1] = KEY_HAT1+2; // D-Pad Left
 		gamecontroldefault[i][gc_scores     ][1] = KEY_HAT1+3; // D-Pad Right
-		gamecontroldefault[i][gc_jump       ][1] = KEY_JOY1+5; // RB
+		gamecontroldefault[i][gc_jump       ][1] = KEY_JOY1+0; // A
 		gamecontroldefault[i][gc_pause      ][1] = KEY_JOY1+6; // Back
 		gamecontroldefault[i][gc_screenshot ][1] = KEY_HAT1+1; // D-Pad Down
 		gamecontroldefault[i][gc_systemmenu ][0] = KEY_JOY1+7; // Start
 
 		// Second player controls only have joypad defaults
-		gamecontrolbisdefault[i][gc_weaponnext][0] = KEY_2JOY1+1; // B
-		gamecontrolbisdefault[i][gc_weaponprev][0] = KEY_2JOY1+2; // X
-		gamecontrolbisdefault[i][gc_tossflag  ][0] = KEY_2JOY1+0; // A
-		gamecontrolbisdefault[i][gc_use       ][0] = KEY_2JOY1+4; // LB
+		gamecontrolbisdefault[i][gc_weaponnext][0] = KEY_2JOY1+5; // RB
+		gamecontrolbisdefault[i][gc_weaponprev][0] = KEY_2JOY1+4; // LB
+		gamecontrolbisdefault[i][gc_tossflag  ][0] = KEY_2JOY1+1; // B
+		gamecontrolbisdefault[i][gc_use       ][0] = KEY_2JOY1+2; // X
 		gamecontrolbisdefault[i][gc_camreset  ][0] = KEY_2JOY1+3; // Y
 		gamecontrolbisdefault[i][gc_centerview][0] = KEY_2JOY1+9; // Right Stick
-		gamecontrolbisdefault[i][gc_jump      ][0] = KEY_2JOY1+5; // RB
+		gamecontrolbisdefault[i][gc_jump      ][0] = KEY_JOY1+0; // A
 		//gamecontrolbisdefault[i][gc_pause     ][0] = KEY_2JOY1+6; // Back
 		//gamecontrolbisdefault[i][gc_systemmenu][0] = KEY_2JOY1+7; // Start
 		gamecontrolbisdefault[i][gc_camtoggle ][0] = KEY_2HAT1+0; // D-Pad Up
