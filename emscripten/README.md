@@ -8,56 +8,7 @@ required to host the shell.
 
 # Quick Start
 
-Refer to this script to compile the game binary and package it for web.
-
-```sh
-# Install emscripten
-# https://emscripten.org/docs/getting_started/downloads.html
-git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk
-./emsdk install latest
-./emsdk activate latest
-source ./emsdk_env.sh
-
-# Get repo source -- if starting from scratch
-git clone https://github.com/mazmazz/SRB2.git
-cd SRB2
-git checkout emscripten-new
-
-# Or, if you already have SRB2 source
-cd SRB2
-git remote add mazmazz https://github.com/mazmazz/SRB2.git
-git checkout mazmazz/emscripten-new
-
-# Build
-emmake make -C src/
-
-# Download assets into staging folder
-cd emscripten
-mkdir -p data
-wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-assets.7z
-wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-optional-assets-em.7z
-7z x ./srb2-2.2.4-assets.7z -o./data
-7z x ./srb2-2.2.4-optional-assets-em.7z -o./data
-
-# Run packaging script
-python3 ./emscripten-package.py 2.2.4 --ewad music.dta
-
-cd ..
-
-# Build lowend version
-emmake make -C src/ clean # make sure objs/Emscripten/SDL/Release is empty!
-emmake make -C src/ NOASYNCIFY=1
-
-# Download low-end assets into staging folder
-cd emscripten
-mkdir -p data-lowend
-wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-lowend-assets.7z
-7z x ./srb2-2.2.4-lowend-assets.7z -o./data-lowend
-
-# Package lowend version and zip up
-python3 ./emscripten-package.py 2.2.4-lowend --package-versions 2.2.4 2.2.4-lowend --default-package-version 2.2.4 --base-version 2.2.4 --data-dir ./data-lowend --out-zip ./srb2-web.zip
-```
+Refer to `build-sample.sh` to compile the game binary and package it for web.
 
 # File Structure
 

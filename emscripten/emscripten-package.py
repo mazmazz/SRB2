@@ -119,8 +119,9 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
     if data_dir is not None and os.path.isdir(data_dir):
         for root, dirs, files in os.walk(data_dir):
             for file in files:
-                fn = os.path.join(root, file)
-                fn_relative = os.path.normpath(fn).replace(f'{os.path.commonprefix([os.path.normpath(fn), os.path.abspath(data_dir)])}{os.path.sep}', '')
+                fn = os.path.abspath(os.path.normpath(os.path.join(root, file)))
+                # Takes two paths, A:\B\C\D and A:\B\C\D\E\F.txt and outputs E\F.txt
+                fn_relative = fn.replace(f'{os.path.commonprefix([fn, os.path.abspath(data_dir)])}{os.path.sep}', '')
                 version_fn = os.path.join(version_dir, fn_relative)
                 os.makedirs(os.path.dirname(fn), exist_ok=True)
                 if file in fwad or file in ewad:
