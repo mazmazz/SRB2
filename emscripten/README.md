@@ -34,14 +34,29 @@ emmake make -C src/
 
 # Download assets into staging folder
 cd emscripten
-mkdir data
+mkdir -p data
 wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-assets.7z
 wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-optional-assets-em.7z
 7z x ./srb2-2.2.4-assets.7z -o./data
 7z x ./srb2-2.2.4-optional-assets-em.7z -o./data
 
 # Run packaging script
-python3 ./emscripten-package.py 2.2.4 --ewad music.dta --out-zip srb2-web.zip
+python3 ./emscripten-package.py 2.2.4 --ewad music.dta
+
+cd ..
+
+# Build lowend version
+emmake make -C src/ clean
+emmake make -C src/ NOASYNCIFY=1
+
+# Download low-end assets into staging folder
+cd emscripten
+mkdir -p data-lowend
+wget https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-lowend-assets.7z
+7z x ./srb2-2.2.4-lowend-assets.7z -o./data-lowend
+
+# Package lowend version and zip up
+python3 ./emscripten-package.py 2.2.4-lowend --package-versions 2.2.4 2.2.4-lowend --default-package-version 2.2.4 --base-version 2.2.4 --data-dir ./data-lowend --out-zip ./srb2-web.zip
 ```
 
 # File Structure
