@@ -378,8 +378,12 @@
                     min="0" max="10" value="5" step="1"/>
                   <span id="drawDistanceValue"></span>
                 </p>
-                <input type="checkbox" id="shadow" checked/>
-                <label for="shadow">Render Shadows</label>
+                <p>
+                  <input type="checkbox" id="shadow" checked/>
+                  <label for="shadow">Render Shadows</label>
+                  <input type="checkbox" id="midisoundfont" class="nosave"/>
+                  <label for="midisoundfont">Reset Soundfont</label>
+                </p>
               </p>
               <p id="packageVersionRow">
                 <label for="packageVersion">Version</label>
@@ -532,7 +536,7 @@
                     : input.value
           // Don't save the field if it's specified in the URL query string,
           // because that's a forced override.
-          if (input.type !== 'file' && (!URLParams.has(input.id) || URLParams.get(input.id) != val))
+          if (input.type !== 'file' && (!URLParams.has(input.id) || URLParams.get(input.id) != val) && !input.classList.contains('nosave'))
             localStorage.setItem(`${form.id}_${input.id}`, val);
         });
       };
@@ -545,7 +549,7 @@
             val = URLParams.get(input.id);
           else
             val = localStorage.getItem(`${form.id}_${input.id}`);
-          if (val !== null && !input.readOnly && input.type !== 'file') {
+          if (val !== null && !input.readOnly && input.type !== 'file' && !input.classList.contains('nosave')) {
             if (input.type === 'checkbox')
               input.checked = (val === "true");
             else if (input.type === 'select-one')
@@ -568,7 +572,7 @@
                   : e.target.value
         // Don't save the field if it's specified in the URL query string,
         // because that's a forced override.
-        if (e.target.type !== 'file' && (!URLParams.has(e.target.id) || URLParams.get(e.target.id) != val))
+        if (e.target.type !== 'file' && (!URLParams.has(e.target.id) || URLParams.get(e.target.id) != val) && !e.target.classList.contains('nosave'))
           localStorage.setItem(`${ControlsFormElement.id}_${e.target.id}`, val);
         BuildControlArguments();
         document.getElementById("systemArguments").value = SystemArgumentsToString();
@@ -1555,6 +1559,14 @@
               args.push(
                 '+shadow',val
               );
+              break;
+            }
+            case 'midisoundfont': {
+              if (input.checked) {
+                args.push(
+                  '+midisoundfont','/florestan.sf2'
+                );
+              }
               break;
             }
           }

@@ -309,6 +309,10 @@ void S_RegisterSoundStuff(void)
 	CV_RegisterVar(&cv_midiplayer);
 	CV_RegisterVar(&cv_miditimiditypath);
 #endif
+#ifdef __EMSCRIPTEN__
+	// https://musical-artifacts.com/artifacts/400
+	cv_midisoundfontpath.defaultValue = "/florestan.sf2";
+#endif
 	CV_RegisterVar(&cv_midisoundfontpath);
 
 	COM_AddCommand("tunes", Command_Tunes_f);
