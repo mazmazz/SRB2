@@ -213,8 +213,6 @@ int main(int argc, char **argv)
 #endif
 #endif
 {
-	const char *logdir = NULL;
-
 	myargc = argc;
 	myargv = argv; /// \todo pull out path to exe from this string
 

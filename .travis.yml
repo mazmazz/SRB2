@@ -590,7 +590,9 @@ before_script:
   # Prepare CMake
   - mkdir build
   - cd build
-  - export CFLAGS="-Wall -W -Werror $WFLAGS $CFLAGS"
+  - if [[ "$EMSCRIPTEN" != "1" ]]; then
+      export CFLAGS="-Wall -W -Werror $WFLAGS $CFLAGS";
+    fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
       __CMAKE_GENERATOR="MinGW Makefiles";
       __CMAKE_COMPILER="-DCMAKE_C_COMPILER=gcc -DCMAKE_MAKE_PROGRAM=mingw32-make";
