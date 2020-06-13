@@ -888,6 +888,11 @@ void D_RegisterClientCommands(void)
 	CV_RegisterVar(&cv_cam_lockonboss[0]);
 	CV_RegisterVar(&cv_cam_lockonboss[1]);
 
+#ifdef __EMSCRIPTEN__
+	// compensate for loud default soundfont
+	cv_midimusicvolume.defaultvalue = "9";
+#endif
+
 	// s_sound.c
 	CV_RegisterVar(&cv_soundvolume);
 	CV_RegisterVar(&cv_closedcaptioning);

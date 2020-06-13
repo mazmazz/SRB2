@@ -46,7 +46,7 @@ python3 ./emscripten-package.py 2.2.4 --ewad music.dta
 cd ..
 
 # Build lowend version
-emmake make -C src/ clean
+emmake make -C src/ clean # make sure objs/Emscripten/SDL/Release is empty!
 emmake make -C src/ NOASYNCIFY=1
 
 # Download low-end assets into staging folder

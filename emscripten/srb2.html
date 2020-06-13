@@ -1233,9 +1233,9 @@
         }
       };
 
-      var CheckInstallFileList = async (filesList, version = '{{{ PACKAGE_VERSION }}}', checkServer = false, progressCallback = null, finishedCallback = null) => {
+      var CheckInstallFileList = async (fileList, version = '{{{ PACKAGE_VERSION }}}', checkServer = false, progressCallback = null, finishedCallback = null) => {
+        let bases = await GetVersionBases(version);
         let files = [...fileList];
-
         // Using es6-promise-pool to rate-limit file requests.
         // This works like a loop: when the Pool requests a promise,
         // it produces promises based on the count index.
@@ -1280,7 +1280,7 @@
         // Populate local file lists
         // This is inefficent, but pull the files we just downloaded
         // Hopefully we got them all, so we just retrieve them from the IDB.
-        Object.keys(fileLists).forEach(name => {
+        await Promise.all(Object.keys(fileLists).map(async (name) => {
           try {
             fileLists[name].length = 0; // clear array, keep reference
             let file = await RetrieveInstalledFile(name, version, false);
@@ -1299,7 +1299,8 @@
           } catch (e) {
             console.error(`GetVersionFileLists: Could not populate list ${name}`, e);
           }
-        });
+          return name;
+        }));
 
         // Add PersistentLumpFiles to StartupFiles
         StartupFiles.push(...PersistentLumpFiles);

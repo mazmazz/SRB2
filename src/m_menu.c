@@ -1528,11 +1528,7 @@ static menuitem_t OP_SoundOptionsMenu[] =
 #define OPENMPT_MENUOFFSET 0
 #endif
 
-#ifdef HAVE_MIXERX
 #define MIXERX_MENUOFFSET 81
-#else
-#define MIXERX_MENUOFFSET 0
-#endif
 
 static menuitem_t OP_SoundAdvancedMenu[] =
 {
