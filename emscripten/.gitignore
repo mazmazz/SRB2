@@ -12,6 +12,7 @@ data-lowend/*
 !data-lowend/_REQUIRED
 gtag.txt
 landing/*
+!landing/README.md
 !landing/assets
 *.zip
 __pycache__
