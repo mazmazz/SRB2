@@ -428,6 +428,9 @@
             This software is licensed under GNU General Public License Version 2. See license text at <a href="https://opensource.org/licenses/GPL-2.0" target="_blank">https://opensource.org/licenses/GPL-2.0</a>.
           </p>
           <p style="font-size:xx-small;">
+            The <a href="https://musical-artifacts.com/artifacts/400" target="_blank">Florestan Basic GM GS</a> soundfont is created by <a href="http://dev.nando.audio" target="_blank">Nando Florestan</a>.
+          </p>
+          <p style="font-size:xx-small;">
             Original design and content is copyright 1998-2020 Sonic Team Junior. All non-original material is copyrighted by their respective owners, and no copyright infringement is intended.
           </p>
         </details>
@@ -662,9 +665,12 @@
         if (localStorage.getItem('controlsForm_resizeHeight') === null && !UserAgentIsMobile())
             document.getElementById('resizeHeight').value = 400;
         
-        // iOS devices default to low-end builds
-        if (localStorage.getItem('controlsForm_lowend') === null && UserAgentIsiOS())
+        // iOS devices default to low-end builds. the high-end build does not play
+        // even on new devices
+        if (UserAgentIsiOS()) {
             document.getElementById('lowend').checked = true;
+            document.getElementById('lowend').disabled = true;
+        }
         
         ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
 
@@ -741,64 +747,124 @@
       // Version Check - For PWA
       ////////////////////////////////
 
-      var CheckVersion = () => {
-        if (!document.body.classList.contains('calledRun')) {
+      let AuthorUpdateShown = false;
+
+      var CheckVersion = async () => {
+        if (document.body.classList.contains('calledRun'))
+          return;
+
+        try {
+          ////////////////////////////////
           // Check Web Version
-          fetch("version-shell.txt")
-          .then(response => response.text())
-          .then(data => {
-            console.log(`SRB2 Web Version: {{{ SHELL_VERSION }}}`);
-            if (data.trim() && data.trim() !== "{{{ SHELL_VERSION }}}") {
-              console.log(`New Web Version Found: ${data}`);
-              // Don't refresh page more than once in a row.
-              let updateCount = localStorage.getItem('srb2web_update');
-              if (IsStandalone() && (!updateCount || !parseInt(updateCount))) {
-                localStorage.setItem('srb2web_update', (1).toString());
-                window.location.reload(true);
-                return Promise.resolve();
-              } else {
-                if (document.getElementById('newVersion'))
-                  document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
-              }
+          ////////////////////////////////
+
+          let response = await fetch("version-shell.txt");
+          let data = await response.text();
+          
+          console.log(`SRB2 Web Version: {{{ SHELL_VERSION }}}`);
+          if (data.trim() && data.trim() !== "{{{ SHELL_VERSION }}}") {
+            console.log(`New Web Version Found: ${data}`);
+            // Don't refresh page more than once in a row.
+            let updateCount = localStorage.getItem('srb2web_update');
+            if (IsStandalone() && (!updateCount || !parseInt(updateCount))) {
+              localStorage.setItem('srb2web_update', (1).toString());
+              window.location.reload(true);
+              return;
+            } else {
+              if (document.getElementById('newVersion'))
+                document.getElementById('newVersion').outerHTML = `<p style="font-size:xx-small;">Update Version: <a href="#" onclick="window.location.reload(true);return false;">${data}</a></p>`;
             }
-            localStorage.setItem('srb2web_update', (0).toString());
-          })
-          // Check Program Version
-          .then(() => {
-            // Don't check program version more than once a page load
-            let updateCount = localStorage.getItem('srb2program_update');
-            if (!updateCount || !parseInt(updateCount))
-              return fetch("version-package.txt")
-            else
-              return Promise.reject("Already checked program version.");
-          })
-          .then(response => response.text())
-          .then(data => {
-            let previousDefaultPackageVersion = localStorage.getItem('srb2program_defaultversion');
-            console.log(`SRB2 Default Program Version: {{{ PACKAGE_VERSION }}}`);
-            if (data.trim() && previousDefaultPackageVersion && data.trim() !== previousDefaultPackageVersion) {
-              console.log(`New Default Program Version Found: ${data}`);
-              if (PackageVersionElement.length > 1 && confirm(`SRB2 Version ${data} is released! Do you want to switch to the new version?`)) {
-                for (let i = 0; i < PackageVersionElement.length; i++) {
-                  if (PackageVersionElement.options[i].value === data) {
-                    PackageVersionElement.selectedIndex = i;
-                    SaveFormToStorage(ControlsFormElement);
-                    alert(`The new version will run when you ${UserAgentIsMobile() ? 'tap' : 'click'} "Play".`);
-                    break;
-                  }
+          }
+          localStorage.setItem('srb2web_update', (0).toString());
+          
+          ////////////////////////////////
+          // Check Author Updates
+          ////////////////////////////////
+
+          // If this app were to be decentralized, I would still to be able
+          // to communicate updates. Line 1 is the update ID, everything else
+          // goes in an alert. Show the alert on two page loads.
+          // Put new updates in a new filename.
+
+          if (!AuthorUpdateShown) {
+            try {
+              // get data
+              let authorUrl = 'https://raw.githubusercontent.com/mazmazz/SRB2-emscripten/emscripten-new/emscripten/author-update.txt';
+              let authorResponse = await fetch(authorUrl, {mode: 'cors'});
+              data = await authorResponse.text();
+              data = data.replace('\r\n','\n');
+              let linePos = data.indexOf('\n');
+
+              // process data
+              let updateId = data.substr(0, linePos > -1 ? linePos : data.length);
+              let updateText = data.substr(linePos+1 < data.length ? linePos+1 : data.length, data.length);
+
+              if (!updateId.trim() || !updateText.trim())
+                throw('Invalid author update, updateId or updateText was blank');
+
+              // compare against stored info
+              let updateCount = localStorage.getItem('srb2web_authorUpdate');
+              updateCount = parseInt(updateCount);
+              if (!updateCount)
+                updateCount = 0;
+              let updateStoredId = localStorage.getItem('srb2web_authorUpdate_id');
+              if (updateId !== updateStoredId)
+                updateCount = 0;
+              
+              // show the update?
+              if (!AuthorUpdateShown) {
+                if (updateCount++ < 2) {
+                  AuthorUpdateShown = true; // don't show again for this page load
+                  alert(updateText);
+                }
+              }
+
+              // store variables
+              localStorage.setItem('srb2web_authorUpdate_id', updateId);
+              localStorage.setItem('srb2web_authorUpdate', updateCount.toString());
+            } catch (err) { 
+              console.log('CheckVersion: author update check', err);
+            }
+          }
+
+          ////////////////////////////////
+          // Check default program version
+          ////////////////////////////////
+
+          // Don't check program version more than once a page load
+          let updateCount = localStorage.getItem('srb2program_update');
+          if (!updateCount || !parseInt(updateCount))
+            response = await fetch("version-package.txt");
+          else
+            throw("Already checked program version.");
+          
+          data = await response.text();
+
+          let previousDefaultPackageVersion = localStorage.getItem('srb2program_defaultversion');
+          console.log(`SRB2 Default Program Version: {{{ PACKAGE_VERSION }}}`);
+          if (data.trim() && previousDefaultPackageVersion && data.trim() !== previousDefaultPackageVersion) {
+            console.log(`New Default Program Version Found: ${data}`);
+            if (PackageVersionElement.length > 1 && confirm(`SRB2 Version ${data} is released! Do you want to switch to the new version?`)) {
+              for (let i = 0; i < PackageVersionElement.length; i++) {
+                if (PackageVersionElement.options[i].value === data) {
+                  PackageVersionElement.selectedIndex = i;
+                  SaveFormToStorage(ControlsFormElement);
+                  alert(`The new version will run when you ${UserAgentIsMobile() ? 'tap' : 'click'} "Play".`);
+                  break;
                 }
               }
             }
-            localStorage.setItem('srb2program_defaultversion', data.trim());
-          })
-          .catch(err => {
-            console.log(`Error Checking New Version:`,err);
-            localStorage.setItem('srb2web_update', (0).toString());
-          });
+          }
+          localStorage.setItem('srb2program_defaultversion', data.trim());
+        } catch (err) {
+          console.log(`Error Checking New Version:`,err);
+          localStorage.setItem('srb2web_update', (0).toString());
+          throw err;
         }
       };
 
-      localStorage.setItem('srb2program_update', (0).toString()); // reset on page load
+      // reset on page load
+      localStorage.setItem('srb2program_update', (0).toString());
       window.addEventListener('load', CheckVersion, {once: true});
       window.addEventListener('focus', CheckVersion, false);
 
@@ -810,7 +876,7 @@
         var ua = window.navigator.userAgent;
         var iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i) || !!ua.match(/iPod/i);
         var webkit = !!ua.match(/WebKit/i);
-        var iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+        var iOSSafari = iOS && webkit && !ua.match(/CriOS/i) && !ua.match(/FxiOS/i);
         return iOSSafari;
       };
 
