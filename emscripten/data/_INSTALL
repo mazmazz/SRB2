@@ -1,0 +1,28 @@
+srb2.wasm
+srb2.pk3
+player.dta
+zones.pk3
+patch.pk3
+music.dta
+patch_music.pk3
+emscripten.pk3
+_music.dta/MUSICDEF
+// Menus
+_music.dta/O__NITAT
+_music.dta/O__RECAT
+_music.dta/O__STJR
+_music.dta/O__INTRO
+_music.dta/O__TITLE
+_music.dta/O__CHSEL
+// First Levels
+_music.dta/O_GFZ1
+_music.dta/O_TUTORL
+// Jingles
+_music.dta/O__1UP
+_music.dta/O__CLEAR
+_music.dta/O__CONTI
+_music.dta/O__DROWN
+_music.dta/O__GOVER
+_music.dta/O__INV
+_music.dta/O__SHOES
+_music.dta/O__SUPER

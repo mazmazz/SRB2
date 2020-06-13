@@ -1,4 +1,9 @@
-data
+data/*
+!data/_INSTALL
+!data/_FULLINSTALL
+!data/_PERSISTENT
+!data/_STARTUP
+!data/_REQUIRED
 gtag.txt
 landing/*
 !landing/assets

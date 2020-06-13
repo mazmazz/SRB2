@@ -56,6 +56,14 @@ python3 ./emscripten-package.py 2.2.4 --ewad music.dta --out-zip srb2-web.zip
 - data/                -- Game data
 -   {version}/         -- Subfolder to store the game version's binary and assets.
 -     _BASE            -- Text file with the name of a version to use assets from (see BASE, below).
+-     _FULLINSTALL     -- Text file listing every file to download for a "full install" IN ADDITION TO
+                          _INSTALL. Not used, currently.
+-     _INSTALL         -- Text file listing the files to download on first run of the game.
+-     _PERSISTENT      -- Text file listing the files which will always stay in the in-memory file
+                          system during gameplay.
+-     _REQUIRED        -- Text file listing the files that must be downloaded for the game to run
+-     _STARTUP         -- Text file listing the files that will be loaded to the in-memory file system
+                          on game start. _PERSISTENT is added to this list on runtime.
 -     {wadfile}        -- Wadfile
 -     {wadfile}.md5    -- Text file with the MD5 hash of a wadfile. This must exist for the shell
                           to recognize the wadfile.

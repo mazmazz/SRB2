@@ -1031,88 +1031,27 @@
       // Program Data
       ////////////////////////////////
 
-      var InstallFiles = [
-        'srb2.wasm', 'srb2.pk3', 'player.dta', 'zones.pk3', 'patch.pk3', 'music.dta', 'patch_music.pk3', 'emscripten.pk3',
-        '_music.dta/MUSICDEF',
-        // Menus
-        '_music.dta/O__NITAT',
-        '_music.dta/O__RECAT',
-        '_music.dta/O__STJR',
-        '_music.dta/O__INTRO',
-        '_music.dta/O__TITLE',
-        '_music.dta/O__CHSEL',
-        // First Levels
-        '_music.dta/O_GFZ1',
-        '_music.dta/O_TUTORL',
-        // Jingles
-        '_music.dta/O__1UP',
-        '_music.dta/O__CLEAR',
-        '_music.dta/O__CONTI',
-        '_music.dta/O__DROWN',
-        '_music.dta/O__GOVER',
-        '_music.dta/O__INV',
-        '_music.dta/O__SHOES',
-        '_music.dta/O__SUPER'
-      ];
+      // Files to download on first run
+      var InstallFiles = [];
+
+      // Files to download on full install (currently unused)
+      //var FullInstallFiles = [];
 
       // Don't delete these files on lump unload
-      var PersistentLumpFiles = [
-        '_music.dta/O__1UP',
-        '_music.dta/O__CLEAR',
-        '_music.dta/O__CONTI',
-        '_music.dta/O__DROWN',
-        '_music.dta/O__GOVER',
-        '_music.dta/O__INV',
-        '_music.dta/O__SHOES',
-        '_music.dta/O__SUPER'
-      ];
+      var PersistentLumpFiles = [];
 
-      var StartupFiles = [
-        'srb2.pk3', 'player.dta', 'zones.pk3', 'patch.pk3', 'music.dta', 'patch_music.pk3', 'emscripten.pk3',
-        ...PersistentLumpFiles
-      ];
+      // Files to place in FS on game startup
+      var StartupFiles = [];
 
-      var RequiredFiles = [
-        'srb2.wasm', 'srb2.pk3', 'player.dta', 'zones.pk3', 'patch.pk3', 'emscripten.pk3'
-      ];
+      // Files that must be downloaded before game startup
+      var RequiredFiles = [];
+
+      // Store of version bases
+      var VersionBases = {};
 
       var CompositeKey = (fn, version) => `data/${version}/${fn}`;
 
       var StripLeadingSeparators = (fn) => fn.replace(/^\/*/, '');
-
-      // !!!!!!!!!! OLD, DEPRECATED !!!!!!!!!!
-      var CheckDownloadFileToFS = (url, destBaseDir) => {
-        let dependencyId = `download-${GetBasenameFromPath(url)}`;
-        let baseDir = (destBaseDir === undefined ? '/home/web_user/.srb2' : destBaseDir);
-        let name = `${GetBasenameFromPath(url)}`;
-        addRunDependency(dependencyId);
-        console.log(`Checking ${name}...`);
-
-        return fetch(url, {
-          method: 'HEAD'
-        })
-        .then((response) => {
-          let remote_size = parseInt(response.headers.get('Content-Length'));
-
-          try {
-            let local_size = parseInt(FS.stat(`${baseDir}/${name}`)['size']);
-            if (remote_size == local_size)
-              return resolve(`${name} already loaded`);
-            FS.unlink(`${baseDir}/${name}`);
-            console.log(`Downloading ${GetBasenameFromPath(url)}...`);
-          } catch(e) { /* File doesn't exist */ }
-
-          return fetch(url);
-        })
-        .then((response) => response.arrayBuffer())
-        .then((buffer) => {
-          data = new Uint8Array(buffer);
-          FS.createDataFile(baseDir, name, data, true, true);
-          return SyncFS;
-        })
-        .catch((reason) => console.error(reason))
-        .finally(() => removeRunDependency(dependencyId));
-      };
 
       var ResetProgramData = async (manageLoop = true, callback = null) => {
         // Delete specific files in IndexedDB /home/web_user -> FILE_DATA
@@ -1274,7 +1213,77 @@
         }
       };
 
-      var VersionBases = {};
+      var CheckInstallFileList = async (filesList, version = '{{{ PACKAGE_VERSION }}}', checkServer = false, progressCallback = null, finishedCallback = null) => {
+        let files = [...fileList];
+
+        // Using es6-promise-pool to rate-limit file requests.
+        // This works like a loop: when the Pool requests a promise,
+        // it produces promises based on the count index.
+        let count = 0;
+        let promiseProducer = () => {
+          if (count < files.length) {
+            let basesRecursive = [...bases]; // first entry is our own version
+            return CheckInstallProgramFile(files[count++], basesRecursive.shift(), basesRecursive, [...bases], checkServer)
+            .then(_ => { 
+              if (typeof progressCallback === 'function')
+                progressCallback(files[count], count, files.length);
+            });
+          } else
+            return null;
+        };
+
+        // Prime the progress callback with the first file
+        if (typeof progressCallback === 'function')
+          progressCallback(files[count], count, files.length);
+
+        let pool = new PromisePool(promiseProducer, 3);
+
+        return pool.start()
+        .then(_ => {
+          if (typeof finishedCallback === 'function')
+            finishedCallback();
+        })
+        .catch(e => { console.error(`CheckInstallFileList: ${e}`); throw e; });
+      };
+
+      var GetVersionFileLists = async (version = '{{{ PACKAGE_VERSION }}}') => {
+        let fileLists = {'_INSTALL': InstallFiles,
+                         //'_FULLINSTALL': FullInstallFiles,
+                         '_PERSISTENT': PersistentLumpFiles,
+                         '_STARTUP': StartupFiles,
+                         '_REQUIRED': RequiredFiles};
+        // Download all file lists
+        try {
+          await CheckInstallFileList(Object.keys(fileLists), version, true, null, null);
+        } catch (e) { console.error('GetVersionFileLists error: ^^^^^'); }
+
+        // Populate local file lists
+        // This is inefficent, but pull the files we just downloaded
+        // Hopefully we got them all, so we just retrieve them from the IDB.
+        Object.keys(fileLists).forEach(name => {
+          try {
+            fileLists[name].length = 0; // clear array, keep reference
+            let file = await RetrieveInstalledFile(name, version, false);
+            if (file instanceof Object && 'contents' in file && file.contents) {
+              // Convert to text file
+              let textList = new TextDecoder("utf-8").decode(file.contents);
+              textList = textList.replace('\r\n','\n');
+              textLines = textList.split('\n');
+              // Add entry to file list
+              textLines.forEach(line => {
+                let lineTrim = line.trim();
+                if (lineTrim && !lineTrim.startsWith('//'))
+                  fileLists[name].push(lineTrim);
+              });
+            }
+          } catch (e) {
+            console.error(`GetVersionFileLists: Could not populate list ${name}`, e);
+          }
+        });
+
+        // Add PersistentLumpFiles to StartupFiles
+        StartupFiles.push(...PersistentLumpFiles);
+      };
 
       var GetVersionBases = async (version = '{{{ PACKAGE_VERSION }}}') => {
         // Build BASE dependency list
@@ -1335,36 +1344,9 @@
 
       var InstallProgram = async (full = false, version = '{{{ PACKAGE_VERSION }}}', checkServer = false, progressCallback = null, finishedCallback = null) => {
         let bases = await GetVersionBases(version);
-        let files = [...InstallFiles];
-
-        // Using es6-promise-pool to rate-limit file requests.
-        // This works like a loop: when the Pool requests a promise,
-        // it produces promises based on the count index.
-        let count = 0;
-        let promiseProducer = () => {
-          if (count < files.length) {
-            let basesRecursive = [...bases]; // first entry is our own version
-            return CheckInstallProgramFile(files[count++], basesRecursive.shift(), basesRecursive, [...bases], checkServer)
-            .then(_ => { 
-              if (typeof progressCallback === 'function')
-                progressCallback(files[count], count, files.length);
-            });
-          } else
-            return null;
-        };
-
-        // Prime the progress callback with the first file
-        if (typeof progressCallback === 'function')
-          progressCallback(files[count], count, files.length);
-
-        let pool = new PromisePool(promiseProducer, 3);
-
-        return pool.start()
-        .then(_ => {
-          if (typeof finishedCallback === 'function')
-            finishedCallback();
-        })
-        .catch(e => { console.error(`InstallProgram: ${e}`); throw e; });
+        await GetVersionFileLists(version);
+        let files = [...InstallFiles]; // if re-implementing FullInstallFiles, do it here and check for `full`
+        return CheckInstallFileList(files, version, checkServer, progressCallback, finishedCallback);
       };
 
       // UX Function
