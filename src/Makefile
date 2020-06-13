@@ -105,6 +105,9 @@ FWAD=1
 ifndef NOASYNCIFY
 HAVE_ASYNCIFY=1
 endif
+ifndef NOFLUIDSYNTH
+HAVE_FLUIDSYNTH=1
+endif
 include emscripten/Makefile.cfg
 endif
 
