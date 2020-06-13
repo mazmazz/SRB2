@@ -79,6 +79,7 @@ matrix:
                 shopt -u globstar;
               fi;
           script:
+            - cd $TRAVIS_BUILD_DIR
             - if [[ "${BUILD}" == "Debug" ]]; then
                 DEBUGCMD="DEBUGMODE=1";
               fi
@@ -580,6 +581,11 @@ before_script:
 
   # Go back to root repo folder
   - cd "$OLDPWD"
+
+  # Prepare CMake asset lists
+  - SRB2_ASSET_HASHED=$(echo ${ASSET_FILES_HASHED// /\;})
+  - SRB2_ASSET_DOCS=$(echo ${ASSET_FILES_DOCS// /\;})
+  - SRB2_ASSET_DIRECTORY="$__ASSET_DIRECTORY"
 
   # Prepare CMake
   - mkdir build
