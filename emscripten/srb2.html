@@ -336,7 +336,7 @@
               <summary>Mod Help</summary>
               <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
               <p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
-              <p>To load savegames and gamedata, place them in a folder titled <code>srb2/</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
+              <p>To load savegames and gamedata, place them in a folder titled <code>userdata/</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
               <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
             </details>
           </details>
@@ -899,7 +899,8 @@
 
       var InitializeFS = () => {
         FS.mkdirTree('/addons');
-        FS.symlink('/home/web_user/.srb2', '/addons/srb2');
+        FS.symlink('/home/web_user/.srb2', '/addons/.srb2');
+        FS.symlink('/home/web_user/.srb2', '/addons/userdata');
         FS.mount(IDBFS, {}, '/home/web_user');
         return (new Promise((resolve, reject) => {
           FS.syncfs(true, (err) => {
