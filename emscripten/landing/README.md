@@ -3,7 +3,7 @@
 To install, just drop the contents of this zipfile into a web server.
 No other services required, just HTTP.
 
-The HTML file does include a Google Analytics tag. If you wish, you may
+The HTML file may include a Google Analytics tag. If you wish, you may
 search the file for "Google Analytics" and erase the tag.
 
 ## Bandwidth Usage
@@ -41,7 +41,7 @@ tested. Error-handling is not well-developed.
 ## Links
 
 * [GitHub repository](https://github.com/mazmazz/SRB2-emscripten)
-    * [Getting started](https://github.com/mazmazz/SRB2-emscripten/tree/emscripten-new/emscripten/README.md)
+    * [Getting started](https://github.com/mazmazz/SRB2-emscripten/tree/emscripten-new/emscripten)
     * [Build script](https://github.com/mazmazz/SRB2-emscripten/tree/emscripten-new/emscripten/build-sample.sh)
 * [GitHub issues](https://github.com/mazmazz/SRB2-emscripten/issues)
 * [GitHub releases](https://github.com/mazmazz/SRB2-emscripten/releases)
