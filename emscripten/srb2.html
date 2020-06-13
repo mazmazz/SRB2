@@ -384,11 +384,15 @@
                   <label for="midisoundfont">Reset Soundfont</label>
                 </p>
               </p>
-              <p id="packageVersionRow">
-                <label for="packageVersion">Version</label>
-                <select id="packageVersion">
-                  <!-- {{{ PACKAGE_VERSION_LIST }}} -->
-                </select>
+              <p>
+                <span id="packageVersionRow">
+                  <label for="packageVersion">Version</label>
+                  <select id="packageVersion">
+                    <!-- {{{ PACKAGE_VERSION_LIST }}} -->
+                  </select>
+                </span>
+                <input type="checkbox" id="lowend"/>
+                <label for="lowend">Prefer Low-End</label>
               </p>
               <p>
                 <label for="userArguments">Command Line</label><br/>
@@ -460,13 +464,25 @@
       var PackageVersionElement = document.getElementById('packageVersion');
       var AddonFields = 0;
 
+      HTMLSelectElement.prototype.contains = function( value ) {
+        for ( var i = 0, l = this.options.length; i < l; i++ ) {
+          if ( this.options[i].value == value ) {
+            return true;
+          }
+        }
+        return false;
+      };
+
       var URLParams;
 
       var GetSelectedPackageVersion = _ => {
         let val = '';
-        if (PackageVersionElement.selectedIndex > -1)
+        if (PackageVersionElement.selectedIndex > -1) {
           val = PackageVersionElement.options[PackageVersionElement.selectedIndex].value;
-        else
+          if (document.getElementById('lowend').checked
+              && PackageVersionElement.contains(`${val}-lowend`))
+            val = `${val}-lowend`;
+        } else
           val = '{{{ PACKAGE_VERSION }}}';
         return val;
       };
@@ -646,6 +662,10 @@
         if (localStorage.getItem('controlsForm_resizeHeight') === null && !UserAgentIsMobile())
             document.getElementById('resizeHeight').value = 400;
         
+        // iOS devices default to low-end builds
+        if (localStorage.getItem('controlsForm_lowend') === null && UserAgentIsiOS())
+            document.getElementById('lowend').checked = true;
+        
         ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
 
         ShowValueRange(document.getElementById('drawDistance'), '', DrawDistanceRange);
@@ -769,7 +789,7 @@
                 }
               }
             }
-            localStorage.setItem('srb2program_defaultversion', data);
+            localStorage.setItem('srb2program_defaultversion', data.trim());
           })
           .catch(err => {
             console.log(`Error Checking New Version:`,err);
