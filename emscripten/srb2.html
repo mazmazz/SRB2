@@ -791,6 +791,8 @@
               // get data
               let authorUrl = 'https://raw.githubusercontent.com/mazmazz/SRB2-emscripten/emscripten-new/emscripten/author-update.txt';
               let authorResponse = await fetch(authorUrl, {mode: 'cors'});
+              if (!authorResponse.ok)
+                throw(`Author update check status: ${authorResponse.status}`);
               data = await authorResponse.text();
               data = data.replace('\r\n','\n');
               let linePos = data.indexOf('\n');
