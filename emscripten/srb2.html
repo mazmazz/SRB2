@@ -336,7 +336,7 @@
               <summary>Mod Help</summary>
               <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
               <p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
-              <p>To load savegames and gamedata, place them in a folder titled <code>userdata/</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
+              <p>To load savegames and gamedata, place them in a folder titled <code>.srb2</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
               <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
             </details>
           </details>
@@ -405,10 +405,10 @@
         <details id="help">
           <summary>Help</summary>
           <p>Game Notes:</p>
+          <p>If this game crashes, try enabling "Low-End" mode under Settings > Advanced.</p>
           <p id="fullscreenNotice">Toggle fullscreen by pressing F11, which should enter your browser's fullscreen mode.</p>
           <p>No online multiplayer: to play netgames, download the PC version at <a href="//www.srb2.org" target="_blank">srb2.org</a>.</p>
           <p>Game controllers should work.</p>
-          <p>If this page crashes, try enabling "Low-End" mode under Settings > Advanced.</p>
           <p id="androidNotice">There is a native Android port available on <a href="https://github.com/Jimita/SRB2/releases" target="_blank">GitHub</a>.</p>
         </details>
         <details id="footer">
@@ -1679,7 +1679,7 @@
         if (index > -1) {
           if (!Module['alive'][index] && !ErrorCrashed) {
             ErrorCrashed = true;
-            let msg = `PROGRAM ERROR\n\n${UserAgentIsMobile() ? "Tap" : "Click"} "${UserAgentIsiOS() ? "Close" : "OK"}" to restart the app.\n\nDEVELOPER INFO`;
+            let msg = `PROGRAM ERROR\n\nIf you experience repeated crashes, try the Low-End mode under Settings > Advanced.\n\n${UserAgentIsMobile() ? "Tap" : "Click"} "${UserAgentIsiOS() ? "Close" : "OK"}" to restart the app.\n\nDEVELOPER INFO`;
             if (e && e.stack)
               msg += `\n\n${e.stack}`;
             else
