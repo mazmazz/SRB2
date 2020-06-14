@@ -276,7 +276,7 @@
 
       .addonFilesField label,
       .addonFilesField input[type=file] {
-        width: 12.5em;
+        width: 10em;
         height: 2.5em;
         margin: 0;
         cursor: pointer;
@@ -287,10 +287,10 @@
         display: none;
       }
 
-      .addonFilesField .addonDelete {
+      .addonFilesField .addonDelete,
+      .addonFilesField .addonHandle {
         width: 2.5em;
         height: 2.5em;
-        margin: 0 0 0 0.1em;
       }
 
       #addonButtonAdd {
@@ -327,9 +327,10 @@
             <summary>Mods</summary>
             <div id="addonFilesContainer">
               <div class="addonFilesField" id="addonFilesTemplate">
-                <input type="file" id="addonFiles" class="button yellowButton"/>
-                <label for="addonFiles" class="button yellowButton">Load File</label><!--
-                --><div class="addonButton addonDelete button redButton">-</div>
+                <div class="addonButton addonDelete button redButton">-</div><!--
+                --><input type="file" id="addonFiles" class="button yellowButton"/><!--
+                --><label for="addonFiles" class="button yellowButton">Load File</label><!--
+                --><div class="addonButton addonHandle button">&#x2b81;</div>
               </div>
             </div>
             <div id="addonButtonAdd" class="button blueButton">+</div>
@@ -712,6 +713,7 @@
         AddAddonField();
         document.getElementById("addonButtonAdd").addEventListener('click', AddAddonField, false);
         Sortable.create(document.getElementById('addonFilesContainer'), {
+          handle: '.addonHandle',
           onEnd: () => {
             BuildControlArguments();
             document.getElementById("systemArguments").value = SystemArgumentsToString();
