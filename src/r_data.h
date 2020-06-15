@@ -92,6 +92,10 @@ extern INT16 *hicolormaps; // remap high colors to high colors..
 extern CV_PossibleValue_t Color_cons_t[];
 
 // Load TEXTURES definitions, create lookup tables
+void R_InitTextures(void);
+#ifdef LOWMEMORY
+void R_ClearTextures(void);
+#endif
 void R_LoadTextures(void);
 void R_FlushTextureCache(void);
 

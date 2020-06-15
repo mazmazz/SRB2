@@ -1749,6 +1749,10 @@ static boolean P_LoadMapData(const virtres_t *virt)
 
 	numlevelflats = 0;
 
+#ifdef LOWMEMORY
+	R_ClearTextures();
+#endif
+
 	// Load map data.
 	if (textmap)
 		P_LoadTextmap();
@@ -1764,6 +1768,11 @@ static boolean P_LoadMapData(const virtres_t *virt)
 	P_ProcessLinedefsAfterSidedefs();
 
 	R_ClearTextureNumCache(true);
+
+#ifdef LOWMEMORY
+	// By now, all the level textures are allocated
+	P_InitPicAnims();
+#endif
 
 	// set the sky flat num
 	skyflatnum = P_AddLevelFlat(SKYFLATNAME, foundflats);
@@ -3553,15 +3562,15 @@ boolean P_LoadLevel(boolean fromnetsave)
 	R_ReInitColormaps(mapheaderinfo[gamemap-1]->palette);
 	CON_SetupBackColormap();
 
-	// SRB2 determines the sky texture to be used depending on the map header.
-	P_SetupLevelSky(mapheaderinfo[gamemap-1]->skynum, true);
-
 	P_ResetSpawnpoints();
 
 	P_MapStart();
 
 	if (!P_LoadMapFromFile())
 		return false;
+
+	// SRB2 determines the sky texture to be used depending on the map header.
+	P_SetupLevelSky(mapheaderinfo[gamemap-1]->skynum, true);
 
 #ifdef FWAD
 	S_PreloadMapMusic();
@@ -3908,6 +3917,17 @@ boolean P_AddWadFile(const char *wadfilename)
 	//
 	R_AddSpriteDefs(wadnum);
 
+#ifdef LOWMEMORY
+	// TODO: Invalidate textures[] etc. entries that are replaced by the
+	// new wadfile. Otherwise, we can't reflect replaced textures mid-level via Lua.
+	//
+	// NOTE: See R_CheckTextureCache -- the rendering cache can re-build itself
+	// when the textures[] list is invalidated. HOWEVER: references to texturetranslation[]
+	// MUST account for an invalidated cache. I.e., if a texnum can't be found,
+	// then rebuild texturetranslation[]. Maybe trigger R_CheckTextureNumForName in R_GetTextureNum.
+
+	// R_ClearTextures();
+#else
 	// Reload it all anyway, just in case they
 	// added some textures but didn't insert a
 	// TEXTURES/etc. list.
@@ -3915,6 +3935,7 @@ boolean P_AddWadFile(const char *wadfilename)
 
 	// Reload ANIMDEFS
 	P_InitPicAnims();
+#endif
 
 	// Flush and reload HUD graphics
 	ST_UnloadGraphics();
