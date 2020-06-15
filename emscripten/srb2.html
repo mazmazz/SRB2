@@ -1066,7 +1066,7 @@
         })
         .then(zip => zip.generateAsync({type:'blob'}))
         .then(blob => Promise.resolve(saveAs(blob, 'srb2-data.zip')))
-        .catch(err => console.log(`DownloadFS: ${err}`))
+        .catch(err => { console.log(`DownloadFS: ${err}`); alert(`Error downloading user data: ${err}`); })
         .finally(_ => {
           if (typeof callback === 'function')
             callback();
@@ -1455,13 +1455,16 @@
         // TODO checkServer -- check for internet connection
         return InstallProgram(full, version, true, (name, curVal, maxVal) => {
           // Progress callback
-          let percent = Math.round(curVal/maxVal*100);
+          let percent = Math.round(Math.min(curVal, maxVal-1)/maxVal*100);
+          // TODO: This is not accurate. In future, we can somehow reference the pool and check pool._pending
+          // for more descriptive values
           if (typeof name === 'undefined') {
             console.log(`InstallProgram: Finished install (${curVal}/${maxVal}`);
-            StatusElement.innerText = `Finishing...`;
+            StatusElement.innerText = `Retrieving Data (${Math.min(maxVal-1)} of ${maxVal})...`;
           } else {
             console.log(`InstallProgram: Retrieving ${name} (${curVal}/${maxVal})`)
-            StatusElement.innerText = `Retrieving ${name.split('/').pop()}...`;
+            //StatusElement.innerText = `Retrieving ${name.split('/').pop()}...`;
+            StatusElement.innerText = `Retrieving Data (${Math.min(curVal, maxVal-1)} of ${maxVal})...`;
           }
           ProgressElement.value = percent;
         },
@@ -1471,7 +1474,7 @@
             alert('Finished install.');
             window.location.reload();
           } else {
-            StatusElement.innerText = 'Loading...';
+            StatusElement.innerText = 'Loading Game...';
             ProgressElement.value = 0;
           }
         });
@@ -1853,7 +1856,7 @@
             ProgressElement.max = parseInt(m[4])*100;
             ProgressElement.hidden = false;
           } else {
-            text = "Starting game... (may take a minute)";
+            text = "Starting Game...";
           }
           StatusElement.innerHTML = text;
         },
