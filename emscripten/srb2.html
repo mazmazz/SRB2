@@ -671,7 +671,7 @@
         LoadFormFromStorage(ControlsFormElement);
 
         // By default, mobile devices should run at 200p.
-        if (localStorage.getItem('controlsForm_resizeHeight') === null && !UserAgentIsMobile())
+        if (localStorage.getItem('controlsForm_resizeHeight') === null && !UserAgentIsMobile() && !UserAgentIsiOS())
             document.getElementById('resizeHeight').value = 400;
         
         // iOS devices default to low-end builds. the high-end build does not play
@@ -889,7 +889,10 @@
         var iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i) || !!ua.match(/iPod/i);
         var webkit = !!ua.match(/WebKit/i);
         var iOSSafari = iOS && webkit && !ua.match(/CriOS/i) && !ua.match(/FxiOS/i);
-        return iOSSafari;
+        var iPad13 = (/iPad|iPhone|iPod/.test(navigator.platform) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+          !window.MSStream;
+        return iOSSafari || iPad13;
       };
 
       var UserAgentIsiPhone = () => /iPhone|iPod/.test(navigator.userAgent);
