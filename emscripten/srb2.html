@@ -370,7 +370,7 @@
             </p>
             <details id="storageControls">
               <summary>Storage</summary>
-              <button class="yellowButton" onclick="DownloadFS(); return false;">Download User Data</button>
+              <button id="downloadUserData" class="yellowButton" onclick="if(UserAgentIsiOS() && GetiOSVersion()[0] < 13) { alert('User data cannot be downloaded on iOS devices.'); } else DownloadFS(); return false;">Download User Data</button>
               <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
               <button onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
             </details>
@@ -679,6 +679,10 @@
         if (UserAgentIsiOS()) {
             document.getElementById('lowend').checked = true;
             document.getElementById('lowend').disabled = true;
+            // blob downloading does not work on iOS < 13, and data URIs
+            // simply don't work in standalone mode.
+            if (GetiOSVersion()[0] < 13)
+              document.getElementById('downloadUserData').style.display = "none";
         }
         
         ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
@@ -893,6 +897,16 @@
           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
           !window.MSStream;
         return iOSSafari || iPad13;
+      };
+
+      var GetiOSVersion = () => {
+        const ua = navigator.userAgent;
+        if (/(iPhone|iPod|iPad)/i.test(ua))
+          return ua.match(/OS [\d_]+/i)[0].substr(3).split('_').map(n => parseInt(n));
+        // iPad 13
+        else if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !window.MSStream)
+          return ua.match(/Version\/[\d.]+/i)[0].substr(3).split('.').map(n => parseInt(n));
+        return [0];
       };
 
       var UserAgentIsiPhone = () => /iPhone|iPod/.test(navigator.userAgent);
