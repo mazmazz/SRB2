@@ -1066,7 +1066,7 @@ static void IdentifyVersion(void)
 	D_AddFile(FILEPATH("patch.pk3"));
 #endif
 
-#if defined(__ANDROID__)
+#ifdef USE_ANDROID_PK3
 	// Android assets
 	D_AddFile(FILEPATH("android.pk3"));
 #endif
@@ -1181,7 +1181,7 @@ void D_SRB2Main(void)
 	"We do not claim ownership of SEGA's intellectual property used\n"
 	"in this program.\n\n");
 
-#if defined(__ANDROID__)
+#ifdef SPLASH_SCREEN
 	I_SplashScreen();
 #endif
 
@@ -1311,7 +1311,7 @@ void D_SRB2Main(void)
 #ifdef USE_PATCH_DTA
 	mainwads++;
 #endif
-#if defined(__ANDROID__)
+#ifdef USE_ANDROID_PK3
 	mainwads++;
 #endif
 #if defined(__EMSCRIPTEN__)
@@ -1332,7 +1332,7 @@ void D_SRB2Main(void)
 #ifdef USE_PATCH_DTA
 	W_VerifyFileMD5(3, ASSET_HASH_PATCH_PK3); // patch.pk3
 #endif
-#if defined(__ANDROID__)
+#ifdef USE_ANDROID_PK3
 	W_VerifyFileMD5(4, ASSET_HASH_ANDROID_PK3); // android.pk3
 #endif
 #if 0

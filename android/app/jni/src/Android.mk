@@ -20,6 +20,7 @@ HWR_SOURCES := $(OBJDIR)/hardware/
 #
 
 LOCAL_SRC_FILES := $(JNIDIR)/jni_android.c \
+			$(JNIDIR)/ndk_strings.c \
 			$(JNIDIR)/ndk_crash_handler.c \
 			$(OBJDIR)/comptime.c \
 			$(OBJDIR)/string.c   \
@@ -135,7 +136,6 @@ LOCAL_SRC_FILES += $(OBJDIR)/lua_script.c \
 	$(LUA_SOURCES)/ltable.c \
 	$(LUA_SOURCES)/ltm.c \
 	$(LUA_SOURCES)/lvm.c \
-	$(JNIDIR)/localeconv.c
 
 # OpenGL
 LOCAL_SRC_FILES += $(HWR_SOURCES)/r_gles/r_gles1.c $(SDL2_SOURCES)/ogl_es_sdl.c \
@@ -151,9 +151,6 @@ LOCAL_SRC_FILES += $(HWR_SOURCES)/r_gles/r_gles1.c $(SDL2_SOURCES)/ogl_es_sdl.c 
 		$(HWR_SOURCES)/hw_md3load.c \
 		$(HWR_SOURCES)/hw_model.c \
 		$(HWR_SOURCES)/u_list.c
-
-# LodePNG
-LOCAL_SRC_FILES += $(JNIDIR)/lodepng.c
 
 #
 # SDL2 interface
