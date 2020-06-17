@@ -1141,6 +1141,13 @@ void R_ClearTextures(void)
 			HWR_FreeTextureCache();
 #endif
 	}
+	// TODO: Load first texture at index 0, not index 1. See issue #167
+	// For now, initialize a new textures[] buffer so we can offset indexes by 1.
+#ifndef LOWMEMORY
+	// Texture buffer is not modified in R_LoadTexture
+	R_GrowTexture();
+#endif
+	R_LoadTextureForName("SKY68");
 }
 
 //
@@ -1245,7 +1252,8 @@ void R_LoadTextures(void)
 
 	R_GrowTextures(numtexes);
 
-	for (i = 0, w = 0; w < numwadfiles; w++)
+	// TODO: Load first texture at index 0, not index 1. See issue #167
+	for (i = 1, w = 0; w < numwadfiles; w++)
 	{
 #ifdef WALLFLATS
 		i = Rloadflats(i, w);
