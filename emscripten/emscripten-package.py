@@ -187,7 +187,7 @@ if __name__ == '__main__':
     parser_package.add_argument('--splash-image', type=str, help='Path to base image to generate Apple splash images. If you specify this argument, you must have NPM installed. The package "pwa-asset-generator" will be installed.')
     parser_package.add_argument('--npm-install', type=str, help='Location to install "pwa-asset-generator". If blank, will install into "{cwd}/node_modules". If "_GLOBAL", will install globally.')
     parser_package.add_argument('--gtag', type=str, help='Path to file from which to read Google Analytics GTAG for insertion into landing page. Or, you may specify a BASE64-encoded string of the GTAG.')
-    parser_package.add_argument('--url', type=str, help=f'Base URL where you intend to deploy. Default: {defaults["url"]}')
+    parser_package.add_argument('--url', type=str, default=defaults['url'], help=f'Base URL where you intend to deploy. Default: {defaults["url"]}')
     # Game data
     parser_data = parser.add_argument_group('Game Data')
     parser_data.add_argument('--base-version', type=str, help='Name of version to use as a game asset base.')
