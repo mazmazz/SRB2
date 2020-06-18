@@ -321,6 +321,7 @@
           <p>
             <button id="resetbtn" class="button" onclick="javascript:window.location.reload()">Cancel</button>
           </p>
+          <div id="loadingAdvice"></div>
         </div>
         <form id="controlsForm" action="javascript:void(0);">
           <details id="addons">
@@ -529,10 +530,17 @@
       };
 
       var StartLoad = async () => {
-        PackageVersion = GetSelectedPackageVersion();
+        if (!UserAgentIsMobile()) {
+          let adviceHTML = "<p>To play in Fullscreen, press F11.</p>";
+          if (document.getElementById("useMouse").checked)
+            adviceHTML += "<p>To use the mouse, click inside the game.</p>"
+          document.getElementById('loadingAdvice').innerHTML = adviceHTML;
+        }
 
         SaveFormToStorage(ControlsFormElement);
         window.removeEventListener('focus', CheckVersion, false);
+
+        PackageVersion = GetSelectedPackageVersion();
         await UXInstallProgram(false, PackageVersion); // hides the UI
         await GetWasm(PackageVersion);
         let scriptSrc = `data/${PackageVersion}/srb2.js`;
@@ -1493,8 +1501,9 @@
             alert('Finished install.');
             window.location.reload();
           } else {
-            StatusElement.innerText = 'Loading Game...';
-            ProgressElement.value = 0;
+            StatusElement.innerText = 'Loading...';
+            // Currently, the ProgressElement is useless after this, so just hide
+            ProgressElement.style.display = "none";
           }
         });
       };
@@ -1875,7 +1884,7 @@
             ProgressElement.max = parseInt(m[4])*100;
             ProgressElement.hidden = false;
           } else {
-            text = "Starting Game...";
+            text = "Starting...";
           }
           StatusElement.innerHTML = text;
         },
