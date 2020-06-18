@@ -59,6 +59,7 @@ INT32 setresneeded[3]; // if setresneeded[2] is > 0, set resolution
 static void SCR_ChangeFullscreen (void);
 static void SCR_ChangeWidthCVAR (void);
 static void SCR_ChangeHeightCVAR (void);
+static void SCR_ChangeResizeHeightCVAR (void);
 
 static CV_PossibleValue_t scr_depth_cons_t[] = {{8, "8 bits"}, {16, "16 bits"}, {24, "24 bits"}, {32, "32 bits"}, {0, NULL}};
 
@@ -67,7 +68,7 @@ consvar_t cv_scr_width = {"scr_width", CONFIGVIDWIDTH, CV_SAVE|CV_CALL|CV_NOINIT
 consvar_t cv_scr_height = {"scr_height", CONFIGVIDHEIGHT, CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeHeightCVAR, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_depth = {"scr_depth", "16 bits", CV_SAVE, scr_depth_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_resize = {"scr_resize", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_scr_resizeheight = {"scr_resizeheight", "0", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_scr_resizeheight = {"scr_resizeheight", "0", CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeResizeHeightCVAR, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_renderview = {"renderview", "On", 0, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 
 static void SCR_ActuallyChangeRenderer(void);
@@ -526,6 +527,17 @@ void SCR_ChangeHeightCVAR(void)
 {
 	setresneeded[0] = vid.width;
 	setresneeded[1] = cv_scr_height.value;
+	setresneeded[2] = 1;
+}
+
+// Called after changing the value of scr_resizeheight
+void SCR_ChangeResizeHeightCVAR(void)
+{
+	INT32 newX = vid.width, newY = vid.height;
+	if (cv_scr_resizeheight.value)
+		SCR_ResizeDimensions(&newX, &newY, cv_scr_resizeheight.value);
+	setresneeded[0] = newX;
+	setresneeded[1] = newY;
 	setresneeded[2] = 1;
 }
 

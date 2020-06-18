@@ -891,6 +891,8 @@ void D_RegisterClientCommands(void)
 #ifdef __EMSCRIPTEN__
 	// compensate for loud default soundfont
 	cv_midimusicvolume.defaultvalue = "9";
+	// default vertical resolution is 200p for all devices
+	cv_scr_resizeheight.defaultvalue = "200";
 #endif
 
 	// s_sound.c
