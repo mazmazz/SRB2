@@ -535,6 +535,8 @@
           if (document.getElementById("useMouse").checked)
             adviceHTML += "<p>To use the mouse, click inside the game.</p>"
           document.getElementById('loadingAdvice').innerHTML = adviceHTML;
+        } else {
+          document.getElementById('loadingAdvice').innerHTML = '<p>If a button "sticks", press the "Menu" button to unstick it.</p>';
         }
 
         SaveFormToStorage(ControlsFormElement);
