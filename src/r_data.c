@@ -973,28 +973,11 @@ INT32 R_LoadWallFlatOrTextureForNameEx(const char *name, const char *lastname)
 		{
 			texstart = W_CheckNumForFolderStartPK3("textures/", (UINT16)w, 0);
 			texend = W_CheckNumForFolderEndPK3("textures/", (UINT16)w, texstart);
-			texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, 0);
-			while (texturesLumpPos != INT16_MAX)
-			{
-				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name, lastname);
-				if (i != oldi)
-					// guesstimate the actual index of our texture
-					return oldi;
-				texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, texturesLumpPos + 1);
-			}
 		}
 		else
 		{
 			texstart = W_CheckNumForMarkerStartPwad(TX_START, (UINT16)w, 0);
 			texend = W_CheckNumForNamePwad(TX_END, (UINT16)w, 0);
-			texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, 0);
-			if (texturesLumpPos != INT16_MAX)
-			{
-				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name, lastname);
-				if (i != oldi)
-					// guesstimate the actual index of our texture
-					return oldi;
-			}
 		}
 
 		if (!( texstart == INT16_MAX || texend == INT16_MAX ))
@@ -1011,6 +994,33 @@ INT32 R_LoadWallFlatOrTextureForNameEx(const char *name, const char *lastname)
 					if (!range || !strncmp(W_CheckNameForNum(lumpnum), lastname, 8))
 						return result;
 				}
+			}
+		}
+
+		// Failed to find lump, so now check TEXTURES
+		i = oldi;
+
+		if (wadfiles[w]->type == RET_PK3)
+		{
+			texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, 0);
+			while (texturesLumpPos != INT16_MAX)
+			{
+				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name, lastname);
+				if (i != oldi)
+					// guesstimate the actual index of our texture
+					return oldi;
+				texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, texturesLumpPos + 1);
+			}
+		}
+		else
+		{
+			texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, 0);
+			if (texturesLumpPos != INT16_MAX)
+			{
+				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name, lastname);
+				if (i != oldi)
+					// guesstimate the actual index of our texture
+					return oldi;
 			}
 		}
 		
