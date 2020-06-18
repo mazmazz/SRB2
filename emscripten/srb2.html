@@ -688,11 +688,8 @@
           document.getElementById('resizeHeight').value = 200;
         if (localStorage.getItem('controlsForm_lowend') === null)
           document.getElementById('lowend').checked = true;
-        
-        // Force low-end on iOS devices
+
         if (UserAgentIsiOS()) {
-            document.getElementById('lowend').checked = true;
-            document.getElementById('lowend').disabled = true;
             // blob downloading does not work on iOS < 13, and data URIs
             // simply don't work in standalone mode.
             // I also don't know if this actually works on 13 standalone.
