@@ -30,7 +30,8 @@ defaults = {
     'url': f'https://srb2web.surge.sh'
 }
 
-def populate_shell_template(shell_version, gtag, package_versions, default_package_version, landing_dir=defaults['landing_dir'], url=defaults['url']):
+def populate_shell_template(shell_version, gtag, package_versions, default_package_version, landing_dir=defaults['landing_dir'],
+                            url=defaults['url'], maintainer=None, maintainer_url=None):
     shell_data = ''
     landing_fn = os.path.join(landing_dir, 'index.html')
     copy(os.path.join(script_dir, 'srb2.html'), landing_fn)
@@ -42,6 +43,13 @@ def populate_shell_template(shell_version, gtag, package_versions, default_packa
             selected = ' selected'
         package_version_list.append(f'<option value="{version}"{selected}>{version}</option>')
 
+    if maintainer is not None:
+        if maintainer_url is not None:
+            maintainer = f'<a href="{maintainer_url}" target="_blank">{maintainer}</a>'
+        maintainer_string = f'This web service is maintained by {maintainer}. It is not an official project of Sonic Team Junior.'
+    else:
+        maintainer_string = 'This web service is not an official project of Sonic Team Junior.'
+
     with open(landing_fn, 'r') as f:
         shell_data = f.read()
 
@@ -50,6 +58,7 @@ def populate_shell_template(shell_version, gtag, package_versions, default_packa
     shell_data = shell_data.replace('{{{ SHELL_VERSION }}}', shell_version)
     shell_data = shell_data.replace('<!-- {{{ GTAG }}} -->', gtag if gtag else '')
     shell_data = shell_data.replace('<!-- {{{ PACKAGE_VERSION_LIST }}} -->', '\n'.join(package_version_list))
+    shell_data = shell_data.replace('{{{ MAINTAINER }}}', maintainer_string)
 
     with open(landing_fn, 'w') as f:
         f.write(shell_data)
@@ -89,7 +98,8 @@ def parse_default(input, name):
         return defaults[name]
     return input
 
-def main(version, skip_landing=False, package_versions=[], default_package_version=None, landing_dir=defaults['landing_dir'], splash_image=None, npm_install=None, gtag=None, url=defaults['url'],
+def main(version, skip_landing=False, package_versions=[], default_package_version=None, landing_dir=defaults['landing_dir'], splash_image=None, npm_install=None,
+         gtag=None, url=defaults['url'], maintainer=None, maintainer_url=None,
          base_version=None, build_dir=defaults['build_dir'], data_dir=defaults['data_dir'], fwad=[], ewad=[], 
          out_zip=None, out_zip_no_assets=None):
     # Build parameters
@@ -133,7 +143,8 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
 
     # Generate landing page
     if not skip_landing:
-        populate_shell_template(shell_version, gtag, package_versions=package_versions, default_package_version=default_package_version, landing_dir=landing_dir, url=url)
+        populate_shell_template(shell_version, gtag, package_versions=package_versions, default_package_version=default_package_version, landing_dir=landing_dir,
+                                url=url, maintainer=maintainer, maintainer_url=maintainer_url)
     generate_splash_images(splash_image, npm_install=npm_install, landing_dir=landing_dir)
 
     # Generate MD5
@@ -188,6 +199,8 @@ if __name__ == '__main__':
     parser_package.add_argument('--npm-install', type=str, help='Location to install "pwa-asset-generator". If blank, will install into "{cwd}/node_modules". If "_GLOBAL", will install globally.')
     parser_package.add_argument('--gtag', type=str, help='Path to file from which to read Google Analytics GTAG for insertion into landing page. Or, you may specify a BASE64-encoded string of the GTAG.')
     parser_package.add_argument('--url', type=str, default=defaults['url'], help=f'Base URL where you intend to deploy. Default: {defaults["url"]}')
+    parser_package.add_argument('--maintainer', type=str, help='Name of responsible party for maintaining the web service. This name is displayed at the bottom of the web page.')
+    parser_package.add_argument('--maintainer-url', type=str, help='URL to web site of the responsible party.')
     # Game data
     parser_data = parser.add_argument_group('Game Data')
     parser_data.add_argument('--base-version', type=str, help='Name of version to use as a game asset base.')
