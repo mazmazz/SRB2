@@ -450,6 +450,16 @@ static void G_HandleFingerEvent(event_t *ev)
 						INT32 padx = touch_joystick_x, pady = touch_joystick_y;
 						INT32 padw = touch_joystick_w, padh = touch_joystick_h;
 
+#ifdef __EMSCRIPTEN__
+						if (players[consoleplayer].mo &&
+							players[consoleplayer].powers[pw_carry] == CR_NIGHTSMODE)
+						{
+							// Lower the joy sensitivity to make NiGHTS more playable
+							xsens = max(0.1, xsens-0.125);
+							ysens = max(0.1, ysens-0.125);
+						}
+#endif
+
 						G_ScaleTouchCoords(&padx, &pady, &padw, &padh, false, true);
 
 						dx = x - (padx + (padw / 2));
