@@ -1749,10 +1749,6 @@ static boolean P_LoadMapData(const virtres_t *virt)
 
 	numlevelflats = 0;
 
-#ifdef LOWMEMORY
-	R_ClearTextures();
-#endif
-
 	// Load map data.
 	if (textmap)
 		P_LoadTextmap();
@@ -1772,6 +1768,11 @@ static boolean P_LoadMapData(const virtres_t *virt)
 #ifdef LOWMEMORY
 	// By now, all the level textures are allocated, so we know which anims to load
 	P_InitPicAnims();
+#ifdef HWRENDER
+	// By now, the anim frames are also loaded, so we don't expect anymore changes to textures[]
+	if (rendermode == render_opengl)
+		HWR_LoadTextures(numtextures);
+#endif
 #endif
 
 	// set the sky flat num
@@ -3522,6 +3523,7 @@ boolean P_LoadLevel(boolean fromnetsave)
 	R_FlushTranslationColormapCache();
 
 #ifdef LOWMEMORY
+	R_ClearTextures();
 	Z_ForceFlushPatches();
 	cleardrawsegs = CLEARDRAWSEGSINTERVAL; // forces realloc of drawsegs
 	ds_p = drawsegs;
@@ -3562,15 +3564,15 @@ boolean P_LoadLevel(boolean fromnetsave)
 	R_ReInitColormaps(mapheaderinfo[gamemap-1]->palette);
 	CON_SetupBackColormap();
 
+	// SRB2 determines the sky texture to be used depending on the map header.
+	P_SetupLevelSky(mapheaderinfo[gamemap-1]->skynum, true);
+
 	P_ResetSpawnpoints();
 
 	P_MapStart();
 
 	if (!P_LoadMapFromFile())
 		return false;
-
-	// SRB2 determines the sky texture to be used depending on the map header.
-	P_SetupLevelSky(mapheaderinfo[gamemap-1]->skynum, true);
 
 #ifdef FWAD
 	S_PreloadMapMusic();
