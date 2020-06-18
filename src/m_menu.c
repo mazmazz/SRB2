@@ -325,7 +325,7 @@ static void M_AssignJoystick(INT32 choice);
 static void M_ChangeControl(INT32 choice);
 
 #ifdef TOUCHINPUTS
-static void M_CustomizeTouchControls(void);
+static void M_CustomizeTouchControls(INT32 choice);
 #endif
 
 // Video & Sound
@@ -12157,8 +12157,9 @@ static void M_Setup2PControlsMenu(INT32 choice)
 }
 
 #ifdef TOUCHINPUTS
-static void M_CustomizeTouchControls(void)
+static void M_CustomizeTouchControls(INT32 choice)
 {
+	(void)choice;
 	if (cv_touchpreset.value != touchpreset_none)
 		M_StartMessage(M_GetText("You must have no preset selected\nto access this menu.\n\n" PRESS_A_KEY_MESSAGE), NULL, MM_NOTHING);
 	else
