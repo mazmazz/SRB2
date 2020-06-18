@@ -1241,7 +1241,11 @@ void G_DefineDefaultControls(void)
 void G_SetupTouchSettings(void)
 {
 	touch_movementstyle = cv_touchstyle.value;
+#ifdef __EMSCRIPTEN__
+	touch_camera = (!!cv_touchcamera.value);
+#else
 	touch_camera = (cv_usemouse.value ? false : (!!cv_touchcamera.value));
+#endif
 	touch_tinycontrols = !!cv_touchtiny.value;
 	touch_gui_scale = cv_touchguiscale.value;
 }
