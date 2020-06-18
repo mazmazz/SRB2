@@ -703,12 +703,8 @@ void R_FlushTextureCache(void)
 
 // Need these prototypes for later; defining them here instead of r_data.h so they're "private"
 int R_CountTexturesInTEXTURESLump(UINT16 wadNum, UINT16 lumpNum);
-#ifdef LOWMEMORY
-void R_ParseTEXTURESLumpEx(UINT16 wadNum, UINT16 lumpNum, INT32 *index, const char *name);
-#define R_ParseTEXTURESLump(wadNum, lumpNum, texindex) R_ParseTEXTURESLumpEx(wadNum, lumpNum, texindex, NULL);
-#else
-void R_ParseTEXTURESLump(UINT16 wadNum, UINT16 lumpNum, INT32 *index);
-#endif
+void R_ParseTEXTURESLumpEx(UINT16 wadNum, UINT16 lumpNum, INT32 *index, const char *name, const char *lastname);
+#define R_ParseTEXTURESLump(wadNum, lumpNum, texindex) R_ParseTEXTURESLumpEx(wadNum, lumpNum, texindex, NULL, NULL)
 
 #define TX_START "TX_START"
 #define TX_END "TX_END"
@@ -954,8 +950,7 @@ static INT32 R_LoadTextureForName(const char *name)
 	return R_LoadTexture(WADFILENUM(lumpnum), LUMPNUM(lumpnum), numtextures);
 }
 
-#ifdef LOWMEMORY
-static INT32 R_LoadWallFlatOrTexture(const char *name)
+INT32 R_LoadWallFlatOrTextureForNameEx(const char *name, const char *lastname)
 {
 	INT32 i, w, oldi;
 	UINT16 texstart, texend;
@@ -981,7 +976,7 @@ static INT32 R_LoadWallFlatOrTexture(const char *name)
 			texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, 0);
 			while (texturesLumpPos != INT16_MAX)
 			{
-				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name);
+				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name, lastname);
 				if (i != oldi)
 					// guesstimate the actual index of our texture
 					return oldi;
@@ -995,7 +990,7 @@ static INT32 R_LoadWallFlatOrTexture(const char *name)
 			texturesLumpPos = W_CheckNumForNamePwad("TEXTURES", (UINT16)w, 0);
 			if (texturesLumpPos != INT16_MAX)
 			{
-				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name);
+				R_ParseTEXTURESLumpEx(w, texturesLumpPos, &i, name, lastname);
 				if (i != oldi)
 					// guesstimate the actual index of our texture
 					return oldi;
@@ -1004,11 +999,18 @@ static INT32 R_LoadWallFlatOrTexture(const char *name)
 
 		if (!( texstart == INT16_MAX || texend == INT16_MAX ))
 		{
+			boolean range = false;
 			for (i = texstart; i < texend; i++)
 			{
 				lumpnum_t lumpnum = (w<<16) | i;
-				if (!strncmp(W_CheckNameForNum(lumpnum), name, 8))
-					return R_LoadTexture(w, i, numtextures);
+				if (range || !strncmp(W_CheckNameForNum(lumpnum), name, 8))
+				{
+					INT32 result = R_LoadTexture(w, i, numtextures);
+					if (result > -1 && lastname)
+						range = true;
+					if (!range || !strncmp(W_CheckNameForNum(lumpnum), lastname, 8))
+						return result;
+				}
 			}
 		}
 		
@@ -1027,11 +1029,18 @@ static INT32 R_LoadWallFlatOrTexture(const char *name)
 
 		if (!( texstart == INT16_MAX || texend == INT16_MAX ))
 		{
+			boolean range = false;
 			for (i = texstart; i < texend; i++)
 			{
 				lumpnum_t lumpnum = (w<<16) | i;
-				if (!strncmp(W_CheckNameForNum(lumpnum), name, 8))
-					return R_LoadWallFlat(w, i, numtextures);
+				if (range || !strncmp(W_CheckNameForNum(lumpnum), name, 8))
+				{
+					INT32 result = R_LoadWallFlat(w, i, numtextures);
+					if (result > -1 && lastname)
+						range = true;
+					if (!range || !strncmp(W_CheckNameForNum(lumpnum), lastname, 8))
+						return result;
+				}
 			}
 		}
 #endif
@@ -1039,8 +1048,7 @@ static INT32 R_LoadWallFlatOrTexture(const char *name)
 	return -1;
 }
 
-// TODO: Animdefs?
-#endif
+#define R_LoadWallFlatOrTextureForName(name) R_LoadWallFlatOrTextureForNameEx(name, NULL)
 
 #ifdef WALLFLATS
 static INT32
@@ -1141,13 +1149,21 @@ void R_ClearTextures(void)
 			HWR_FreeTextureCache();
 #endif
 	}
+
 	// TODO: Load first texture at index 0, not index 1. See issue #167
 	// For now, initialize a new textures[] buffer so we can offset indexes by 1.
 #ifndef LOWMEMORY
-	// Texture buffer is not modified in R_LoadTexture
+	// Texture buffer is not modified in R_LoadTexture, so grow it here.
 	R_GrowTexture();
+	// Stupid hack to ensure we load at index 0; see R_LoadTextureForName
+	numtextures = 0;
 #endif
+	// Something needs to be loaded into index 0 so PrecacheLevel doesn't crash. 
+	// SKY68 is an empty def.
 	R_LoadTextureForName("SKY68");
+#ifndef LOWMEMORY
+	numtextures = 1;
+#endif
 }
 
 //
@@ -1681,17 +1697,14 @@ int R_CountTexturesInTEXTURESLump(UINT16 wadNum, UINT16 lumpNum)
 }
 
 // Parses the TEXTURES lump... for real, this time.
-#ifdef LOWMEMORY
-void R_ParseTEXTURESLumpEx(UINT16 wadNum, UINT16 lumpNum, INT32 *texindex, const char *name)
-#else
-void R_ParseTEXTURESLump(UINT16 wadNum, UINT16 lumpNum, INT32 *texindex)
-#endif
+void R_ParseTEXTURESLumpEx(UINT16 wadNum, UINT16 lumpNum, INT32 *texindex, const char *name, const char *lastname)
 {
 	char *texturesLump;
 	size_t texturesLumpLength;
 	char *texturesText;
 	char *texturesToken;
 	texture_t *newTexture;
+	boolean range = false;
 
 	I_Assert(texindex != NULL);
 
@@ -1722,18 +1735,21 @@ void R_ParseTEXTURESLump(UINT16 wadNum, UINT16 lumpNum, INT32 *texindex)
 			// Get the new texture
 			newTexture = R_ParseTexture(true);
 #ifdef LOWMEMORY
-			if (!name || (name && !strncmp(newTexture->name, name, 8)))
+			if (!name || range || (name && !strncmp(newTexture->name, name, 8)))
 			{
-#endif
 			// Store the new texture
 			R_GrowTexture();
+#endif
 			textures[*texindex] = newTexture;
 			texturewidth[*texindex] = newTexture->width;
 			textureheight[*texindex] = newTexture->height << FRACBITS;
 			// Increment i back in R_LoadTextures()
 			(*texindex)++;
 #ifdef LOWMEMORY
-			break;
+			if (lastname)
+				range = true;
+			if (!range || !strncmp(newTexture->name, lastname, 8))
+				break;
 			}
 			else
 				Z_Free(newTexture);
@@ -2829,7 +2845,7 @@ void R_ClearTextureNumCache(boolean btell)
 //
 // Check whether texture is available. Filter out NoTexture indicator.
 //
-INT32 R_CheckTextureNumForName(const char *name)
+INT32 R_CheckTextureNumForNameEx(const char *name, boolean loadifmissing)
 {
 	INT32 i;
 
@@ -2857,13 +2873,12 @@ INT32 R_CheckTextureNumForName(const char *name)
 			return i;
 		}
 
-#ifdef LOWMEMORY
 	// Still here? Load the texture dynamically and return
 	// the new index. Cache this texture num at the next pass.
-	return R_LoadWallFlatOrTexture(name);
-#else
-	return -1;
-#endif
+	if (loadifmissing)
+		return R_LoadWallFlatOrTextureForName(name);
+	else
+		return -1;
 }
 
 //

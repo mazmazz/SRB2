@@ -92,6 +92,7 @@ extern INT16 *hicolormaps; // remap high colors to high colors..
 extern CV_PossibleValue_t Color_cons_t[];
 
 // Load TEXTURES definitions, create lookup tables
+INT32 R_LoadWallFlatOrTextureForNameEx(const char *name, const char *lastname);
 void R_InitTextures(void);
 #ifdef LOWMEMORY
 void R_ClearTextures(void);
@@ -121,7 +122,12 @@ lumpnum_t R_GetFlatNumForName(const char *name);
 // returns the texture number for the texture name.
 void R_ClearTextureNumCache(boolean btell);
 INT32 R_TextureNumForName(const char *name);
-INT32 R_CheckTextureNumForName(const char *name);
+INT32 R_CheckTextureNumForNameEx(const char *name, boolean loadifmissing);
+#ifdef LOWMEMORY
+#define R_CheckTextureNumForName(name) R_CheckTextureNumForNameEx(name, true)
+#else
+#define R_CheckTextureNumForName(name) R_CheckTextureNumForNameEx(name, false)
+#endif
 
 // Extra Colormap lumps (C_START/C_END) are not used anywhere
 // Uncomment to enable

@@ -1770,7 +1770,7 @@ static boolean P_LoadMapData(const virtres_t *virt)
 	R_ClearTextureNumCache(true);
 
 #ifdef LOWMEMORY
-	// By now, all the level textures are allocated
+	// By now, all the level textures are allocated, so we know which anims to load
 	P_InitPicAnims();
 #endif
 
