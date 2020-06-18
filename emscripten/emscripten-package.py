@@ -27,7 +27,7 @@ defaults = {
     'build_dir': f'{script_dir}/../bin/Emscripten/Release',
     'landing_dir': f'{script_dir}/landing',
     'data_dir': f'{script_dir}/data',
-    'url': f'https://srb2webbeta.netlify.app'
+    'url': f'https://srb2web.surge.sh'
 }
 
 def populate_shell_template(shell_version, gtag, package_versions, default_package_version, landing_dir=defaults['landing_dir'], url=defaults['url']):

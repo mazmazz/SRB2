@@ -25,6 +25,11 @@
     -->
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta property="og:title" content="Sonic Robo Blast 2 for Web">
+    <meta property="og:description" content="Play this 3D Sonic the Hedgehog fangame in your web browser! Works on PC, Chromebook, iPhone, and Android.">
+    <meta property="og:image" content="https://srb2web.surge.sh/assets/landing.png">
+    <meta property="og:url" content="https://srb2web.surge.sh">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -310,19 +315,22 @@
           </p>
         </div>
         <div id="details">
-          <p>To play SRB2 for Web, go to <a href="https://srb2webbeta.netlify.app">https://srb2webbeta.netlify.app</a>.</p>
+          <p>To play SRB2 for Web, go to <a href="https://srb2web.surge.sh">https://srb2web.surge.sh</a>.</p>
           <p class="noniOS">First, save a backup of your game data here. Then, you can upload it onto the new website.</p>
           <p class="isiOS">You should wipe your Program Data here because it is unusable in the new web site. You will download a new copy of the Program Data at the new site.</p>
         </div>
         <div>
           <button class="noniOS" class="redButton" onclick="if (confirm('Are you sure? Once you download your user data, you cannot retrieve it from this page again.')) { DownloadFS().then(_=>ResetProgramData(true, _=>alert('Program data reset.'))).then(_=>DeleteFS('/home/web_user/.srb2', true, _=>alert('User data wiped. You can upload your backup onto the new web site.'))).catch(err=>alert(`Error -- if you did not yet download your user data, then it may be safe.\n\n${err}`)); } return false;">Back up and Wipe</button>
           <button class="isiOS" class="redButton" onclick="if (confirm('Are you sure? You will be unable to retrieve your user data from this page again.')) { ResetProgramData(true, _=>alert('Program data reset.')).then(_=>DeleteFS('/home/web_user/.srb2', true, _=>alert('User data wiped.'))).catch(err=>alert(`Error -- try wiping your program data in the iOS Safari settings.\n\n${err}`)); } return false;">Wipe Program Data</button>
-          <button class="yellowButton" onclick="window.location.href='https:\/\/srb2webbeta.netlify.app'; return false;">Go to App</button>
+          <button class="yellowButton" onclick="window.location.href='https:\/\/srb2web.surge.sh'; return false;">Go to App</button>
         </div>
         <details id="footer">
           <summary>About</summary>
           <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
           <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
+          <p>
+            Follow the <a href="https://discord.gg/fMuddqH" target="_blank">SRB2 for Web Updates Discord</a> for news and support!
+          </p>
           <p><a href="https://github.com/mazmazz/SRB2-emscripten/issues">View issues</a> / <a href="https://github.com/mazmazz/SRB2-emscripten">View source</a></p>
           <p>Contributors:</p>
           <p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
