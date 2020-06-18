@@ -36,7 +36,7 @@ extern size_t maxdrawsegs;
 #ifdef LOWMEMORY
 extern UINT8 cleardrawsegs;
 #define CLEARDRAWSEGSINTERVAL 5
-#define MAXDRAWSEGSINTERVAL 64
+#define MAXDRAWSEGSINTERVAL 96
 #endif
 extern INT32 doorclosed;
 
