@@ -2147,8 +2147,10 @@
       };
 
       var LockMouse = () => {
-        if (StartedMainLoop)
+        if (StartedMainLoop) {
+          CanvasElement.requestPointerLock();
           Module.ccall('lock_mouse', null, [], []);
+        }
       };
       
       var UnlockMouse = (force = false) => {
