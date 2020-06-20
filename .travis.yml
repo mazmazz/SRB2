@@ -9,6 +9,9 @@ dist: trusty
 
 matrix:
     include:
+################################
+# Feature Branch Buildbots
+################################
         - os: linux
           language: android
           android:
@@ -53,85 +56,56 @@ matrix:
           env: 
             - EMSCRIPTEN=1
             - BUILD=${BUILD:-Release}
-            - ASSET_FILE_PATHS="https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-assets.7z;https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-optional-assets-em.7z"
+            - ASSET_ARCHIVE_PATHS="https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-assets.7z;https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-optional-assets-em.7z"
+            - ASSET_ARCHIVE_PATH_LOWEND="https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-lowend-assets.7z"
           cache:
             apt: true
             directories:
             - $HOME/srb2_cache
-            - $TRAVIS_BUILD_DIR/objs/Emscripten/SDL/$BUILD
-          install:
-            # Save PWD to a file; for some reason, this var gets obliterated
-            - echo "$PWD" > ~/oldpwd.txt
-            # Install latest emscripten
-            - git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
-            - cd ~/emsdk
-            - ./emsdk install latest
-            - ./emsdk activate latest
-            - source ./emsdk_env.sh
-            # Install llvm 10 (current latest version)
-            - wget https://apt.llvm.org/llvm.sh
-            - chmod +x llvm.sh
-            - sudo ./llvm.sh 10
-            - export PATH="/usr/lib/llvm-10/bin:$PATH"
-            # Finishing touches
-            - mkdir -p $HOME/srb2_cache
-            - cd "$(<~/oldpwd.txt)"
-            - if [[ "${USE_OBJ_CACHE}" != "1" ]]; then
-                shopt -s globstar;
-                for f in objs/Emscripten/SDL/${BUILD}/**/*; do [[ -f $f ]] && echo rm -- "$f"; done;
-                shopt -u globstar;
-              fi;
-          script:
-            - cd $TRAVIS_BUILD_DIR
-            - if [[ "${BUILD}" == "Debug" ]]; then
-                DEBUGCMD="DEBUGMODE=1";
-              fi
-            - emmake make -C src/ $DEBUGCMD
-          after_success:
-            # Compile asset tree for deployment
-            - if [[ "$GTAG" != "" ]]; then
-                GTAG="--gtag $GTAG";
-              fi
-            - if [[ "$BASE_VERSION" != "" ]]; then
-                BASE_VERSION="--base-version ${BASE_VERSION}";
-              fi
-            - if [[ "$PACKAGE_VERSION" == "" ]]; then
-                PACKAGE_VERSION="${TRAVIS_COMMIT:0:8}";
-              fi
-            - python3 emscripten/emscripten-package.py ${PACKAGE_VERSION} ${GTAG} 
-                ${BASE_VERSION} --build-dir "bin/Emscripten/${BUILD}" --data-dir "$__ASSET_DIRECTORY" 
-                --ewad music.dta --out-zip "emscripten/srb2-web-${PACKAGE_VERSION}.zip"
-                --out-zip-no-assets "emscripten/srb2-web-no-assets-${PACKAGE_VERSION}.zip"
-          ################################
-          # This job deploys to GitHub Releases and Netlify.
-          # Netlify is deployed to preview; the URL will be in the build log.
-          # 
-          # Grab your Netlify site's API ID at:
-          #   Your site > Settings > General - Site details
-          # The API key is in GUID format.
-          # In your Travis environment variables, set NETLIFY_SITE= to this ID.
-          #
-          # Setup your personal access token at:
-          #   User Settings > Applications > Personal Access Tokens
-          # In your Travis environment variables, set NETLIFY_TOKEN= to your token.
-          ################################
+          before_install: ~
+          install: $TRAVIS_BUILD_DIR/travis/emscripten_install.sh
+          script: $TRAVIS_BUILD_DIR/travis/emscripten_script.sh
+          after_success: ~
           deploy:
             - provider: releases
               api_key: $DPL_GITHUB_TOKEN
               file_glob: true
-              file: emscripten/*.zip # relative to [repo]
+              file: $TRAVIS_BUILD_DIR/emscripten/*.zip
               skip_cleanup: true
               draft: true
               on:
                 all_branches: true
+                condition: >
+                          "$DPL_DISABLED" != "1" &&
+                          "$DPL_GITHUB_TOKEN" != ""
             - provider: netlify
               edge: true # opt into dpl v2
-              site: $NETLIFY_SITE
-              auth: $NETLIFY_TOKEN
-              dir: emscripten/landing
+              site: $DPL_NETLIFY_SITE
+              auth: $DPL_NETLIFY_TOKEN
+              dir: $TRAVIS_BUILD_DIR/emscripten/landing
               skip_cleanup: true
               on:
                 all_branches: true
+                condition: >
+                          "$DPL_DISABLED" != "1" &&
+                          "$DPL_NETLIFY_SITE" != "" &&
+                          "$DPL_NETLIFY_TOKEN" != ""
+            - provider: surge
+              edge: true # opt in to dpl v2
+              login: $DPL_SURGE_LOGIN
+              token: $DPL_SURGE_TOKEN
+              domain: $DPL_SURGE_DOMAIN
+              project: $TRAVIS_BUILD_DIR/emscripten/landing
+              skip_cleanup: true
+              on:
+                all_branches: true
+                condition: >
+                          "$DPL_DISABLED" != "1" &&
+                          "$DPL_SURGE_LOGIN" != "" &&
+                          "$DPL_SURGE_TOKEN" != "" &&
+                          "$DPL_SURGE_DOMAIN" != ""
+            
+        # Emscripten
 
 ################################
 # Deploying Buildbots
