@@ -195,9 +195,12 @@ extern UINT8 *scr_borderpatch; // patch used to fill the view borders
 
 extern CV_PossibleValue_t cv_renderer_t[];
 
-extern consvar_t cv_scr_width, cv_scr_height, cv_scr_depth, cv_scr_resize, cv_scr_resizeheight, cv_renderview, cv_renderer, cv_fullscreen;
+extern consvar_t cv_scr_width, cv_scr_height, cv_scr_depth, cv_scr_resize, cv_renderview, cv_renderer, cv_fullscreen;
 #ifdef HWRENDER
 extern consvar_t cv_newrenderer;
+#endif
+#if !defined(__ANDROID__)
+extern consvar_t cv_scr_resizeheight;
 #endif
 // wait for page flipping to end or not
 extern consvar_t cv_vidwait;
@@ -206,7 +209,7 @@ extern consvar_t cv_vidwait;
 void SCR_SetMode(void);
 // Change resolution
 void SCR_SetResolution(void);
-#if !defined(__ANDROID__) || defined(__EMSCIRPTEN__)
+#if !defined(__ANDROID__)
 // Resize dimensions for resolution
 void SCR_ResizeDimensions(INT32 *x, INT32 *y, INT32 resizeHeight);
 #endif

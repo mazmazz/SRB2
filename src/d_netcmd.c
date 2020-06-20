@@ -918,7 +918,9 @@ void D_RegisterClientCommands(void)
 	CV_RegisterVar(&cv_scr_width);
 	CV_RegisterVar(&cv_scr_height);
 	CV_RegisterVar(&cv_scr_resize);
+#if !defined(__ANDROID__)
 	CV_RegisterVar(&cv_scr_resizeheight);
+#endif
 
 	CV_RegisterVar(&cv_soundtest);
 

@@ -709,7 +709,7 @@ void R_ParseTEXTURESLumpEx(UINT16 wadNum, UINT16 lumpNum, INT32 *index, const ch
 #define TX_START "TX_START"
 #define TX_END "TX_END"
 
-void R_GrowTextures(INT32 count)
+static void R_GrowTextures(INT32 count)
 {
 	INT32 i, oldnumtexes;
 	texture_t **newtextures;
@@ -865,11 +865,13 @@ static INT32 R_LoadWallFlat(UINT16 wadnum, lumpnum_t lumpnum, INT32 texindex)
 	return texindex;
 }
 
+#if 0 // Unused
 static INT32 R_LoadWallFlatForName(const char *name)
 {
 	lumpnum_t lumpnum = W_GetNumForName(name);
 	return R_LoadWallFlat(WADFILENUM(lumpnum), LUMPNUM(lumpnum), numtextures);
 }
+#endif
 #endif
 
 static INT32 R_LoadTexture(UINT16 wadnum, lumpnum_t lumpnum, INT32 texindex)
@@ -1714,7 +1716,12 @@ void R_ParseTEXTURESLumpEx(UINT16 wadNum, UINT16 lumpNum, INT32 *texindex, const
 	char *texturesText;
 	char *texturesToken;
 	texture_t *newTexture;
+#ifdef LOWMEMORY
 	boolean range = false;
+#else	
+	(void)name;
+	(void)lastname;
+#endif
 
 	I_Assert(texindex != NULL);
 

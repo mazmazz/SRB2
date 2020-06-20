@@ -68,7 +68,9 @@ consvar_t cv_scr_width = {"scr_width", CONFIGVIDWIDTH, CV_SAVE|CV_CALL|CV_NOINIT
 consvar_t cv_scr_height = {"scr_height", CONFIGVIDHEIGHT, CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeHeightCVAR, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_depth = {"scr_depth", "16 bits", CV_SAVE, scr_depth_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_resize = {"scr_resize", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+#if !defined(__ANDROID__)
 consvar_t cv_scr_resizeheight = {"scr_resizeheight", "0", CV_SAVE|CV_CALL|CV_NOINIT, CV_Unsigned, SCR_ChangeResizeHeightCVAR, 0, NULL, NULL, 0, 0, NULL};
+#endif
 consvar_t cv_renderview = {"renderview", "On", 0, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 
 static void SCR_ActuallyChangeRenderer(void);
@@ -254,7 +256,7 @@ void SCR_SetResolution(void)
 	setrenderneeded = 0;
 }
 
-#if !defined(__ANDROID__) || defined(__EMSCIRPTEN__)
+#if !defined(__ANDROID__)
 void SCR_ResizeDimensions(INT32 *x, INT32 *y, INT32 resizeHeight)
 {
 	boolean portrait = (*x < *y);
@@ -530,6 +532,7 @@ void SCR_ChangeHeightCVAR(void)
 	setresneeded[2] = 1;
 }
 
+#if !defined(__ANDROID__)
 // Called after changing the value of scr_resizeheight
 void SCR_ChangeResizeHeightCVAR(void)
 {
@@ -540,6 +543,7 @@ void SCR_ChangeResizeHeightCVAR(void)
 	setresneeded[1] = newY;
 	setresneeded[2] = 1;
 }
+#endif
 
 static int target_renderer = 0;
 
