@@ -22,20 +22,19 @@ matrix:
           before_install: ~
           install:
             - echo y | sdkmanager 'ndk-bundle'
-          after_success: ~
-          ################################
-          # This job deploys to GitHub Releases as a draft post.
-          # It is not visible to the public.
-          # 
-          # Setup your GitHub API token by going to your:
-          #   User Settings > Developer Settings > Personal Access Token
-          # Enable all Repo permissions; clear all other permissions.
-          # In your Travis environment variables, set GITHUB_TOKEN= to your token.
-          #
-          # When deploying new builds, make sure your previous
-          # draft release is published or deleted.
-          # New build drafts will NOT overwrite old build drafts.
-          ################################
+          script:
+            - cd $TRAVIS_BUILD_DIR/android
+            - ./gradlew build
+          after_success:
+            # Give unique names to APK
+            - if [[ "$TRAVIS_TAG" != "" ]]; then
+                PACKAGE_FILENAME="$TRAVIS_TAG-$TRAVIS_JOB_ID";
+              else
+                PACKAGE_FILENAME="${TRAVIS_COMMIT:0:8}-$TRAVIS_JOB_ID";
+              fi
+            - shopt -s globstar
+            - for f in $TRAVIS_BUILD_DIR/android/app/build/outputs/apk/**/*.apk; do [[ -f $f ]] && mv "$f" "$(dirname "$f")/srb2-android-${PACKAGE_FILENAME}-$(basename "$f")"; done
+            - shopt -u globstar
           deploy:
             - provider: releases
               api_key: $DPL_GITHUB_TOKEN
@@ -45,6 +44,10 @@ matrix:
               draft: true
               on:
                 all_branches: true
+                condition: >
+                          "$DPL_DISABLED" != "1" &&
+                          "$DPL_GITHUB_TOKEN" != ""
+        # Android NDK
         - os: linux
           dist: bionic
           env: 
@@ -621,12 +624,7 @@ before_script:
 
 script:
   # Build our Makefile from Cmake!
-  - if [[ "$ANDROID" == "1" ]]; then
-      cd $TRAVIS_BUILD_DIR/android;
-      ./gradlew build;
-    else
-      ${__MAKE} -k;
-    fi;
+  - ${__MAKE} -k
 
 after_success:
   # Generate packages and installers
