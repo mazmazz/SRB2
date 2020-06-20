@@ -516,7 +516,7 @@ static menuitem_t MainMenu[] =
 	{IT_STRING|IT_CALL,    NULL, "Extras",      M_SecretsMenu,           92},
 	{IT_CALL   |IT_STRING, NULL, "Addons",      M_Addons,               100},
 	{IT_STRING|IT_CALL,    NULL, "Options",     M_Options,              108},
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	{IT_STRING|IT_CALL,    NULL, "Return  to  Menu",  M_QuitSRB2,       116},
 #else
 	{IT_STRING|IT_CALL,    NULL, "Quit  Game",  M_QuitSRB2,             116},
@@ -578,7 +578,7 @@ static menuitem_t MPauseMenu[] =
 	{IT_STRING | IT_CALL,    NULL, "Options",                   M_Options,             64},
 
 	{IT_STRING | IT_CALL,    NULL, "Return to Title",           M_EndGame,             80},
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	{IT_STRING | IT_CALL,    NULL, "Return to Menu",            M_QuitSRB2,            96},
 #else
 	{IT_STRING | IT_CALL,    NULL, "Quit Game",                 M_QuitSRB2,            88},
@@ -620,7 +620,7 @@ static menuitem_t SPauseMenu[] =
 
 	{IT_CALL | IT_STRING,    NULL, "Return to Title",      M_EndGame,             80},
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	{IT_CALL | IT_STRING,    NULL, "Return to Menu",       M_QuitSRB2,            96},
 #else
 	{IT_CALL | IT_STRING,    NULL, "Quit Game",            M_QuitSRB2,            88},
@@ -1382,7 +1382,7 @@ enum
 static menuitem_t OP_VideoOptionsMenu[] =
 {
 	{IT_HEADER, NULL, "Screen", NULL, 0},
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 	{IT_STRING | IT_CALL,  NULL, "Set Resolution...",       M_VideoModeMenu,          6},
 
@@ -3560,7 +3560,7 @@ boolean M_Responder(event_t *ev)
 				M_SetupNextMenu(&OP_SoundOptionsDef);
 				return true;
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 			case KEY_F5: // Video Mode
 				if (modeattacking)
 					return true;
@@ -3589,7 +3589,7 @@ boolean M_Responder(event_t *ev)
 				M_QuitSRB2(0);
 				return true;
 
-#ifdef __EMSCRIPTEN__ // free F11 for browser fullscreen
+#if defined(__EMSCRIPTEN__) // free F11 for browser fullscreen
 			case KEY_F5:
 #else
 			case KEY_F11: // Gamma Level
@@ -12605,7 +12605,7 @@ static void M_VideoModeMenu(INT32 choice)
 static void M_DrawMainVideoMenu(void)
 {
 	M_DrawGenericScrollMenu();
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	// No video mode menu in emscripten
 	if (itemOn < 8) // where it starts to go offscreen; change this number if you change the layout of the video menu
 	{

@@ -39,7 +39,7 @@
 #include "lua_hook.h"
 #include "md5.h" // demo checksums
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 
@@ -1995,7 +1995,7 @@ void G_DoPlayDemo(char *defdemoname)
 
 	demo_start = true;
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// Make the browser push frames as fast as possible
 	if (timingdemo)
 		emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
@@ -2390,7 +2390,7 @@ ATTRNORETURN void FUNCNORETURN G_StopMetalRecording(boolean kill)
 // called from stopdemo command, map command, and g_checkdemoStatus.
 void G_StopDemo(void)
 {
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	if (timingdemo)
 		emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 1000/NEWTICRATE);
 #endif

@@ -317,7 +317,7 @@ void I_UpdateSound(void)
 /// SFX
 /// ------------------------
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 // this is as fast as I can possibly make it.
 // sorry. more asm needed.
 static Mix_Chunk *ds2chunk(void *stream)
@@ -448,7 +448,7 @@ void *I_GetSfx(sfxinfo_t *sfx)
 	lump = W_CacheLumpNum(sfx->lumpnum, PU_SOUND);
 
 	// Doom sounds are not converted properly in emscripten, so fail silently.
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	// convert from standard DoomSound format.
 	chunk = ds2chunk(lump);
 	if (chunk)

@@ -450,7 +450,7 @@ static void G_HandleFingerEvent(event_t *ev)
 						INT32 padx = touch_joystick_x, pady = touch_joystick_y;
 						INT32 padw = touch_joystick_w, padh = touch_joystick_h;
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 						if (players[consoleplayer].mo &&
 							players[consoleplayer].powers[pw_carry] == CR_NIGHTSMODE)
 						{
@@ -1341,7 +1341,7 @@ void G_DefineDefaultControls(void)
 void G_SetupTouchSettings(void)
 {
 	touch_movementstyle = cv_touchstyle.value;
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	touch_camera = (!!cv_touchcamera.value);
 #else
 	touch_camera = (cv_usemouse.value ? false : (!!cv_touchcamera.value));
@@ -1528,7 +1528,7 @@ static void G_BuildTouchPreset(touchconfig_t *controls, touchconfigstatus_t *sta
 {
 	fixed_t x, y, w, h;
 	fixed_t dx, dy, dw, dh;
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	fixed_t corneroffsetxcon = 16 * FRACUNIT;
 	fixed_t corneroffsetycon = 4 * FRACUNIT;
 	fixed_t corneroffsetxnav = 4 * FRACUNIT;
@@ -1847,7 +1847,7 @@ void G_PositionTouchButtons(void)
 
 void G_PositionTouchNavigation(void)
 {
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	INT32 corneroffsetxnav = 8 * FRACUNIT;
 	INT32 corneroffsetynav = 8 * FRACUNIT;
 	INT32 wnav = 32 * FRACUNIT;

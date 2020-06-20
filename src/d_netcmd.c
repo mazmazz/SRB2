@@ -888,7 +888,7 @@ void D_RegisterClientCommands(void)
 	CV_RegisterVar(&cv_cam_lockonboss[0]);
 	CV_RegisterVar(&cv_cam_lockonboss[1]);
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// compensate for loud default soundfont
 	cv_midimusicvolume.defaultvalue = "9";
 	// default vertical resolution is 200p for all devices

@@ -23,7 +23,7 @@
 #include "../m_misc.h"/* path shit */
 #include "../i_system.h"
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #include "../screen.h"
 #include "../console.h"
@@ -206,7 +206,7 @@ static void InitLogging(void)
 #ifdef FORCESDLMAIN
 int SDL_main(int argc, char **argv)
 #else
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 int main_cont(int argc, char **argv)
 #else
 int main(int argc, char **argv)
@@ -271,7 +271,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 int main(int argc, char **argv)
 {
     EM_ASM(

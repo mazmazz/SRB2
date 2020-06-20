@@ -60,7 +60,7 @@ typedef off_t off64_t;
 #endif
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 
@@ -254,7 +254,7 @@ boolean FIL_WriteFile(char const *name, const void *source, size_t length)
 	count = fwrite(source, 1, length, handle);
 	fclose(handle);
 
-	#ifdef __EMSCRIPTEN__
+	#if defined(__EMSCRIPTEN__)
 		EM_ASM(
 			FS.syncfs(function (err) { console.log(err); });
 		);
@@ -630,7 +630,7 @@ void M_SaveConfig(const char *filename)
 
 	fclose(f);
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM(
 		FS.syncfs(function (err) { console.log(err); });
 	);

@@ -30,7 +30,7 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 //int	vsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 
@@ -646,7 +646,7 @@ static void D_SRB2LoopIter(void)
 {
 	tic_t entertic = 0, realtics = 0, rendertimeout = INFTICS;
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM({
 		InvalidateErrorChecks();
 	});
@@ -762,7 +762,7 @@ void D_SRB2Loop(void)
 
 	// make sure to do a d_display to init mode _before_ load a level
 	SCR_SetResolution(); // change video resolution
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// Initialize first screen resize
 	EM_ASM({
 		ChangeResolution();
@@ -791,7 +791,7 @@ void D_SRB2Loop(void)
 	if (gamestate != GS_TITLESCREEN)
 		V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(W_GetNumForName("CONSBACK"), PU_CACHE));
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	emscripten_set_main_loop(D_SRB2LoopIter, 35, 0);
 	EM_ASM({
 		StartedMainLoopCallback();

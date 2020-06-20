@@ -410,7 +410,7 @@ void TS_GetJoystick(fixed_t *x, fixed_t *y, fixed_t *w, fixed_t *h, boolean tiny
 {
 	if (tiny)
 	{
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 		// offset more center because the video takes the entire screen
 		if (x)
 			*x = 36 * FRACUNIT;
@@ -429,7 +429,7 @@ void TS_GetJoystick(fixed_t *x, fixed_t *y, fixed_t *w, fixed_t *h, boolean tiny
 	}
 	else
 	{
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 		// offset more center because the video takes the entire screen
 		if (x)
 			*x = 36 * FRACUNIT;

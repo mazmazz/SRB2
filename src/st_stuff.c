@@ -1234,7 +1234,7 @@ void ST_drawJoystickBacking(fixed_t padx, fixed_t pady, fixed_t padw, fixed_t pa
 	fixed_t dupx = vid.dupx*FRACUNIT;
 	fixed_t dupy = vid.dupy*FRACUNIT;
 	fixed_t xscale, yscale;
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// TODO: Get Android's JOY_ assets
 	patch_t *backing = W_CachePatchName("DSHADOW", PU_PATCH);
 #else
@@ -1355,7 +1355,7 @@ void ST_drawTouchDPad(
 
 void ST_drawTouchJoystick(fixed_t dpadx, fixed_t dpady, fixed_t dpadw, fixed_t dpadh, UINT8 color, INT32 flags)
 {
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// TODO: Get Android's JOY_ assets
 	patch_t *cursor = W_CachePatchName("DSHADOW", PU_PATCH);
 #else

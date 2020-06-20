@@ -2381,7 +2381,7 @@ void I_Quit(void)
 		free(myargv); // Deallocate allocated memory
 death:
 	W_Shutdown();
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	emscripten_cancel_main_loop();
 	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
 #ifndef HAVE_ASYNCIFY
@@ -2463,7 +2463,7 @@ void I_Error(const char *error, ...)
 				buffer, NULL);
 
 			W_Shutdown();
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 			emscripten_cancel_main_loop();
 			EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
 #ifndef HAVE_ASYNCIFY
@@ -2522,7 +2522,7 @@ void I_Error(const char *error, ...)
 
 	W_Shutdown();
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	emscripten_cancel_main_loop();
 	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
 #ifndef HAVE_ASYNCIFY

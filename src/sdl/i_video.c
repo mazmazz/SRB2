@@ -35,7 +35,7 @@
 #include "SDL_rwops.h"
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 
@@ -119,7 +119,7 @@ INT32 vid_opengl_state = 0;
 // To disable fullscreen at startup; is set in VID_PrepareModeList
 boolean allow_fullscreen = false;
 static SDL_bool disable_fullscreen = SDL_FALSE;
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 // Fullscreen reacts weirdly to browser resize events
 #define USE_FULLSCREEN 0
 // use non-cvars for programmatic handling
@@ -401,7 +401,7 @@ static boolean IgnoreMouse(void)
 {
 	if (cv_alwaysgrabmouse.value)
 		return false;
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	if (alwaysgrabmouse)
 		return false;
 #endif
@@ -448,7 +448,7 @@ void I_UpdateMouseGrab(void)
 		SDLdoGrabMouse();
 }
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 void lock_mouse(void)
 {
 	if (!disable_mouse)
@@ -572,7 +572,7 @@ static void VID_Command_Mode_f (void)
 		return;
 	}
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	modenum = atoi(COM_Argv(1));
 
 	if (modenum >= VID_NumModes())
@@ -705,7 +705,7 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 
 	// Focus tracking is unreliable with browser events, so skip this.
 	// We handle this ourselves on JS-side.
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	if (mousefocus && kbfocus)
 	{
 		// Tell game we got focus back, resume music if necessary
@@ -761,7 +761,7 @@ static void Impl_HandleKeyboardEvent(SDL_KeyboardEvent evt, Uint32 type)
 		return;
 	}
 	event.key = Impl_SDL_Scancode_To_Keycode(evt.keysym.scancode);
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// workaround for web browsers mapping escape to mouse unlock/exit fullscreen
 	if (event.key == '\\')
 		event.key = KEY_ESCAPE;
@@ -1373,7 +1373,7 @@ void I_StartupMouse(void)
 	else
 		firsttimeonmouse = SDL_FALSE;
 	if (cv_usemouse.value && !IgnoreMouse()
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 		&& usemouse
 #endif
 	)
@@ -1389,7 +1389,7 @@ void I_RaiseScreenKeyboard(char *buffer, size_t length)
 	textbufferlength = length;
 	textinputcallback = NULL;
 	SDL_StartTextInput();
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM({
 		I_RaiseScreenKeyboard();
 	});
@@ -1410,7 +1410,7 @@ void I_CallScreenKeyboardCallback(char *text, size_t length)
 boolean I_KeyboardOnScreen(void)
 {
 	return
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM_INT({
 		return I_KeyboardOnScreen();
 	}) &&
@@ -1424,7 +1424,7 @@ void I_CloseScreenKeyboard(void)
 	textbufferlength = 0;
 	textinputcallback = NULL;
 	SDL_StopTextInput();
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM({
 		I_CloseScreenKeyboard();
 	});
@@ -2128,7 +2128,7 @@ void I_StartupGraphics(void)
 	if (graphics_started)
 		return;
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	cv_vidwait.defaultvalue = "off";
 #endif
 
