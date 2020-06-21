@@ -515,9 +515,10 @@ void Z_FlushCachedPatches(void)
 	Z_FreeTag(PU_CACHE);
 	Z_FreeTag(PU_PATCH);
 	Z_FreeTag(PU_HUDGFX);
-	Z_FreeTag(PU_HWRPATCHINFO);
-	Z_FreeTag(PU_HWRMODELTEXTURE);
-	Z_FreeTag(PU_HWRCACHE);
+	//Don't free locked GL memory (?)
+	//Z_FreeTag(PU_HWRPATCHINFO);
+	//Z_FreeTag(PU_HWRMODELTEXTURE);
+	//Z_FreeTag(PU_HWRCACHE);
 	Z_FreeTag(PU_HWRCACHE_UNLOCKED);
 	Z_FreeTag(PU_HWRPATCHINFO_UNLOCKED);
 	Z_FreeTag(PU_HWRMODELTEXTURE_UNLOCKED);

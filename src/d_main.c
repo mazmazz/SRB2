@@ -30,7 +30,7 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 //int	vsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 
@@ -646,7 +646,7 @@ static void D_SRB2LoopIter(void)
 {
 	tic_t entertic = 0, realtics = 0, rendertimeout = INFTICS;
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM({
 		InvalidateErrorChecks();
 	});
@@ -762,11 +762,11 @@ void D_SRB2Loop(void)
 
 	// make sure to do a d_display to init mode _before_ load a level
 	SCR_SetResolution(); // change video resolution
-#ifdef __EMSCRIPTEN__
-	// Dirty hack to properly size the game viewport at first run.
-	// This invokes the window.onresize event handler.
-	// See srb2.js _emscripten_set_resize_callback_on_thread
-	emscripten_run_script("window.dispatchEvent(new Event('resize'));");
+#if defined(__EMSCRIPTEN__)
+	// Initialize first screen resize
+	EM_ASM({
+		ChangeResolution();
+	});
 #endif
 	SCR_Recalc();
 
@@ -791,7 +791,7 @@ void D_SRB2Loop(void)
 	if (gamestate != GS_TITLESCREEN)
 		V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(W_GetNumForName("CONSBACK"), PU_CACHE));
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	emscripten_set_main_loop(D_SRB2LoopIter, 35, 0);
 	EM_ASM({
 		StartedMainLoopCallback();
@@ -891,7 +891,7 @@ void D_StartTitle(void)
 
 	currentMenu = &MainDef; // reset the current menu ID
 #ifdef TOUCHINPUTS
-	G_TouchNavigationPreset();
+	G_PositionTouchNavigation();
 #endif
 
 	// Reset the palette
@@ -1066,7 +1066,7 @@ static void IdentifyVersion(void)
 	D_AddFile(FILEPATH("patch.pk3"));
 #endif
 
-#if defined(__ANDROID__)
+#ifdef USE_ANDROID_PK3
 	// Android assets
 	D_AddFile(FILEPATH("android.pk3"));
 #endif
@@ -1181,7 +1181,7 @@ void D_SRB2Main(void)
 	"We do not claim ownership of SEGA's intellectual property used\n"
 	"in this program.\n\n");
 
-#if defined(__ANDROID__)
+#ifdef SPLASH_SCREEN
 	I_SplashScreen();
 #endif
 
@@ -1311,7 +1311,7 @@ void D_SRB2Main(void)
 #ifdef USE_PATCH_DTA
 	mainwads++;
 #endif
-#if defined(__ANDROID__)
+#ifdef USE_ANDROID_PK3
 	mainwads++;
 #endif
 #if defined(__EMSCRIPTEN__)
@@ -1332,7 +1332,7 @@ void D_SRB2Main(void)
 #ifdef USE_PATCH_DTA
 	W_VerifyFileMD5(3, ASSET_HASH_PATCH_PK3); // patch.pk3
 #endif
-#if defined(__ANDROID__)
+#ifdef USE_ANDROID_PK3
 	W_VerifyFileMD5(4, ASSET_HASH_ANDROID_PK3); // android.pk3
 #endif
 #if 0
@@ -1386,7 +1386,7 @@ void D_SRB2Main(void)
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	VID_PrepareModeList(); // Regenerate Modelist according to cv_fullscreen
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	EM_ASM({
 		UpdateFullscreenStatus();
 	});

@@ -45,6 +45,10 @@
 #include "p_setup.h"
 #include "f_finale.h"
 
+#ifdef TOUCHINPUTS
+#include "ts_custom.h"
+#endif
+
 #ifdef HWRENDER
 #include "hardware/hw_main.h"
 #endif
@@ -71,7 +75,7 @@
 #if SDL_VERSION_ATLEAST(2,0,0)
 #include "sdl/sdlmain.h" // JOYSTICK_HOTPLUG
 #endif
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 #endif
@@ -308,9 +312,12 @@ menu_t OP_PlaystyleDef;
 
 #ifdef TOUCHINPUTS
 menu_t OP_TouchOptionsDef;
+menu_t OP_TouchControlsDef;
+menu_t OP_TouchCustomizationDef;
 #endif
 
 static void M_VideoModeMenu(INT32 choice);
+
 static void M_Setup1PControlsMenu(INT32 choice);
 static void M_Setup2PControlsMenu(INT32 choice);
 static void M_Setup1PJoystickMenu(INT32 choice);
@@ -319,6 +326,10 @@ static void M_Setup1PPlaystyleMenu(INT32 choice);
 static void M_Setup2PPlaystyleMenu(INT32 choice);
 static void M_AssignJoystick(INT32 choice);
 static void M_ChangeControl(INT32 choice);
+
+#ifdef TOUCHINPUTS
+static void M_CustomizeTouchControls(INT32 choice);
+#endif
 
 // Video & Sound
 static void M_VideoOptions(INT32 choice);
@@ -508,7 +519,11 @@ static menuitem_t MainMenu[] =
 	{IT_STRING|IT_CALL,    NULL, "Extras",      M_SecretsMenu,           92},
 	{IT_CALL   |IT_STRING, NULL, "Addons",      M_Addons,               100},
 	{IT_STRING|IT_CALL,    NULL, "Options",     M_Options,              108},
+#if defined(__EMSCRIPTEN__)
+	{IT_STRING|IT_CALL,    NULL, "Return  to  Menu",  M_QuitSRB2,       116},
+#else
 	{IT_STRING|IT_CALL,    NULL, "Quit  Game",  M_QuitSRB2,             116},
+#endif
 };
 
 typedef enum
@@ -566,7 +581,9 @@ static menuitem_t MPauseMenu[] =
 	{IT_STRING | IT_CALL,    NULL, "Options",                   M_Options,             64},
 
 	{IT_STRING | IT_CALL,    NULL, "Return to Title",           M_EndGame,             80},
-#ifndef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
+	{IT_STRING | IT_CALL,    NULL, "Return to Menu",            M_QuitSRB2,            96},
+#else
 	{IT_STRING | IT_CALL,    NULL, "Quit Game",                 M_QuitSRB2,            88},
 #endif
 };
@@ -606,7 +623,11 @@ static menuitem_t SPauseMenu[] =
 
 	{IT_CALL | IT_STRING,    NULL, "Return to Title",      M_EndGame,             80},
 
+#if defined(__EMSCRIPTEN__)
+	{IT_CALL | IT_STRING,    NULL, "Return to Menu",       M_QuitSRB2,            96},
+#else
 	{IT_CALL | IT_STRING,    NULL, "Quit Game",            M_QuitSRB2,            88},
+#endif
 };
 
 typedef enum
@@ -1218,28 +1239,40 @@ static menuitem_t OP_Mouse2OptionsMenu[] =
 #ifdef TOUCHINPUTS
 static menuitem_t OP_TouchOptionsMenu[] =
 {
-	{IT_STRING | IT_CVAR, NULL, "Movement style",         &cv_touchstyle,     10},
-	{IT_STRING | IT_CVAR, NULL, "Camera movement",        &cv_touchcamera,    20},
-	{IT_STRING | IT_CVAR, NULL, "Use tiny preset",        &cv_touchtiny,      30},
+	{IT_STRING | IT_CVAR,    NULL, "Movement Style",         &cv_touchstyle,        10},
+	{IT_STRING | IT_CVAR,    NULL, "Camera Movement",        &cv_touchcamera,       20},
+	{IT_STRING | IT_SUBMENU, NULL, "Touch Controls...",      &OP_TouchControlsDef,  30},
 
 	{IT_STRING | IT_CVAR, NULL, "First-Person Vert-Look", &cv_alwaysfreelook, 50},
 	{IT_STRING | IT_CVAR, NULL, "Third-Person Vert-Look", &cv_chasefreelook,  60},
 
-	{IT_STRING | IT_CVAR | IT_CV_FLOATSLIDER,
-	                      NULL, "Input GUI scale",        &cv_touchguiscale,  80},
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-	                      NULL, "Input translucency",     &cv_touchtrans,     90},
+	                      NULL, "Input translucency",     &cv_touchtrans,     80},
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-	                      NULL, "Menu translucency",      &cv_touchmenutrans, 100},
+	                      NULL, "Menu translucency",      &cv_touchmenutrans, 90},
 
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-	                      NULL, "Touch Horz. Sensitivity",   &cv_touchsens,        120},
+	                      NULL, "Touch Horz. Sensitivity",   &cv_touchsens,        110},
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-	                      NULL, "Touch Vert. Sensitivity",   &cv_touchvertsens,    130},
+	                      NULL, "Touch Vert. Sensitivity",   &cv_touchvertsens,    120},
 	{IT_STRING | IT_CVAR | IT_CV_FLOATSLIDER,
-	                      NULL, "Joy. Horz. Sensitivity",    &cv_touchjoyhorzsens, 140},
+	                      NULL, "Joy. Horz. Sensitivity",    &cv_touchjoyhorzsens, 130},
 	{IT_STRING | IT_CVAR | IT_CV_FLOATSLIDER,
-	                      NULL, "Joy. Vert. Sensitivity",    &cv_touchjoyvertsens, 150},
+	                      NULL, "Joy. Vert. Sensitivity",    &cv_touchjoyvertsens, 140},
+};
+
+static menuitem_t OP_TouchControlsMenu[] =
+{
+	{IT_STRING | IT_CVAR, NULL, "Use Preset",   &cv_touchpreset,          10},
+	{IT_STRING | IT_CVAR | IT_CV_FLOATSLIDER,
+	                      NULL, "Preset Scale", &cv_touchguiscale,        20},
+
+	{IT_STRING | IT_CALL, NULL, "Customize...", M_CustomizeTouchControls, 40},
+};
+
+static menuitem_t OP_TouchCustomizationMenu[] =
+{
+	{IT_NOTHING, NULL, "", NULL, 0},
 };
 #endif
 
@@ -1352,13 +1385,13 @@ enum
 static menuitem_t OP_VideoOptionsMenu[] =
 {
 	{IT_HEADER, NULL, "Screen", NULL, 0},
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 	{IT_STRING | IT_CALL,  NULL, "Set Resolution...",       M_VideoModeMenu,          6},
-#endif
 
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	{IT_STRING|IT_CVAR,      NULL, "Fullscreen",             &cv_fullscreen,         11},
+#endif
 #endif
 	{IT_STRING | IT_CVAR, NULL, "Vertical Sync",                &cv_vidwait,         16},
 #ifdef HWRENDER
@@ -1368,7 +1401,11 @@ static menuitem_t OP_VideoOptionsMenu[] =
 #endif
 
 	{IT_HEADER, NULL, "Color Profile", NULL, 30},
+#ifdef __EMCSRIPTEN__
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Brightness (F5)", &cv_globalgamma,36},
+#else
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Brightness (F11)", &cv_globalgamma,36},
+#endif
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Saturation", &cv_globalsaturation, 41},
 	{IT_SUBMENU|IT_STRING, NULL, "Advanced Settings...",     &OP_ColorOptionsDef,  46},
 
@@ -1527,11 +1564,7 @@ static menuitem_t OP_SoundOptionsMenu[] =
 #define OPENMPT_MENUOFFSET 0
 #endif
 
-#ifdef HAVE_MIXERX
 #define MIXERX_MENUOFFSET 81
-#else
-#define MIXERX_MENUOFFSET 0
-#endif
 
 static menuitem_t OP_SoundAdvancedMenu[] =
 {
@@ -1540,10 +1573,12 @@ static menuitem_t OP_SoundAdvancedMenu[] =
 	{IT_STRING | IT_CVAR, NULL, "Instrument Filter", &cv_modfilter, 12},
 #endif
 
-#ifdef HAVE_MIXERX
 	{IT_HEADER, NULL, "MIDI Settings", NULL, OPENMPT_MENUOFFSET},
+#ifdef HAVE_MIXERX
 	{IT_STRING | IT_CVAR, NULL, "MIDI Player", &cv_midiplayer, OPENMPT_MENUOFFSET+12},
-	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "FluidSynth Sound Font File", &cv_midisoundfontpath, OPENMPT_MENUOFFSET+24},
+#endif
+	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "MIDI Sound Font File", &cv_midisoundfontpath, OPENMPT_MENUOFFSET+24},
+#ifdef HAVE_MIXERX
 	{IT_STRING | IT_CVAR | IT_CV_STRING, NULL, "TiMidity++ Config Folder", &cv_miditimiditypath, OPENMPT_MENUOFFSET+51},
 #endif
 
@@ -2121,8 +2156,24 @@ menu_t OP_JoystickSetDef =
 
 #ifdef TOUCHINPUTS
 menu_t OP_TouchOptionsDef = DEFAULTMENUSTYLE(
-	MN_OP_MAIN + (MN_OP_P1CONTROLS << 6) + (MN_OP_TOUCHSCREEN << 12),
+	MTREE3(MN_OP_MAIN, MN_OP_P1CONTROLS, MN_OP_TOUCHSCREEN),
 	"M_CONTRO", OP_TouchOptionsMenu, &OP_P1ControlsDef, 35, 30);
+
+menu_t OP_TouchControlsDef = DEFAULTMENUSTYLE(
+	MTREE4(MN_OP_MAIN, MN_OP_P1CONTROLS, MN_OP_TOUCHSCREEN, MN_OP_TOUCHCONTROLS),
+	"M_CONTRO", OP_TouchControlsMenu, &OP_TouchOptionsDef, 35, 30);
+
+menu_t OP_TouchCustomizationDef = {
+	MTREE4(MN_OP_MAIN, MN_OP_P1CONTROLS, MN_OP_TOUCHSCREEN, MN_OP_TOUCHCONTROLS),
+	"M_CONTRO",
+	sizeof (OP_TouchCustomizationMenu)/sizeof (menuitem_t),
+	&OP_TouchControlsDef,
+	OP_TouchCustomizationMenu,
+	TS_DrawCustomization,
+	35, 30,
+	0,
+	TS_ExitCustomization
+};
 #endif
 
 menu_t OP_CameraOptionsDef = {
@@ -2241,7 +2292,7 @@ static void M_OpenGLOptionsMenu(void)
 	if (rendermode == render_opengl)
 		M_SetupNextMenu(&OP_OpenGLOptionsDef);
 	else
-		M_StartMessage(M_GetText("You must be in OpenGL mode\nto access this menu.\n\n(Press a key)\n"), NULL, MM_NOTHING);
+		M_StartMessage(M_GetText("You must be in OpenGL mode\nto access this menu.\n\n" PRESS_A_KEY_MESSAGE), NULL, MM_NOTHING);
 }
 
 menu_t OP_OpenGLOptionsDef = DEFAULTMENUSTYLE(
@@ -3393,28 +3444,30 @@ boolean M_Responder(event_t *ev)
 			touchfinger_t *finger = &touchfingers[ev->key];
 			boolean button = false;
 
+			if (TS_IsCustomizingControls())
+			{
+				if (TS_HandleCustomization(x, y, finger, ev))
+					return true;
+			}
+
 			// Check for any buttons first
 			if (ev->type != ev_touchmotion) // Ignore motion events
 			{
 				INT32 i;
 				for (i = 0; i < NUMKEYS; i++)
 				{
-					touchconfig_t *butt = &touchnavigation[i];
-
-					// Ignore undefined buttons
-					if (!butt->w)
-						continue;
+					touchconfig_t *btn = &touchnavigation[i];
 
 					// Ignore hidden buttons
-					if (butt->hidden)
+					if (btn->hidden)
 						continue;
 
 					// Check if your finger touches this button.
-					if (G_FingerTouchesButton(x, y, butt))
+					if (G_FingerTouchesButton(x, y, btn))
 					{
 						ch = i;
 						button = true;
-						butt->pressed = I_GetTime() + (TICRATE/10);
+						btn->pressed = I_GetTime() + (TICRATE/10);
 						break;
 					}
 				}
@@ -3457,7 +3510,16 @@ boolean M_Responder(event_t *ev)
 		}
 		else if (ev->type == ev_touchup)
 		{
+			INT32 x = ev->x;
+			INT32 y = ev->y;
 			touchfinger_t *finger = &touchfingers[ev->key];
+
+			if (TS_IsCustomizingControls())
+			{
+				TS_HandleCustomization(x, y, finger, ev);
+				return true;
+			}
+
 			if (finger->type.menu)
 				ch = finger->u.keyinput;
 			finger->type.menu = false;
@@ -3501,10 +3563,11 @@ boolean M_Responder(event_t *ev)
 				M_SetupNextMenu(&OP_SoundOptionsDef);
 				return true;
 
-#ifndef __EMSCRIPTEN__ // switching keys around
+#if !defined(__EMSCRIPTEN__)
 			case KEY_F5: // Video Mode
 				if (modeattacking)
 					return true;
+				// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 				M_StartControlPanel();
 				M_Options(0);
 				M_VideoModeMenu(0);
@@ -3529,8 +3592,8 @@ boolean M_Responder(event_t *ev)
 				M_QuitSRB2(0);
 				return true;
 
-#ifdef __EMSCRIPTEN__
-			case KEY_F5: // switching F11 to fullscreen
+#if defined(__EMSCRIPTEN__) // free F11 for browser fullscreen
+			case KEY_F5:
 #else
 			case KEY_F11: // Gamma Level
 #endif
@@ -3557,7 +3620,7 @@ boolean M_Responder(event_t *ev)
 		CON_Toggle();
 		return true;
 	}
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	// Re-use as a fullscreen key
 	if (ch == KEY_F11)
 	{
@@ -3665,7 +3728,7 @@ boolean M_Responder(event_t *ev)
 					if (((currentMenu->menuitems[itemOn].status & IT_CALLTYPE) & IT_CALL_NOTMODIFIED) && modifiedgame && !savemoddata)
 					{
 						S_StartSound(NULL, sfx_skid);
-						M_StartMessage(M_GetText("This cannot be done in a modified game.\n\n(Press a key)\n"), NULL, MM_NOTHING);
+						M_StartMessage(M_GetText("This cannot be done in a modified game.\n\n" PRESS_A_KEY_MESSAGE), NULL, MM_NOTHING);
 						return true;
 					}
 #endif
@@ -6489,7 +6552,7 @@ static void M_Addons(INT32 choice)
 
 	if (!preparefilemenu(false))
 	{
-		M_StartMessage(va("No files/folders found.\n\n%s\n\n(Press a key)\n",LOCATIONSTRING1),NULL,MM_NOTHING);
+		M_StartMessage(va("No files/folders found.\n\n%s\n\n" PRESS_A_KEY_MESSAGE,LOCATIONSTRING1),NULL,MM_NOTHING);
 			// (recommendedflags == V_SKYMAP ? LOCATIONSTRING2 : LOCATIONSTRING1))
 		return;
 	}
@@ -6570,7 +6633,7 @@ static char *M_AddonsHeaderPath(void)
 
 #define UNEXIST S_StartSound(NULL, sfx_lose);\
 		M_SetupNextMenu(MISC_AddonsDef.prevMenu);\
-		M_StartMessage(va("\x82%s\x80\nThis folder no longer exists!\nAborting to main menu.\n\n(Press a key)\n", M_AddonsHeaderPath()),NULL,MM_NOTHING)
+		M_StartMessage(va("\x82%s\x80\nThis folder no longer exists!\nAborting to main menu.\n\n" PRESS_A_KEY_MESSAGE, M_AddonsHeaderPath()),NULL,MM_NOTHING)
 
 #define CLEARNAME Z_Free(refreshdirname);\
 					refreshdirname = NULL
@@ -6598,14 +6661,14 @@ static boolean M_AddonsRefresh(void)
 		{
 			S_StartSound(NULL, sfx_lose);
 			if (refreshdirmenu & REFRESHDIR_MAX)
-				message = va("%c%s\x80\nMaximum number of add-ons reached.\nA file could not be loaded.\nIf you wish to play with this add-on, restart the game to clear existing ones.\n\n(Press a key)\n", ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), refreshdirname);
+				message = va("%c%s\x80\nMaximum number of add-ons reached.\nA file could not be loaded.\nIf you wish to play with this add-on, restart the game to clear existing ones.\n\n" PRESS_A_KEY_MESSAGE, ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), refreshdirname);
 			else
-				message = va("%c%s\x80\nA file was not loaded.\nCheck the console log for more information.\n\n(Press a key)\n", ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), refreshdirname);
+				message = va("%c%s\x80\nA file was not loaded.\nCheck the console log for more information.\n\n" PRESS_A_KEY_MESSAGE, ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), refreshdirname);
 		}
 		else if (refreshdirmenu & (REFRESHDIR_WARNING|REFRESHDIR_ERROR))
 		{
 			S_StartSound(NULL, sfx_skid);
-			message = va("%c%s\x80\nA file was loaded with %s.\nCheck the console log for more information.\n\n(Press a key)\n", ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), refreshdirname, ((refreshdirmenu & REFRESHDIR_ERROR) ? "errors" : "warnings"));
+			message = va("%c%s\x80\nA file was loaded with %s.\nCheck the console log for more information.\n\n" PRESS_A_KEY_MESSAGE, ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), refreshdirname, ((refreshdirmenu & REFRESHDIR_ERROR) ? "errors" : "warnings"));
 		}
 
 		if (message)
@@ -6901,7 +6964,7 @@ static void M_HandleAddons(INT32 choice)
 								if (!preparefilemenu(false))
 								{
 									S_StartSound(NULL, sfx_skid);
-									M_StartMessage(va("%c%s\x80\nThis folder is empty.\n\n(Press a key)\n", ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), M_AddonsHeaderPath()),NULL,MM_NOTHING);
+									M_StartMessage(va("%c%s\x80\nThis folder is empty.\n\n" PRESS_A_KEY_MESSAGE, ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), M_AddonsHeaderPath()),NULL,MM_NOTHING);
 									menupath[menupathindex[++menudepthleft]] = 0;
 
 									if (!preparefilemenu(true))
@@ -6920,7 +6983,7 @@ static void M_HandleAddons(INT32 choice)
 							else
 							{
 								S_StartSound(NULL, sfx_lose);
-								M_StartMessage(va("%c%s\x80\nThis folder is too deep to navigate to!\n\n(Press a key)\n", ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), M_AddonsHeaderPath()),NULL,MM_NOTHING);
+								M_StartMessage(va("%c%s\x80\nThis folder is too deep to navigate to!\n\n" PRESS_A_KEY_MESSAGE, ('\x80' + (highlightflags>>V_CHARCOLORSHIFT)), M_AddonsHeaderPath()),NULL,MM_NOTHING);
 								menupath[menupathindex[menudepthleft]] = 0;
 							}
 							break;
@@ -7038,7 +7101,7 @@ static void M_ConfirmEnterGame(INT32 choice)
 	(void)choice;
 	if (!cv_allowteamchange.value)
 	{
-		M_StartMessage(M_GetText("The server is not allowing\nteam changes at this time.\nPress a key.\n"), NULL, MM_NOTHING);
+		M_StartMessage(M_GetText("The server is not allowing\nteam changes at this time.\n" PRESS_A_KEY_MESSAGE_ALT), NULL, MM_NOTHING);
 		return;
 	}
 	M_ClearMenus(true);
@@ -7066,7 +7129,7 @@ static void M_ConfirmTeamChange(INT32 choice)
 	(void)choice;
 	if (!cv_allowteamchange.value && cv_dummyteam.value)
 	{
-		M_StartMessage(M_GetText("The server is not allowing\nteam changes at this time.\nPress a key.\n"), NULL, MM_NOTHING);
+		M_StartMessage(M_GetText("The server is not allowing\nteam changes at this time.\n" PRESS_A_KEY_MESSAGE_ALT), NULL, MM_NOTHING);
 		return;
 	}
 
@@ -8981,7 +9044,7 @@ static void M_HandleLoadSave(INT32 choice)
 			{
 				loadgamescroll = 0;
 				S_StartSound(NULL, sfx_skid);
-				M_StartMessage(M_GetText("This cannot be done in a modified game.\n\n(Press a key)\n"), NULL, MM_NOTHING);
+				M_StartMessage(M_GetText("This cannot be done in a modified game.\n\n" PRESS_A_KEY_MESSAGE), NULL, MM_NOTHING);
 			}
 			else if (saveSlotSelected == NOSAVESLOT || savegameinfo[saveSlotSelected-1].lives != -666) // don't allow loading of "bad saves"
 			{
@@ -10892,7 +10955,7 @@ static void M_ConnectMenuModChecks(INT32 choice)
 
 	if (modifiedgame)
 	{
-		M_StartMessage(M_GetText("Add-ons are currently loaded.\n\nYou will only be able to join a server if\nit has the same ones loaded in the same order, which may be unlikely.\n\nIf you wish to play on other servers,\nrestart the game to clear existing add-ons.\n\n(Press a key)\n"),M_ConnectMenu,MM_EVENTHANDLER);
+		M_StartMessage(M_GetText("Add-ons are currently loaded.\n\nYou will only be able to join a server if\nit has the same ones loaded in the same order, which may be unlikely.\n\nIf you wish to play on other servers,\nrestart the game to clear existing add-ons.\n\n" PRESS_A_KEY_MESSAGE),M_ConnectMenu,MM_EVENTHANDLER);
 		return;
 	}
 
@@ -12002,7 +12065,7 @@ static void M_AssignJoystick(INT32 choice)
 					M_StartMessage("This gamepad is used by another\n"
 					               "player. Reset the gamepad\n"
 					               "for that player first.\n\n"
-					               "(Press a key)\n", NULL, MM_NOTHING);
+					               PRESS_A_KEY_MESSAGE, NULL, MM_NOTHING);
 			}
 		}
 	}
@@ -12032,7 +12095,7 @@ static void M_AssignJoystick(INT32 choice)
 					M_StartMessage("This gamepad is used by another\n"
 					               "player. Reset the gamepad\n"
 					               "for that player first.\n\n"
-					               "(Press a key)\n", NULL, MM_NOTHING);
+					               PRESS_A_KEY_MESSAGE, NULL, MM_NOTHING);
 			}
 		}
 	}
@@ -12109,6 +12172,25 @@ static void M_Setup2PControlsMenu(INT32 choice)
 	OP_ChangeControlsDef.menuid |= MN_OP_P2CONTROLS << MENUBITS; // combine second level
 	M_SetupNextMenu(&OP_ChangeControlsDef);
 }
+
+#ifdef TOUCHINPUTS
+static void M_CustomizeTouchControls(INT32 choice)
+{
+	(void)choice;
+	if (cv_touchpreset.value != touchpreset_none)
+		M_StartMessage(M_GetText("You must have no preset selected\nto access this menu.\n\n" PRESS_A_KEY_MESSAGE), NULL, MM_NOTHING);
+	else
+	{
+		TS_SetupCustomization();
+		M_SetupNextMenu(&OP_TouchCustomizationDef);
+	}
+}
+
+boolean M_IsCustomizingTouchControls(void)
+{
+	return (currentMenu == &OP_TouchCustomizationDef);
+}
+#endif
 
 #define controlheight 18
 
@@ -12228,8 +12310,6 @@ static void M_DrawControl(void)
 	V_DrawScaledPatch(currentMenu->x - 20, cursory, 0,
 		W_CachePatchName("M_CURSOR", PU_PATCH));
 }
-
-#undef controlbuffer
 
 static INT32 controltochange;
 static char controltochangetext[33];
@@ -12538,7 +12618,7 @@ static void M_VideoModeMenu(INT32 choice)
 static void M_DrawMainVideoMenu(void)
 {
 	M_DrawGenericScrollMenu();
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	// No video mode menu in emscripten
 	if (itemOn < 8) // where it starts to go offscreen; change this number if you change the layout of the video menu
 	{

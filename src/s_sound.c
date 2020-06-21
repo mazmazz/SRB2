@@ -307,9 +307,13 @@ void S_RegisterSoundStuff(void)
 #endif
 #ifdef HAVE_MIXERX
 	CV_RegisterVar(&cv_midiplayer);
-	CV_RegisterVar(&cv_midisoundfontpath);
 	CV_RegisterVar(&cv_miditimiditypath);
 #endif
+#if defined(__EMSCRIPTEN__)
+	// https://musical-artifacts.com/artifacts/400
+	cv_midisoundfontpath.defaultvalue = "/florestan.sf2";
+#endif
+	CV_RegisterVar(&cv_midisoundfontpath);
 
 	COM_AddCommand("tunes", Command_Tunes_f);
 	COM_AddCommand("restartaudio", Command_RestartAudio_f);

@@ -153,9 +153,20 @@ static void Midiplayer_Onchange(void)
 		S_StartEx(true);
 }
 
+// make sure that s_sound.c does not already verify these
+// which happens when: defined(HAVE_MIXERX) && !defined(HAVE_MIXER)
+static CV_PossibleValue_t midiplayer_cons_t[] = {{MIDI_OPNMIDI, "OPNMIDI"}, {MIDI_Fluidsynth, "Fluidsynth"}, {MIDI_Timidity, "Timidity"}, {MIDI_Native, "Native"}, {0, NULL}};
+consvar_t cv_midiplayer = {"midiplayer", "OPNMIDI" /*MIDI_OPNMIDI*/, CV_CALL|CV_NOINIT|CV_SAVE, midiplayer_cons_t, Midiplayer_Onchange, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_miditimiditypath = {"midisoundbank", "./timidity", CV_SAVE, NULL, NULL, 0, NULL, NULL, 0, 0, NULL};
+#endif
+
 static void MidiSoundfontPath_Onchange(void)
 {
-	if (Mix_GetMidiPlayer() != MIDI_Fluidsynth || (I_SongType() != MU_NONE && I_SongType() != MU_MID_EX))
+	if ((I_SongType() != MU_NONE && I_SongType() != MU_MID)
+#ifdef HAVE_MIXERX
+		|| Mix_GetMidiPlayer() != MIDI_Fluidsynth || (I_SongType() != MU_NONE && I_SongType() != MU_MID_EX)
+#endif
+		)
 		return;
 
 	if (stricmp(Mix_GetSoundFonts(), cv_midisoundfontpath.string))
@@ -193,13 +204,7 @@ static void MidiSoundfontPath_Onchange(void)
 	}
 }
 
-// make sure that s_sound.c does not already verify these
-// which happens when: defined(HAVE_MIXERX) && !defined(HAVE_MIXER)
-static CV_PossibleValue_t midiplayer_cons_t[] = {{MIDI_OPNMIDI, "OPNMIDI"}, {MIDI_Fluidsynth, "Fluidsynth"}, {MIDI_Timidity, "Timidity"}, {MIDI_Native, "Native"}, {0, NULL}};
-consvar_t cv_midiplayer = {"midiplayer", "OPNMIDI" /*MIDI_OPNMIDI*/, CV_CALL|CV_NOINIT|CV_SAVE, midiplayer_cons_t, Midiplayer_Onchange, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_midisoundfontpath = {"midisoundfont", "sf2/8bitsf.SF2", CV_CALL|CV_NOINIT|CV_SAVE, NULL, MidiSoundfontPath_Onchange, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_miditimiditypath = {"midisoundbank", "./timidity", CV_SAVE, NULL, NULL, 0, NULL, NULL, 0, 0, NULL};
-#endif
 
 static void var_cleanup(void)
 {
@@ -257,9 +262,9 @@ void I_StartupSound(void)
 
 #ifdef HAVE_MIXERX
 	Mix_SetMidiPlayer(cv_midiplayer.value);
-	Mix_SetSoundFonts(cv_midisoundfontpath.string);
 	Mix_Timidity_addToPathList(cv_miditimiditypath.string);
 #endif
+	Mix_SetSoundFonts(cv_midisoundfontpath.string);
 #if SDL_MIXER_VERSION_ATLEAST(1,2,11)
 	Mix_Init(MIX_INIT_FLAC|MIX_INIT_MP3|MIX_INIT_OGG|MIX_INIT_MOD);
 #endif
@@ -312,7 +317,7 @@ void I_UpdateSound(void)
 /// SFX
 /// ------------------------
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 // this is as fast as I can possibly make it.
 // sorry. more asm needed.
 static Mix_Chunk *ds2chunk(void *stream)
@@ -443,7 +448,7 @@ void *I_GetSfx(sfxinfo_t *sfx)
 	lump = W_CacheLumpNum(sfx->lumpnum, PU_SOUND);
 
 	// Doom sounds are not converted properly in emscripten, so fail silently.
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__)
 	// convert from standard DoomSound format.
 	chunk = ds2chunk(lump);
 	if (chunk)
@@ -885,13 +890,18 @@ boolean I_SetSongSpeed(float speed)
 #ifdef HAVE_OPENMPT
 	if (openmpt_mhandle)
 	{
-		char modspd[13];
-
 		if (speed > 4.0f)
 			speed = 4.0f; // Limit this to 4x to prevent crashing, stupid fix but... ~SteelT 27/9/19
-
-		sprintf(modspd, "%g", speed);
-		openmpt_module_ctl_set(openmpt_mhandle, "play.tempo_factor", modspd);
+#if OPENMPT_API_VERSION_MAJOR < 1 && OPENMPT_API_VERSION_MINOR < 5
+		{
+			// deprecated in 0.5.0
+			char modspd[13];
+			sprintf(modspd, "%g", speed);
+			openmpt_module_ctl_set(openmpt_mhandle, "play.tempo_factor", modspd);
+		}
+#else
+		openmpt_module_ctl_set_floatingpoint(openmpt_mhandle, "play.tempo_factor", (double)speed);
+#endif
 		return true;
 	}
 #else
@@ -1251,10 +1261,10 @@ boolean I_LoadSong(char *data, size_t len)
 #ifdef HAVE_MIXERX
 	if (Mix_GetMidiPlayer() != cv_midiplayer.value)
 		Mix_SetMidiPlayer(cv_midiplayer.value);
-	if (stricmp(Mix_GetSoundFonts(), cv_midisoundfontpath.string))
-		Mix_SetSoundFonts(cv_midisoundfontpath.string);
 	Mix_Timidity_addToPathList(cv_miditimiditypath.string); // this overwrites previous custom path
 #endif
+	if (stricmp(Mix_GetSoundFonts(), cv_midisoundfontpath.string))
+		Mix_SetSoundFonts(cv_midisoundfontpath.string);
 
 #ifdef HAVE_OPENMPT
 	/*

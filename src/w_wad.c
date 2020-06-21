@@ -33,7 +33,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #endif
 
@@ -661,8 +661,17 @@ static boolean ResFindSignature (void* handle, char endPat[], UINT32 startpos)
 
 	File_Seek(handle, startpos, SEEK_SET);
 	s = endPat;
+
+#if defined(__ANDROID__)
+	while (true)
+	{
+		c = (unsigned char)(File_GetChar(handle));
+		if (File_EOF(handle))
+			break;
+#else
 	while((c = File_GetChar(handle)) != EOF)
 	{
+#endif
 		if (*s != c && s > endPat) // No match?
 			s = endPat; // We "reset" the counter by sending the s pointer back to the start of the array.
 		if (*s == c)

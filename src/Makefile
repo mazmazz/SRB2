@@ -98,12 +98,14 @@ NOOPENMPT=1
 NOASM=1
 NONX86=1
 NOHW=1
-NOHS=1
 NOOBJDUMP=1
 LOWMEMORY=1
 FWAD=1
 ifndef NOASYNCIFY
 HAVE_ASYNCIFY=1
+endif
+ifndef NOFLUIDSYNTH
+HAVE_FLUIDSYNTH=1
 endif
 include emscripten/Makefile.cfg
 endif
@@ -457,6 +459,7 @@ OBJS:=$(i_main_o) \
 		$(OBJDIR)/g_demo.o   \
 		$(OBJDIR)/g_game.o   \
 		$(OBJDIR)/g_input.o  \
+		$(OBJDIR)/ts_custom.o  \
 		$(OBJDIR)/am_map.o   \
 		$(OBJDIR)/command.o  \
 		$(OBJDIR)/console.o  \

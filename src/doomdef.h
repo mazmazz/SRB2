@@ -157,6 +157,11 @@ extern char logfilename[1024];
 // Comment or uncomment this as necessary.
 #define USE_PATCH_DTA
 
+// Load Android assets
+#if defined(__ANDROID__)
+#define USE_ANDROID_PK3
+#endif
+
 // Use .kart extension addons
 //#define USE_KART
 
@@ -183,7 +188,7 @@ extern char logfilename[1024];
 "the Master Server until you update to\n"\
 "the newest version of the game.\n"\
 "\n"\
-"(Press a key)\n"
+PRESS_A_KEY_MESSAGE
 
 // The string used in the I_Error alert upon trying to host through command line parameters.
 // Generally less filled with newlines, since Windows gives you lots more room to work with.
@@ -473,9 +478,16 @@ extern char savegamename[256];
 void M_StartupLocale(void);
 
 char *va(const char *format, ...) FUNCPRINTF;
+
 #if defined(__ANDROID__)
-///\brief Android vsnprintf errors on characters beyond 0x80 and makes me want to die.
-int Android_vsnprintf(char *str, size_t size, const char *format, va_list argptr);
+#include <ndk_strings.h>
+#define M_sprintf Android_sprintf
+#define M_snprintf Android_snprintf
+#define M_vsnprintf Android_vsnprintf
+#else
+#define M_sprintf sprintf
+#define M_snprintf snprintf
+#define M_vsnprintf vsnprintf
 #endif
 
 char *sizeu1(size_t num);
@@ -606,6 +618,11 @@ extern const char *compdate, *comptime, *comprevision, *compbranch;
 
 ///	Shuffle's incomplete OpenGL sorting code.
 #define SHUFFLE // This has nothing to do with sorting, why was it disabled?
+
+/// Splash screen
+#if defined(__ANDROID__)
+#define SPLASH_SCREEN
+#endif
 
 ///	Allow the use of the SOC RESETINFO command.
 ///	\note	Builds that are tight on memory should disable this.

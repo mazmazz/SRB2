@@ -63,6 +63,9 @@ typedef struct
 	INT32 basepic;   ///< The start flat number
 	INT32 numpics;   ///< Number of frames in the animation
 	tic_t speed;     ///< Number of tics for which each frame is shown
+#ifdef LOWMEMORY
+	INT32 origpic;   ///< Original texture index to basepic
+#endif
 } anim_t;
 
 #if defined(_MSC_VER)
@@ -197,8 +200,19 @@ void P_InitPicAnims(void)
 	{
 		if (animdefs[i].istexture)
 		{
-			if (R_CheckTextureNumForName(animdefs[i].startname) == -1)
+			if (R_CheckTextureNumForNameEx(animdefs[i].startname, false) == -1)
 				continue;
+
+#ifdef LOWMEMORY
+			// Store the original texture index of basepic so we can translate it
+			lastanim->origpic = R_TextureNumForName(animdefs[i].startname);
+			// Wasteful hack to load consecutive frames because we now know the start/endpics.
+			// Essentially, we're loading a second copy of the basepic and any other
+			// inbetween frames that the map has specified as wall textures.
+			R_LoadWallFlatOrTextureForNameEx(animdefs[i].startname, animdefs[i].endname);
+			// Don't recall the first copies of the textures
+			R_ClearTextureNumCache(false);
+#endif
 
 			lastanim->picnum = R_TextureNumForName(animdefs[i].endname);
 			lastanim->basepic = R_TextureNumForName(animdefs[i].startname);
@@ -458,11 +472,17 @@ static inline void P_FindAnimatedFlat(INT32 animnum)
 {
 	size_t i;
 	lumpnum_t startflatnum, endflatnum;
+#ifdef LOWMEMORY
+	lumpnum_t origflatnum;
+#endif
 	levelflat_t *foundflats;
 
 	foundflats = levelflats;
 	startflatnum = anims[animnum].basepic;
 	endflatnum = anims[animnum].picnum;
+#ifdef LOWMEMORY
+	origflatnum = anims[animnum].origpic;
+#endif
 
 	// note: high word of lumpnum is the wad number
 	if ((startflatnum>>16) != (endflatnum>>16))
@@ -476,7 +496,13 @@ static inline void P_FindAnimatedFlat(INT32 animnum)
 	{
 		// is that levelflat from the flat anim sequence ?
 		if ((anims[animnum].istexture) && (foundflats->type == LEVELFLAT_TEXTURE)
-			&& ((UINT16)foundflats->u.texture.num >= startflatnum && (UINT16)foundflats->u.texture.num <= endflatnum))
+			&& (
+#ifdef LOWMEMORY
+				((UINT16)foundflats->u.texture.num == origflatnum) ||
+#endif
+				((UINT16)foundflats->u.texture.num >= startflatnum && (UINT16)foundflats->u.texture.num <= endflatnum)
+				)
+			)
 		{
 			foundflats->u.texture.basenum = startflatnum;
 			foundflats->animseq = foundflats->u.texture.num - startflatnum;
@@ -5594,7 +5620,13 @@ void P_UpdateSpecials(void)
 		{
 			pic = anim->basepic + ((leveltime/anim->speed + i) % anim->numpics);
 			if (anim->istexture)
+			{
 				texturetranslation[anim->basepic+i] = pic;
+#ifdef LOWMEMORY
+				if (anim->origpic && !i)
+					texturetranslation[anim->origpic] = pic;
+#endif
+			}
 		}
 	}
 

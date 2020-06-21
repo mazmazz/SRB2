@@ -66,6 +66,9 @@ typedef enum
 	gc_straferight,
 	gc_turnleft,
 	gc_turnright,
+#ifdef TOUCHINPUTS
+	gc_joystick,
+#endif
 	gc_weaponnext,
 	gc_weaponprev,
 	gc_wepslot1,
@@ -157,25 +160,35 @@ void G_ResetMice(void);
 
 boolean G_HandlePauseKey(boolean ispausebreak);
 boolean G_DoViewpointSwitch(void);
+boolean G_ToggleChaseCam(void);
+boolean G_ToggleChaseCam2(void);
 
 // Lactozilla: Touch input buttons
 #ifdef TOUCHINPUTS
 
 // Finger structure
 #define NUMTOUCHFINGERS 20
+
+typedef boolean (*longpressaction_t) (void *finger);
+
 typedef struct
 {
 	INT32 x, y, id;
 	float pressure;
+
 	union {
 		INT32 gamecontrol;
 		INT32 keyinput;
+		INT32 selection;
 	} u;
 	union {
 		boolean menu;
 		INT32 mouse;
 		INT32 joystick;
 	} type;
+
+	tic_t longpress;
+	longpressaction_t longpressaction;
 	boolean ignoremotion;
 } touchfinger_t;
 extern touchfinger_t touchfingers[NUMTOUCHFINGERS];
@@ -184,22 +197,33 @@ extern UINT8 touchcontroldown[num_gamecontrols];
 // Touch screen button structure
 typedef struct
 {
-	fixed_t x, y; // coordinates
+	fixed_t x, y; // coordinates (normalized)
 	fixed_t w, h; // dimensions
-	const char *name, *tinyname; // key names
+	const char *name, *tinyname; // names
+	UINT8 color; // color
 
+	boolean dpad; // d-pad button
 	tic_t pressed; // touch navigation
-	boolean dpad; // d-pad key
-	boolean hidden; // key doesn't exist
-	boolean dontscale; // key isn't scaled
+	boolean hidden; // doesn't exist
+	boolean dontscale; // isn't scaled
 } touchconfig_t;
 
 // Screen buttons
 extern touchconfig_t touchcontrols[num_gamecontrols]; // Game inputs
 extern touchconfig_t touchnavigation[NUMKEYS]; // Menu inputs
+extern touchconfig_t *usertouchcontrols;
+
+// Button presets
+typedef enum
+{
+	touchpreset_none,
+	touchpreset_normal,
+	touchpreset_tiny,
+	num_touchpresets,
+} touchpreset_e;
 
 // Input variables
-extern fixed_t touch_dpad_x, touch_dpad_y, touch_dpad_w, touch_dpad_h;
+extern fixed_t touch_joystick_x, touch_joystick_y, touch_joystick_w, touch_joystick_h;
 extern fixed_t touch_gui_scale;
 
 // Touch movement style
@@ -224,17 +248,18 @@ extern boolean touch_screenexists;
 
 // Touch screen settings
 extern touchmovementstyle_e touch_movementstyle;
-extern boolean touch_tinycontrols;
+extern touchpreset_e touch_preset;
 extern boolean touch_camera;
 
 // Touch config. status
 typedef struct
 {
-	INT32 vidwidth, vidheight;
-
+	INT32 vidwidth; // vid.width
+	INT32 vidheight; // vid.height
 	fixed_t guiscale; // touch_gui_scale
+
+	touchpreset_e preset; // touch_preset
 	touchmovementstyle_e movementstyle; // touch_movementstyle
-	boolean tiny; // touch_tinycontrols
 
 	boolean ringslinger; // G_RingSlingerGametype
 	boolean ctfgametype; // gametyperules & GTR_TEAMFLAGS
@@ -244,6 +269,7 @@ typedef struct
 	boolean canteamtalk; // G_GametypeHasTeams() && players[consoleplayer].ctfteam
 	boolean promptblockcontrols; // promptblockcontrols
 	boolean canopenconsole; // modeattacking || metalrecording
+	boolean customizingcontrols; // TS_IsCustomizingControls
 } touchconfigstatus_t;
 
 extern touchconfigstatus_t touchcontrolstatus;
@@ -251,7 +277,7 @@ extern touchconfigstatus_t touchnavigationstatus;
 
 // Console variables for the touch screen
 extern consvar_t cv_touchstyle;
-extern consvar_t cv_touchtiny;
+extern consvar_t cv_touchpreset;
 extern consvar_t cv_touchcamera;
 extern consvar_t cv_touchtrans, cv_touchmenutrans;
 extern consvar_t cv_touchguiscale;
@@ -261,8 +287,8 @@ extern consvar_t cv_touchsens, cv_touchvertsens;
 extern consvar_t cv_touchjoyhorzsens, cv_touchjoyvertsens;
 
 // Screen joystick movement
-#define TOUCHJOYEXTENDX (touch_dpad_w / 2) //(FixedDiv(touch_dpad_w, 2 * FRACUNIT))
-#define TOUCHJOYEXTENDY (touch_dpad_h / 2) //(FixedDiv(touch_dpad_h, 2 * FRACUNIT))
+#define TOUCHJOYEXTENDX (touch_joystick_w / 2)
+#define TOUCHJOYEXTENDY (touch_joystick_h / 2)
 extern float touchxmove, touchymove, touchpressure;
 #endif
 
@@ -333,19 +359,36 @@ void G_DefineDefaultControls(void);
 void G_SetupTouchSettings(void);
 void G_UpdateTouchControls(void);
 void G_DefineTouchButtons(void);
+void G_PositionTouchButtons(void);
+void G_PositionTouchNavigation(void);
 
-// Button presets
-void G_TouchControlPreset(void);
-void G_TouchNavigationPreset(void);
+// Returns the names of a touch button
+const char *G_GetTouchButtonName(INT32 gc);
+const char *G_GetTouchButtonShortName(INT32 gc);
 
-// Check if the finger (x, y) is touching the specified button (butt)
-boolean G_FingerTouchesButton(INT32 x, INT32 y, touchconfig_t *butt);
+// Update touch fingers
+void G_UpdateFingers(INT32 realtics);
+
+// Check if the finger (x, y) is touching the specified button (btn)
+boolean G_FingerTouchesButton(INT32 x, INT32 y, touchconfig_t *btn);
+
+// Check if the finger is touching the joystick area.
+boolean G_FingerTouchesJoystickArea(INT32 x, INT32 y);
 
 // Check if the gamecontrol is a player control key
 boolean G_TouchButtonIsPlayerControl(INT32 gamecontrol);
 
 // Scale a touch button
-void G_ScaleTouchCoords(INT32 *x, INT32 *y, INT32 *w, INT32 *h, boolean screenscale);
+void G_ScaleTouchCoords(INT32 *x, INT32 *y, INT32 *w, INT32 *h, boolean normalized, boolean screenscale);
+
+// Normalize a touch button
+void G_NormalizeTouchButton(touchconfig_t *button);
+
+// Normalize a touch config
+void G_NormalizeTouchConfig(touchconfig_t *config, int configsize);
+
+// Setup a d-pad
+void G_DPadPreset(touchconfig_t *controls, fixed_t xscale, fixed_t yscale, fixed_t dw, boolean tiny);
 #endif
 
 INT32 G_GetControlScheme(INT32 (*fromcontrols)[2], const INT32 *gclist, INT32 gclen);

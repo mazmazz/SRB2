@@ -1203,8 +1203,8 @@ static void ST_drawInput(void)
 #ifdef TOUCHINPUTS
 
 #define SCALEBUTTONFIXED(touch) \
-	x = touch->x; \
-	y = touch->y; \
+	x = touch->x * BASEVIDWIDTH; \
+	y = touch->y * BASEVIDHEIGHT; \
 	w = touch->w; \
 	h = touch->h; \
 	if (!touch->dontscale) \
@@ -1234,7 +1234,12 @@ void ST_drawJoystickBacking(fixed_t padx, fixed_t pady, fixed_t padw, fixed_t pa
 	fixed_t dupx = vid.dupx*FRACUNIT;
 	fixed_t dupy = vid.dupy*FRACUNIT;
 	fixed_t xscale, yscale;
+#if defined(__EMSCRIPTEN__)
+	// TODO: Get Android's JOY_ assets
 	patch_t *backing = W_CachePatchName("DSHADOW", PU_PATCH);
+#else
+	patch_t *backing = W_CachePatchLongName("JOY_BACKING", PU_PATCH);
+#endif
 
 	// generate colormap
 	static UINT8 *colormap = NULL;
@@ -1265,6 +1270,33 @@ void ST_drawJoystickBacking(fixed_t padx, fixed_t pady, fixed_t padw, fixed_t pa
 		xscale, yscale, flags, backing, colormap);
 }
 
+static void ST_drawTouchDPadButton(
+	fixed_t x, fixed_t y, fixed_t w, fixed_t h,
+	INT32 shx, INT32 shy,
+	patch_t *patch, INT32 flags, boolean isdown,
+	UINT8 *colormap)
+{
+	fixed_t offs = (3*FRACUNIT);
+
+	x *= BASEVIDWIDTH * vid.dupx;
+	y *= BASEVIDHEIGHT * vid.dupy;
+
+	// draw shadow
+	if (!isdown)
+	{
+		static UINT8 *shadow = NULL;
+		size_t colsize = 256 * sizeof(UINT8);
+
+		if (shadow == NULL)
+			shadow = Z_Calloc(colsize, PU_STATIC, NULL);
+		memset(shadow, 31, colsize);
+		V_DrawStretchyFixedPatch(x + (offs * shx), y + (offs * shy), w, h, flags, patch, shadow);
+	}
+
+	// draw button
+	V_DrawStretchyFixedPatch(x, (isdown ? y+offs : y), w, h, flags, patch, (isdown ? colormap : NULL));
+}
+
 void ST_drawTouchDPad(
 					fixed_t dpadx, fixed_t dpady, fixed_t dpadw, fixed_t dpadh,
 					touchconfig_t *tleft, boolean moveleft,
@@ -1276,155 +1308,59 @@ void ST_drawTouchDPad(
 	INT32 x, y, w, h;
 	fixed_t dupx = vid.dupx * FRACUNIT;
 	fixed_t dupy = vid.dupy * FRACUNIT;
-	const INT32 shadow = max(1, FixedInt(FixedMul(dupy, touch_gui_scale) + (FRACUNIT / 2)));
-	const UINT32 alphalevel = (10 - ((flags & V_ALPHAMASK) >> V_ALPHASHIFT));
-	INT32 col, offs;
-	INT32 base, ybase;
-	INT32 xslant, yslant;
-	INT32 udw;
-	INT32 i, j;
+	fixed_t xscale, yscale;
 
-#define SCALEPAD(touch) \
-	SCALEBUTTON(touch); \
-	xslant = FixedMul(FixedDiv(touch->w, 2 * FRACUNIT), dupx) / FRACUNIT; \
-	yslant = FixedMul(FixedDiv(touch->h, 2 * FRACUNIT), dupy) / FRACUNIT; \
+	patch_t *up = W_CachePatchLongName("DPAD_UP", PU_PATCH);
+	patch_t *down = W_CachePatchLongName("DPAD_DOWN", PU_PATCH);
+	patch_t *left = W_CachePatchLongName("DPAD_LEFT", PU_PATCH);
+	patch_t *right = W_CachePatchLongName("DPAD_RIGHT", PU_PATCH);
+
+	// generate colormap
+	static UINT8 *colormap = NULL;
+	static UINT8 lastcolor = 0;
+	size_t colsize = 256 * sizeof(UINT8);
+
+	if (colormap == NULL)
+		colormap = Z_Calloc(colsize, PU_STATIC, NULL);
+	if (accent != lastcolor)
+	{
+		memset(colormap, accent, colsize);
+		lastcolor = accent;
+	}
 
 	// O backing
 	if (backing)
 		ST_drawJoystickBacking(dpadx, dpady, dpadw, dpadh, 3*FRACUNIT/2, 20, flags);
 
-	if (vid.dupx == 1)
-		udw = 2;
-	else
-		udw = vid.dupx * 3;
-	udw = FixedInt(FixedMul(udw * FRACUNIT, touch_gui_scale));
+	SCALEBUTTONFIXED(tup);
+	xscale = FixedDiv(tup->w, SHORT(up->width)*FRACUNIT);
+	yscale = FixedDiv(tup->h, SHORT(up->height)*FRACUNIT);
+	ST_drawTouchDPadButton(tup->x, tup->y, xscale, yscale, 0, 1, up, flags, moveup, colormap);
 
-	// <
-	SCALEPAD(tleft);
+	SCALEBUTTONFIXED(tdown);
+	xscale = FixedDiv(tdown->w, SHORT(down->width)*FRACUNIT);
+	yscale = FixedDiv(tdown->h, SHORT(down->height)*FRACUNIT);
+	ST_drawTouchDPadButton(tdown->x, tdown->y, xscale, yscale, 0, 1, down, flags, movedown, colormap);
 
-	base = (w - xslant);
-	ybase = (y + h) - vid.dupy;
+	SCALEBUTTONFIXED(tleft);
+	xscale = FixedDiv(tleft->w, SHORT(left->width)*FRACUNIT);
+	yscale = FixedDiv(tleft->h, SHORT(left->height)*FRACUNIT);
+	ST_drawTouchDPadButton(tleft->x, tleft->y, xscale, yscale, -1, 1, left, flags, moveleft, colormap);
 
-#define drawleftbutton(color, offset) { \
-	drawfill(x, y+offset, base+(vid.dupx), h, color, flags); \
-	for (i = 0; i < xslant; i++) \
-		drawfill(x+base+i+(vid.dupx), (y+i)+offset, vid.dupx, h-(i*2), color, flags); }
-
-	if (moveleft)
-	{
-		col = accent;
-		offs = shadow;
-	}
-	else
-	{
-		col = 16;
-		offs = 0;
-		if (alphalevel >= 10)
-			drawleftbutton(29, shadow);
-	}
-
-	drawleftbutton(col, offs);
-
-	// ^
-	SCALEPAD(tup);
-
-	yslant /= 2;
-	yslant += (vid.dupy * 2) + 1;
-
-	base = w;
-	ybase = (y + h) - vid.dupy;
-
-#define drawupbutton(color, offset) { \
-	for (i = 0; i < yslant; i++) \
-		drawfill(x+i, y+offset, 1, (h-yslant)+i, color, flags); \
-	ybase = (h-yslant)+i; \
-	drawfill(x+i, y+offset, udw, ybase, color, flags); \
-	for (j = 0; j < yslant; j++) \
-		drawfill(x+i+j+udw, y+offset, 1, (ybase-(j+1)), color, flags); }
-
-	if (moveup)
-	{
-		col = accent;
-		offs = shadow;
-	}
-	else
-	{
-		col = 16;
-		offs = 0;
-		if (alphalevel >= 10)
-			drawupbutton(29, shadow);
-	}
-
-	drawupbutton(col, offs);
-
-	// >
-	SCALEPAD(tright);
-
-	base = (w - xslant);
-	ybase = (y + h) - vid.dupy;
-
-#define drawrightbutton(color, offset) { \
-	drawfill(x+base-(vid.dupx), y+offset, base+(vid.dupx), h, color, flags); \
-	for (i = 0; i < xslant; i++) \
-		drawfill(x+(base-(vid.dupx))-i-(vid.dupx), (y+i)+offset, vid.dupx, h-(i*2), color, flags); }
-
-	if (moveright)
-	{
-		col = accent;
-		offs = shadow;
-	}
-	else
-	{
-		col = 16;
-		offs = 0;
-		if (alphalevel >= 10)
-			drawrightbutton(29, shadow);
-	}
-
-	drawrightbutton(col, offs);
-
-	// v
-	SCALEPAD(tdown);
-
-	yslant /= 2;
-	yslant += (vid.dupy * 2) + 1;
-
-	base = w;
-	ybase = (y + h);
-
-#define drawdownbutton(color, offset) { \
-	for (i = 0; i < yslant; i++) \
-		drawfill(x+i, (y+(yslant-i)) + offset, 1, (h-yslant)+i, color, flags); \
-	ybase = (h-yslant)+i; \
-	drawfill(x+i, y+offset, udw, ybase, color, flags); \
-	for (j = 0; j < yslant; j++) \
-		drawfill(x+i+j+udw, ((y+(yslant-i))+j) + 1 + offset, 1, (ybase-(j+1)), color, flags); }
-
-	if (movedown)
-	{
-		col = accent;
-		offs = shadow;
-	}
-	else
-	{
-		col = 16;
-		offs = 0;
-		if (alphalevel >= 10)
-			drawdownbutton(29, shadow);
-	}
-
-	drawdownbutton(col, offs);
-
-#undef drawdownbutton
-#undef drawrightbutton
-#undef drawupbutton
-#undef drawleftbutton
-#undef SCALEPAD
+	SCALEBUTTONFIXED(tright);
+	xscale = FixedDiv(tright->w, SHORT(right->width)*FRACUNIT);
+	yscale = FixedDiv(tright->h, SHORT(right->height)*FRACUNIT);
+	ST_drawTouchDPadButton(tright->x, tright->y, xscale, yscale, 1, 1, right, flags, moveright, colormap);
 }
 
 void ST_drawTouchJoystick(fixed_t dpadx, fixed_t dpady, fixed_t dpadw, fixed_t dpadh, UINT8 color, INT32 flags)
 {
+#if defined(__EMSCRIPTEN__)
+	// TODO: Get Android's JOY_ assets
 	patch_t *cursor = W_CachePatchName("DSHADOW", PU_PATCH);
+#else
+	patch_t *cursor = W_CachePatchLongName("JOY_CURSOR", PU_PATCH);
+#endif
 	fixed_t dupx = vid.dupx*FRACUNIT;
 	fixed_t dupy = vid.dupy*FRACUNIT;
 	fixed_t pressure = max(FRACUNIT/2, FRACUNIT - FLOAT_TO_FIXED(touchpressure));
@@ -1491,9 +1427,9 @@ void ST_drawTouchJoystick(fixed_t dpadx, fixed_t dpady, fixed_t dpadw, fixed_t d
 // Touch input in-game
 //
 
-static void ST_drawTouchGameInputButton(INT32 gctype, const char *str, INT32 keycol, const INT32 accent, INT32 alphalevel, INT32 flags)
+static void ST_drawTouchGameInputButton(touchconfig_t *config, INT32 gctype, const char *str, INT32 keycol, const INT32 accent, INT32 alphalevel, INT32 flags)
 {
-	touchconfig_t *control = &touchcontrols[gctype];
+	touchconfig_t *control = &config[gctype];
 	INT32 x, y, w, h;
 	INT32 col, offs;
 	INT32 shadow = vid.dupy;
@@ -1568,16 +1504,20 @@ static void ST_drawTouchGameInputButton(INT32 gctype, const char *str, INT32 key
 	}
 }
 
-void ST_drawTouchGameInput(boolean drawgamecontrols, INT32 alphalevel)
+void ST_drawTouchGameInput(touchconfig_t *config, boolean drawgamecontrols, INT32 alphalevel)
 {
 	const INT32 transflag = ((10-alphalevel)<<V_ALPHASHIFT);
 	const INT32 flags = (transflag | V_NOSCALESTART);
 	const INT32 accent = (stplyr->skincolor ? Color_Index[stplyr->skincolor-1][4] : 0);
 
-	touchconfig_t *tleft = &touchcontrols[gc_strafeleft];
-	touchconfig_t *tright = &touchcontrols[gc_straferight];
-	touchconfig_t *tup = &touchcontrols[gc_forward];
-	touchconfig_t *tdown = &touchcontrols[gc_backward];
+	touchconfig_t *tleft = &config[gc_strafeleft];
+	touchconfig_t *tright = &config[gc_straferight];
+	touchconfig_t *tup = &config[gc_forward];
+	touchconfig_t *tdown = &config[gc_backward];
+
+	INT32 i;
+	INT32 noncontrolbtns[] = {gc_systemmenu, gc_viewpoint, gc_screenshot, gc_talkkey, gc_scores, gc_camtoggle, gc_camreset};
+	INT32 numnoncontrolbtns = (INT32)(sizeof(noncontrolbtns) / sizeof(INT32));
 
 	if (!alphalevel)
 		return;
@@ -1586,14 +1526,14 @@ void ST_drawTouchGameInput(boolean drawgamecontrols, INT32 alphalevel)
 		return;
 
 	// Draw movement control
-	if (!promptblockcontrols && drawgamecontrols)
+	if (!promptblockcontrols && drawgamecontrols && (!config[gc_joystick].hidden))
 	{
 		// Draw the d-pad
 		if (touch_movementstyle == tms_dpad)
 		{
 			ST_drawTouchDPad(
-				touch_dpad_x, touch_dpad_y,
-				touch_dpad_w, touch_dpad_h,
+				touch_joystick_x, touch_joystick_y,
+				touch_joystick_w, touch_joystick_h,
 				tleft, (stplyr->cmd.sidemove < 0),
 				tright, (stplyr->cmd.sidemove > 0),
 				tup, (stplyr->cmd.forwardmove > 0),
@@ -1601,56 +1541,46 @@ void ST_drawTouchGameInput(boolean drawgamecontrols, INT32 alphalevel)
 				true, flags, accent);
 		}
 		else // Draw the joystick
-			ST_drawTouchJoystick(touch_dpad_x, touch_dpad_y, touch_dpad_w, touch_dpad_h, accent, flags);
+			ST_drawTouchJoystick(touch_joystick_x, touch_joystick_y, touch_joystick_w, touch_joystick_h, accent, flags);
 	}
 
 #define DEFAULTKEYCOL 16 // Because of macro expansion, this define needs to be up here.
-#define drawbutton(gctype, str, keycol) ST_drawTouchGameInputButton(gctype, str, keycol, accent, alphalevel, flags)
-#define drawbutt(gctype) drawbutton(gctype, NULL, DEFAULTKEYCOL)
-#define drawbuttname(gctype, str) drawbutton(gctype, str, DEFAULTKEYCOL)
-#define drawcolbutt(gctype, col) drawbutton(gctype, NULL, col)
+#define drawbutton(gctype, str, keycol) ST_drawTouchGameInputButton(config, gctype, str, keycol, accent, alphalevel, flags)
+#define drawbtn(gctype) drawbutton(gctype, NULL, DEFAULTKEYCOL)
+#define drawbtnname(gctype, str) drawbutton(gctype, str, DEFAULTKEYCOL)
+#define drawcolbtn(gctype, col) drawbutton(gctype, NULL, col)
 
 	if (drawgamecontrols)
 	{
-		// Jump and spin
-		drawbutt(gc_jump);
-		drawbutt(gc_use);
-
-		// Fire and fire normal
-		drawbutt(gc_fire);
-		drawbutt(gc_firenormal);
-
-		// Toss flag
-		drawbutt(gc_tossflag);
+		for (i = 0; i < num_gamecontrols; i++)
+		{
+			if (G_TouchButtonIsPlayerControl(i) && (!config[i].hidden))
+				drawbtn(i);
+		}
 	}
 
 	//
 	// Non-control buttons
 	//
-
-	// Control panel
-	drawbutt(gc_systemmenu);
+	for (i = 0; i < numnoncontrolbtns; i++)
+	{
+		INT32 gc = noncontrolbtns[i];
+		if (!config[gc].hidden)
+			drawbtn(gc);
+	}
 
 	// Pause
-	drawbuttname(gc_pause, (paused ? "\x1D" : "II"));
-
-	// Spy mode
-	drawbutt(gc_viewpoint);
-
-	// Screenshot
-	drawbutt(gc_screenshot);
+	drawbtnname(gc_pause, (paused ? "\x1D" : "II"));
 
 	// Movie mode
-	drawcolbutt(gc_recordgif, (moviemode ? ((leveltime & 16) ? 36 : 43) : 36));
+	drawcolbtn(gc_recordgif, (moviemode ? ((leveltime & 16) ? 36 : 43) : 36));
 
-	// Talk key and team talk key
-	drawbutt(gc_talkkey);
-	drawcolbutt(gc_teamkey, accent);
+	// Team talk key
+	drawcolbtn(gc_teamkey, accent);
 
-#undef drawoffsbutt
-#undef drawcolbutt
-#undef drawbuttname
-#undef drawbutt
+#undef drawcolbtn
+#undef drawbtnname
+#undef drawbtn
 #undef drawbutton
 #undef DEFAULTKEYCOL
 }
@@ -1679,7 +1609,7 @@ void ST_drawTouchMenuInput(void)
 	if (!touch_screenexists)
 		return;
 
-#define drawbutt(keyname, symb) \
+#define drawbtn(keyname, symb) \
 	control = &touchnavigation[keyname]; \
 	if (!control->hidden) \
 	{ \
@@ -1691,7 +1621,7 @@ void ST_drawTouchMenuInput(void)
 		} \
 		else \
 		{ \
-			col = 16; \
+			col = control->color; \
 			offs = 0; \
 			if (alphalevel >= 10) \
 				V_DrawFill(x, y + h, w, shadow, 29|flags); \
@@ -1703,14 +1633,14 @@ void ST_drawTouchMenuInput(void)
 						symb|flags, false); \
 	}
 
-	drawbutt(KEY_ESCAPE, 0x1C); // left arrow
-	drawbutt(KEY_ENTER, 0x1D); // right arrow
-	drawbutt(KEY_CONSOLE, '$');
-#ifdef __EMSCRIPTEN__
-	drawbutt(KEY_F11, 0x17); // up/down arrow
+	drawbtn(KEY_ESCAPE, 0x1C); // left arrow
+	drawbtn(KEY_ENTER, 0x1D); // right arrow
+	drawbtn(KEY_CONSOLE, '$');
+#if defined(__EMSCRIPTEN__)
+	drawbtn(KEY_F11, 0x17); // up/down arrow
 #endif
 
-#undef drawbutt
+#undef drawbtn
 }
 
 #undef drawfill
@@ -3290,7 +3220,7 @@ static void ST_overlayDrawer(void)
 		ST_drawInput();
 #ifdef TOUCHINPUTS
 	else if (G_InGameInput() && !demoplayback)
-		ST_drawTouchGameInput(drawtouchcontrols && (stplyr == &players[consoleplayer]), min(cv_touchtrans.value, st_translucency));
+		ST_drawTouchGameInput(touchcontrols, drawtouchcontrols && (stplyr == &players[consoleplayer]), min(cv_touchtrans.value, st_translucency));
 #endif
 
 	ST_drawDebugInfo();

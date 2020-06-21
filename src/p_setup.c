@@ -1765,6 +1765,16 @@ static boolean P_LoadMapData(const virtres_t *virt)
 
 	R_ClearTextureNumCache(true);
 
+#ifdef LOWMEMORY
+	// By now, all the level textures are allocated, so we know which anims to load
+	P_InitPicAnims();
+#ifdef HWRENDER
+	// By now, the anim frames are also loaded, so we don't expect anymore changes to textures[]
+	if (rendermode == render_opengl)
+		HWR_LoadTextures(numtextures);
+#endif
+#endif
+
 	// set the sky flat num
 	skyflatnum = P_AddLevelFlat(SKYFLATNAME, foundflats);
 
@@ -3513,6 +3523,7 @@ boolean P_LoadLevel(boolean fromnetsave)
 	R_FlushTranslationColormapCache();
 
 #ifdef LOWMEMORY
+	R_ClearTextures();
 	Z_ForceFlushPatches();
 	cleardrawsegs = CLEARDRAWSEGSINTERVAL; // forces realloc of drawsegs
 	ds_p = drawsegs;
@@ -3908,6 +3919,17 @@ boolean P_AddWadFile(const char *wadfilename)
 	//
 	R_AddSpriteDefs(wadnum);
 
+#ifdef LOWMEMORY
+	// TODO: Invalidate textures[] etc. entries that are replaced by the
+	// new wadfile. Otherwise, we can't reflect replaced textures mid-level via Lua.
+	//
+	// NOTE: See R_CheckTextureCache -- the rendering cache can re-build itself
+	// when the textures[] list is invalidated. HOWEVER: references to texturetranslation[]
+	// MUST account for an invalidated cache. I.e., if a texnum can't be found,
+	// then rebuild texturetranslation[]. Maybe trigger R_CheckTextureNumForName in R_GetTextureNum.
+
+	// R_ClearTextures();
+#else
 	// Reload it all anyway, just in case they
 	// added some textures but didn't insert a
 	// TEXTURES/etc. list.
@@ -3915,6 +3937,7 @@ boolean P_AddWadFile(const char *wadfilename)
 
 	// Reload ANIMDEFS
 	P_InitPicAnims();
+#endif
 
 	// Flush and reload HUD graphics
 	ST_UnloadGraphics();

@@ -26,10 +26,12 @@ from zipfile import ZipFile
 defaults = {
     'build_dir': f'{script_dir}/../bin/Emscripten/Release',
     'landing_dir': f'{script_dir}/landing',
-    'data_dir': f'{script_dir}/data'
+    'data_dir': f'{script_dir}/data',
+    'url': f'https://srb2web.surge.sh'
 }
 
-def populate_shell_template(shell_version, gtag, package_versions, default_package_version, landing_dir=defaults['landing_dir']):
+def populate_shell_template(shell_version, gtag, package_versions, default_package_version, landing_dir=defaults['landing_dir'],
+                            url=defaults['url'], maintainer=None, maintainer_url=None):
     shell_data = ''
     landing_fn = os.path.join(landing_dir, 'index.html')
     copy(os.path.join(script_dir, 'srb2.html'), landing_fn)
@@ -41,13 +43,22 @@ def populate_shell_template(shell_version, gtag, package_versions, default_packa
             selected = ' selected'
         package_version_list.append(f'<option value="{version}"{selected}>{version}</option>')
 
+    if maintainer is not None:
+        if maintainer_url is not None:
+            maintainer = f'<a href="{maintainer_url}" target="_blank">{maintainer}</a>'
+        maintainer_string = f'This web service is maintained by {maintainer}. It is not an official project of Sonic Team Junior.'
+    else:
+        maintainer_string = 'This web service is not an official project of Sonic Team Junior.'
+
     with open(landing_fn, 'r') as f:
         shell_data = f.read()
 
+    shell_data = shell_data.replace('{{{ URL }}}', url)
     shell_data = shell_data.replace('{{{ PACKAGE_VERSION }}}', default_package_version)
     shell_data = shell_data.replace('{{{ SHELL_VERSION }}}', shell_version)
     shell_data = shell_data.replace('<!-- {{{ GTAG }}} -->', gtag if gtag else '')
     shell_data = shell_data.replace('<!-- {{{ PACKAGE_VERSION_LIST }}} -->', '\n'.join(package_version_list))
+    shell_data = shell_data.replace('{{{ MAINTAINER }}}', maintainer_string)
 
     with open(landing_fn, 'w') as f:
         f.write(shell_data)
@@ -87,7 +98,8 @@ def parse_default(input, name):
         return defaults[name]
     return input
 
-def main(version, skip_landing=False, package_versions=[], default_package_version=None, landing_dir=defaults['landing_dir'], splash_image=None, npm_install=None, gtag=None,
+def main(version, skip_landing=False, package_versions=[], default_package_version=None, landing_dir=defaults['landing_dir'], splash_image=None, npm_install=None,
+         gtag=None, url=defaults['url'], maintainer=None, maintainer_url=None,
          base_version=None, build_dir=defaults['build_dir'], data_dir=defaults['data_dir'], fwad=[], ewad=[], 
          out_zip=None, out_zip_no_assets=None):
     # Build parameters
@@ -119,8 +131,9 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
     if data_dir is not None and os.path.isdir(data_dir):
         for root, dirs, files in os.walk(data_dir):
             for file in files:
-                fn = os.path.join(root, file)
-                fn_relative = os.path.normpath(fn).replace(f'{os.path.commonprefix([os.path.normpath(fn), os.path.abspath(data_dir)])}{os.path.sep}', '')
+                fn = os.path.abspath(os.path.normpath(os.path.join(root, file)))
+                # Takes two paths, A:\B\C\D and A:\B\C\D\E\F.txt and outputs E\F.txt
+                fn_relative = fn.replace(f'{os.path.commonprefix([fn, os.path.abspath(data_dir)])}{os.path.sep}', '')
                 version_fn = os.path.join(version_dir, fn_relative)
                 os.makedirs(os.path.dirname(fn), exist_ok=True)
                 if file in fwad or file in ewad:
@@ -130,7 +143,8 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
 
     # Generate landing page
     if not skip_landing:
-        populate_shell_template(shell_version, gtag, package_versions=package_versions, default_package_version=default_package_version, landing_dir=landing_dir)
+        populate_shell_template(shell_version, gtag, package_versions=package_versions, default_package_version=default_package_version, landing_dir=landing_dir,
+                                url=url, maintainer=maintainer, maintainer_url=maintainer_url)
     generate_splash_images(splash_image, npm_install=npm_install, landing_dir=landing_dir)
 
     # Generate MD5
@@ -161,7 +175,10 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
             for folderName, subfolders, filenames in os.walk(landing_dir):
                 for filename in filenames:
                     if 'data' in folderName:
-                        if not ('.js' in filename or '.wasm' in filename or '_BASE' in filename):
+                        if not ('.js' in filename or '.wasm' in filename 
+                                or '_BASE' in filename or '_FULLINSTALL' in filename
+                                or '_INSTALL' in filename or '_PERSISTENT' in filename
+                                or '_REQUIRED' in filename or '_STARTUP' in filename):
                             continue
                     fn = os.path.join(folderName, filename)
                     fn_relative = os.path.normpath(fn).replace(f'{os.path.commonprefix([os.path.normpath(fn), os.path.abspath(landing_dir)])}{os.path.sep}', '')
@@ -181,6 +198,9 @@ if __name__ == '__main__':
     parser_package.add_argument('--splash-image', type=str, help='Path to base image to generate Apple splash images. If you specify this argument, you must have NPM installed. The package "pwa-asset-generator" will be installed.')
     parser_package.add_argument('--npm-install', type=str, help='Location to install "pwa-asset-generator". If blank, will install into "{cwd}/node_modules". If "_GLOBAL", will install globally.')
     parser_package.add_argument('--gtag', type=str, help='Path to file from which to read Google Analytics GTAG for insertion into landing page. Or, you may specify a BASE64-encoded string of the GTAG.')
+    parser_package.add_argument('--url', type=str, default=defaults['url'], help=f'Base URL where you intend to deploy. Default: {defaults["url"]}')
+    parser_package.add_argument('--maintainer', type=str, help='Name of responsible party for maintaining the web service. This name is displayed at the bottom of the web page.')
+    parser_package.add_argument('--maintainer-url', type=str, help='URL to web site of the responsible party.')
     # Game data
     parser_data = parser.add_argument_group('Game Data')
     parser_data.add_argument('--base-version', type=str, help='Name of version to use as a game asset base.')

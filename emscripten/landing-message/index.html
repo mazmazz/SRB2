@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <!--
+    @licstart
+    SONIC ROBO BLAST 2
+    -----------------------------------------------------------------------------
+    Copyright (C) 1993-1996 by id Software, Inc.
+    Copyright (C) 1998-2000 by DooM Legacy Team.
+    Copyright (C) 1999-2020 by Sonic Team Junior.
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    @licend
+    -->
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta property="og:title" content="Sonic Robo Blast 2 for Web">
+    <meta property="og:description" content="Play this 3D Sonic the Hedgehog fangame in your web browser! Works on PC, Chromebook, iPhone, and Android.">
+    <meta property="og:image" content="https://srb2web.surge.sh/assets/landing.png">
+    <meta property="og:url" content="https://srb2web.surge.sh">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <link rel="apple-touch-icon" href="assets/srb2.png">
+    <meta name="apple-mobile-web-app-title" content="SRB2">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167763417-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-167763417-1');
+</script>
+
+    <title>Sonic Robo Blast 2</title>
+    <style>
+      html, body {
+        height: 100%;
+      }
+
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: none;
+        background-color: #000;
+        background-image: 
+          linear-gradient(90deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.80) 10%, rgba(0,0,0,0.80) 90%, rgba(0,0,0,0.25) 100%),
+          url(assets/background.jpg);
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        color: #ffffff;
+      }
+
+      body.startedMainLoop {
+        background-image: none;
+      }
+
+      body.startedMainLoop #content {
+        display: none;
+      }
+
+      a {
+        color: rgb(107, 161, 255);
+      }
+
+      a:visited {
+        color: #7f6bd1;
+      }
+
+      @media (min-width: 320px) {
+        #logo {
+          width: 120%;
+          height: auto;
+          margin: 0 -10%;
+        }
+
+        #systemArguments, #userArguments {
+          width: 120%;
+          margin: 0 -10%;
+        }
+      }
+
+      @media (min-width: 481px) {
+        #logo {
+          width: 90%;
+          height: auto;
+        }
+
+        #systemArguments, #userArguments {
+          width: 90%;
+        }
+      }
+
+      @media (min-width: 641px) {
+        #logo {
+          width: 60%;
+          height: auto;
+        }
+
+        #systemArguments, #userArguments {
+          width: 60%;
+        }
+      }
+
+      @media (min-width: 1281px) {
+        #logo {
+          width: 40%;
+          height: auto;
+        }
+
+        #systemArguments, #userArguments {
+          width: 40%;
+        }
+      }
+
+      #status-cont {
+        display: inline-block;
+        font-weight: bold;
+        text-align: center;
+        margin: auto 10%;
+      }
+
+      #progress {
+        height: 20px;
+        width: 256px;
+      }
+
+      #canvas, #keyCapture {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100% !important;
+          height: 100% !important;
+          opacity: 0;
+      }
+
+      #keyCapture {
+        opacity: 0;
+        background-color: rgba(0,0,0,0);
+        border: 0;
+        color: rgba(0,0,0,0);
+        z-index: -99999;
+      }
+
+      #textForm {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2.5em;
+        z-index: -99999;
+        opacity: 0;
+      }
+
+      #textCapture {
+        flex-grow: 1;
+      }
+
+      #textSubmit {
+        width: 6.66em;
+      }
+
+      #content {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        text-align: center;
+        display: grid;
+      }
+
+      button, .button {
+        width: 160px;
+        height: 48px;
+        margin: 0.1em;
+        background-color: darkgray;
+        background-image: linear-gradient(black, darkgray);
+        border: 0.1em gray solid;
+        border-radius: 2px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        line-height: 2.5em;
+        display: inline-block;
+        cursor: default;
+      }
+
+      .blueButton {
+        background-color: mediumblue;
+        background-image: linear-gradient(black, mediumblue);
+        border-color: mediumblue;
+      }
+
+      .yellowButton {
+        background-color: goldenrod;
+        background-image: linear-gradient(black, goldenrod);
+        border-color: goldenrod;
+      }
+
+      .redButton {
+        background-image: linear-gradient(black, crimson);
+        border-color: crimson;
+      }
+
+      #startbtn {
+        background-color: yellow;
+        color: black;
+        background-image: linear-gradient(yellow, orange);
+        border: 0.1em orange solid;
+        font-weight: bolder;
+        font-size: 1.25em;
+        line-height: normal;
+        cursor: pointer;
+      }
+
+      #notes {
+        display: inline-block;
+        text-align: start;
+      }
+
+      summary {
+        margin: 0.75em 0;
+        font-size: 1.2em;
+      }
+
+      #addonFilesTemplate {
+        display: none;
+      }
+
+      .addonFilesField {
+        display: inline-block;
+        width: 100%;
+        margin: 0.1em 0;
+      }
+
+      #resetbtn {
+        display: none;
+      }
+
+      .addonFilesField .addonButton {
+        width: 2.5em;
+      }
+
+      .addonFilesField label,
+      .addonFilesField input[type=file] {
+        width: 12.5em;
+        height: 2.5em;
+        margin: 0;
+        cursor: pointer;
+      }
+
+      .addonFilesField input[type=file] {
+        font-size: 1em;
+        display: none;
+      }
+
+      .addonFilesField .addonDelete {
+        width: 2.5em;
+        height: 2.5em;
+        margin: 0 0 0 0.1em;
+      }
+
+      #addonButtonAdd {
+        width: 15.4em;
+        height: 2.5em;
+        margin: 0.1em 0;
+      }
+
+      #androidNotice {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <div id="status-cont" class="emscripten">
+        <div id="header">
+          <p>
+            <img id="logo" src="assets/srb2logo.png"/>
+          </p>
+        </div>
+        <div id="details">
+          <p>Thank you for playing! This game is currently unavailable due to maintenance.</p>
+          <p>To become notified of updates, you may join the <a href="https://discord.gg/fMuddqH" target="_blank">SRB2 for Web Updates Discord</a>.</p>
+        </div>
+        <details id="footer">
+          <summary>About</summary>
+          <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
+          <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
+          <p><a href="https://github.com/mazmazz/SRB2-emscripten/issues">View issues</a> / <a href="https://github.com/mazmazz/SRB2-emscripten">View source</a></p>
+          <p>Contributors:</p>
+          <p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
+          <p>Follow SRB2:</p>
+          <p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
+          <span id="newVersion"></span>
+          <p style="font-size:xx-small;">
+            This software is licensed under GNU General Public License Version 2. See license text at <a href="https://opensource.org/licenses/GPL-2.0" target="_blank">https://opensource.org/licenses/GPL-2.0</a>.
+          </p>
+          <p style="font-size:xx-small;">
+            The <a href="https://musical-artifacts.com/artifacts/400" target="_blank">Florestan Basic GM GS</a> soundfont is created by <a href="http://dev.nando.audio" target="_blank">Nando Florestan</a>.
+          </p>
+          <p style="font-size:xx-small;">
+            Original design and content is copyright 1998-2020 Sonic Team Junior. All non-original material is copyrighted by their respective owners, and no copyright infringement is intended.
+          </p>
+        </details>
+        <div id="copyright">
+          <p style="font-size:xx-small;">
+            Sonic Robo Blast 2 and Sonic Team Junior are in no way affiliated with SEGA&reg; or Sonic Team.
+          </p>
+          <p style="font-size:xx-small;">
+            Sonic the Hedgehog is a trademark of SEGA&reg;<br/>
+            The copyrights of "Sonic the Hedgehog" and all associated characters, names, terms, art, and music thereof belong to SEGA&reg;
+          </p>
+          <p style="font-size:xx-small;">
+            This service is not an official project of Sonic Team Junior.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

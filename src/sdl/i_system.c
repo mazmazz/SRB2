@@ -2381,9 +2381,15 @@ void I_Quit(void)
 		free(myargv); // Deallocate allocated memory
 death:
 	W_Shutdown();
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	emscripten_cancel_main_loop();
 	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+	EM_ASM({
+		SuspendAudioContext(); // stop the stuttering
+		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+	});
+#endif
 #endif
 	exit(0);
 }
@@ -2457,9 +2463,15 @@ void I_Error(const char *error, ...)
 				buffer, NULL);
 
 			W_Shutdown();
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 			emscripten_cancel_main_loop();
 			EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+			EM_ASM({
+				SuspendAudioContext(); // stop the stuttering
+				ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+			});
+#endif
 #endif
 			exit(-1); // recursive errors detected
 		}
@@ -2510,9 +2522,15 @@ void I_Error(const char *error, ...)
 
 	W_Shutdown();
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 	emscripten_cancel_main_loop();
 	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+	EM_ASM({
+		SuspendAudioContext(); // stop the stuttering
+		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+	});
+#endif
 #endif
 
 #if defined (PARANOIA) && defined (__CYGWIN__)
