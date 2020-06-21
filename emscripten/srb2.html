@@ -1,777 +1,777 @@
 <!doctype html>
 <html lang="en-us">
-  <head>
-    <!--
-    @licstart
-    SONIC ROBO BLAST 2
-    -----------------------------------------------------------------------------
-    Copyright (C) 1993-1996 by id Software, Inc.
-    Copyright (C) 1998-2000 by DooM Legacy Team.
-    Copyright (C) 1999-2020 by Sonic Team Junior.
-    
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-    @licend
-    -->
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="icon" href="assets/srb2.png" sizes="256x256" type="image/png">
-    <meta property="og:title" content="Sonic Robo Blast 2 for Web">
-    <meta property="og:description" content="Play this 3D Sonic the Hedgehog fangame in your web browser! Works on PC, Chromebook, iPhone, and Android.">
-    <meta property="og:image" content="{{{ URL }}}/assets/landing.png">
-    <meta property="og:url" content="{{{ URL }}}">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <link rel="apple-touch-icon" href="assets/srb2.png">
-    <meta name="apple-mobile-web-app-title" content="SRB2">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/mazmazz/idb-keyval@idb-version/dist/idb-keyval-iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/es6-promise-pool@2.5.0/es6-promise-pool.min.js"></script>
-    <script src="platform.js"></script>
-    <!-- {{{ GTAG }}} -->
-
-    <title>Sonic Robo Blast 2</title>
-    <style>
-      html, body {
-        height: 100%;
-      }
-
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        margin: 0;
-        padding: none;
-        background-color: #000;
-        background-image: 
-          linear-gradient(90deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.80) 10%, rgba(0,0,0,0.80) 90%, rgba(0,0,0,0.25) 100%),
-          url(assets/background.jpg);
-        background-size: cover;
-        background-attachment: fixed;
-        background-position: center;
-        color: #ffffff;
-      }
-
-      body.startedMainLoop {
-        background-image: none;
-      }
-
-      body.startedMainLoop #content {
-        display: none;
-      }
-
-      a {
-        color: rgb(107, 161, 255);
-      }
-
-      a:visited {
-        color: #7f6bd1;
-      }
-
-      @media (min-width: 320px) {
-        #logo {
-          width: 120%;
-          height: auto;
-          margin: 0 -10%;
-        }
-
-        #systemArguments, #userArguments {
-          width: 120%;
-          margin: 0 -10%;
-        }
-      }
-
-      @media (min-width: 481px) {
-        #logo {
-          width: 90%;
-          height: auto;
-        }
-
-        #systemArguments, #userArguments {
-          width: 90%;
-        }
-      }
-
-      @media (min-width: 641px) {
-        #logo {
-          width: 60%;
-          height: auto;
-        }
-
-        #systemArguments, #userArguments {
-          width: 60%;
-        }
-      }
-
-      @media (min-width: 1281px) {
-        #logo {
-          width: 40%;
-          height: auto;
-        }
-
-        #systemArguments, #userArguments {
-          width: 40%;
-        }
-      }
-
-      #status-cont {
-        display: inline-block;
-        font-weight: bold;
-        text-align: center;
-        margin: auto 10%;
-      }
-
-      #progress {
-        height: 20px;
-        width: 256px;
-      }
-
-      #canvas, #keyCapture {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100% !important;
-          height: 100% !important;
-          opacity: 0;
-      }
-
-      #keyCapture {
-        opacity: 0;
-        background-color: rgba(0,0,0,0);
-        border: 0;
-        color: rgba(0,0,0,0);
-        z-index: -99999;
-      }
-
-      #textForm {
-        display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 2.5em;
-        z-index: -99999;
-        opacity: 0;
-      }
-
-      #textCapture {
-        flex-grow: 1;
-      }
-
-      #textSubmit {
-        width: 6.66em;
-      }
-
-      #content {
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-        text-align: center;
-        display: grid;
-      }
-
-      button, .button {
-        width: 160px;
-        height: 48px;
-        margin: 0.1em;
-        background-color: darkgray;
-        background-image: linear-gradient(black, darkgray);
-        border: 0.1em gray solid;
-        border-radius: 2px;
-        color: white;
-        font-weight: bold;
-        text-align: center;
-        line-height: 2.5em;
-        display: inline-block;
-        cursor: default;
-      }
-
-      .blueButton {
-        background-color: mediumblue;
-        background-image: linear-gradient(black, mediumblue);
-        border-color: mediumblue;
-      }
-
-      .yellowButton {
-        background-color: goldenrod;
-        background-image: linear-gradient(black, goldenrod);
-        border-color: goldenrod;
-      }
-
-      .redButton {
-        background-image: linear-gradient(black, crimson);
-        border-color: crimson;
-      }
-
-      #startbtn {
-        background-color: yellow;
-        color: black;
-        background-image: linear-gradient(yellow, orange);
-        border: 0.1em orange solid;
-        font-weight: bolder;
-        font-size: 1.25em;
-        line-height: normal;
-        cursor: pointer;
-      }
-
-      #notes {
-        display: inline-block;
-        text-align: start;
-      }
-
-      summary {
-        margin: 0.75em 0;
-        font-size: 1.2em;
-      }
-
-      #addonFilesTemplate {
-        display: none;
-      }
-
-      .addonFilesField {
-        display: inline-block;
-        width: 100%;
-        margin: 0.1em 0;
-      }
-
-      #resetbtn {
-        display: none;
-      }
-
-      .addonFilesField .addonButton {
-        width: 2.5em;
-      }
-
-      .addonFilesField label,
-      .addonFilesField input[type=file] {
-        width: 10em;
-        height: 2.5em;
-        margin: 0;
-        cursor: pointer;
-      }
-
-      .addonFilesField input[type=file] {
-        font-size: 1em;
-        display: none;
-      }
-
-      .addonFilesField .addonDelete,
-      .addonFilesField .addonHandle {
-        width: 2.5em;
-        height: 2.5em;
-      }
-
-      #addonButtonAdd {
-        width: 15.4em;
-        height: 2.5em;
-        margin: 0.1em 0;
-      }
-
-      #androidNotice {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="content">
-      <div id="status-cont" class="emscripten">
-        <div id="header">
-          <p>
-            <img id="logo" src="assets/srb2logo.png"/>
-          </p>
-        </div>
-        <div id="details">
-          <p>
-            <button id="startbtn" onclick="StartLoad()">Play</button>
-            <span hidden class="emscripten" id="status"></span>
-          </p>
-          <progress value="0" max="100" id="progress" hidden=1></progress>
-          <p>
-            <button id="resetbtn" class="button" onclick="javascript:window.location.reload()">Cancel</button>
-          </p>
-          <div id="loadingAdvice"></div>
-        </div>
-        <form id="controlsForm" action="javascript:void(0);">
-          <details id="addons">
-            <summary>Mods</summary>
-            <div id="addonFilesContainer">
-              <div class="addonFilesField" id="addonFilesTemplate">
-                <div class="addonButton addonDelete button redButton">-</div><!--
-                --><input type="file" id="addonFiles" class="button yellowButton"/><!--
-                --><label for="addonFiles" class="button yellowButton">Load File</label><!--
-                --><div class="addonButton addonHandle button">&#x2b81;</div>
-              </div>
-            </div>
-            <div id="addonButtonAdd" class="button blueButton">+</div>
-            <p>
-              <input type="checkbox" id="addonStartup" checked/>
-              <label for="addonStartup">Load Mods on Startup</label>
-            </p>
-            <details id="addonsHelp">
-              <summary>Mod Help</summary>
-              <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
-              <p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
-              <p>To load savegames and gamedata, place them in a folder titled <code>.srb2</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
-              <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
-            </details>
-          </details>
-          <details id="controls">
-            <summary>Settings</summary>
-            <p>
-              <label for="resizeHeight">Resolution</label>
-              <input type="range" id="resizeHeight" name="resizeHeight" oninput="ShowValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
-                min="200" max="900" value="200" step="100"/>
-              <span id="resizeHeightValue"></span>
-            </p>
-            <!--<p id="fullscreenRow">
-              <input type="checkbox" id="fullscreen" checked/>
-              <label for="fullscreen">Fullscreen</label>
-            </p>-->
-            <p>
-              <input type="checkbox" id="playMusic" checked/>
-              <label for="playMusic">Play Music</label>
-              <input type="checkbox" id="playSound" checked/>
-              <label for="playSound">Play Sounds</label>
-            </p>
-            <p>
-              <input type="checkbox" id="useMouse" checked/>
-              <label for="useMouse">Use Mouse</label>
-            </p>
-            <details id="storageControls">
-              <summary>Storage</summary>
-              <button id="downloadUserData" class="yellowButton" onclick="if(UserAgentIsiOS() && GetiOSVersion()[0] < 13) { alert('User data cannot be downloaded on iOS devices.'); } else DownloadFS(); return false;">Download User Data</button>
-              <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
-              <button onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
-            </details>
-            <details id="advancedControls">
-              <summary>Advanced</summary>
-              <p>
-                <p>
-                  <label for="drawDistance">Draw Distance</label>
-                  <input type="range" id="drawDistance" name="drawDistance" oninput="ShowValueRange(this, '', DrawDistanceRange);"
-                    min="0" max="10" value="5" step="1"/>
-                  <span id="drawDistanceValue"></span>
-                </p>
-                <p>
-                  <input type="checkbox" id="shadow" checked/>
-                  <label for="shadow">Render Shadows</label>
-                  <input type="checkbox" id="midisoundfont" class="nosave"/>
-                  <label for="midisoundfont">Reset Soundfont</label>
-                </p>
-              </p>
-              <p>
-                <span id="packageVersionRow">
-                  <label for="packageVersion">Version</label>
-                  <select id="packageVersion">
-                    <!-- {{{ PACKAGE_VERSION_LIST }}} -->
-                  </select>
-                </span>
-                <input type="checkbox" id="lowend"/>
-                <label for="lowend">Prefer Low-End</label>
-              </p>
-              <p>
-                <label for="userArguments">Command Line</label><br/>
-                <textarea id="systemArguments" rows="2" readonly></textarea><br/>
-                <textarea id="userArguments" rows="2" placeholder="Custom Arguments"></textarea>
-              </p>
-            </details>
-          </details>
-        </form>
-        <details id="help">
-          <summary>Help</summary>
-          <p>Game Notes:</p>
-          <p>If this game crashes, try enabling "Low-End" mode under Settings > Advanced.</p>
-          <p id="fullscreenNotice">Toggle fullscreen by pressing F11, which should enter your browser's fullscreen mode.</p>
-          <p>No online multiplayer: to play netgames, download the PC version at <a href="//www.srb2.org" target="_blank">srb2.org</a>.</p>
-          <p>Game controllers should work.</p>
-          <div id="androidNotice">
-            <p>If the music is slow, try disabling Low-End mode under Advanced Settings.</p>
-            <p style="color: red;">There is a native Android port available on <a href="https://github.com/Jimita/SRB2/releases" target="_blank">GitHub</a>. Where possible, install this port for better performance!</p>
-          </div>
-        </details>
-        <details id="footer">
-          <summary>About</summary>
-          <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
-          <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
-          <p>
-            Follow the <a href="https://discord.gg/fMuddqH" target="_blank">SRB2 for Web Updates Discord</a> for news and support!
-          </p>
-          <p><a href="https://github.com/mazmazz/SRB2-emscripten/issues">View issues</a> / <a href="https://github.com/mazmazz/SRB2-emscripten">View source</a></p>
-          <p>Contributors:</p>
-          <p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
-          <p>Follow SRB2:</p>
-          <p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
-          <p style="font-size:xx-small;">
-            SRB2 Web Version: {{{ SHELL_VERSION }}}
-          </p>
-          <span id="newVersion"></span>
-          <p style="font-size:xx-small;">
-            This software is licensed under GNU General Public License Version 2. See license text at <a href="https://opensource.org/licenses/GPL-2.0" target="_blank">https://opensource.org/licenses/GPL-2.0</a>.
-          </p>
-          <p style="font-size:xx-small;">
-            The <a href="https://musical-artifacts.com/artifacts/400" target="_blank">Florestan Basic GM GS</a> soundfont is created by <a href="http://dev.nando.audio" target="_blank">Nando Florestan</a>.
-          </p>
-          <p style="font-size:xx-small;">
-            Original design and content is copyright 1998-2020 Sonic Team Junior. All non-original material is copyrighted by their respective owners, and no copyright infringement is intended.
-          </p>
-        </details>
-        <div id="copyright">
-          <p style="font-size:xx-small;">
-            Sonic Robo Blast 2 and Sonic Team Junior are in no way affiliated with SEGA&reg; or Sonic Team.
-          </p>
-          <p style="font-size:xx-small;">
-            Sonic the Hedgehog is a trademark of SEGA&reg;<br/>
-            The copyrights of "Sonic the Hedgehog" and all associated characters, names, terms, art, and music thereof belong to SEGA&reg;
-          </p>
-          <p style="font-size:xx-small;">
-            {{{ MAINTAINER }}}
-          </p>
-        </div>
-      </div>
-    </div>
-    
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" style="z-index:-9999;"></canvas>
-
-    <textarea id="keyCapture" oncontextmenu="event.preventDefault()" tabindex="-1"></textarea>
-
-    <form id="textForm" onsubmit="InjectText();" action="javascript:void(0);" autocomplete="off">
-      <input id="textCapture" tabindex="-1" placeholder="Console Command" disabled/>
-      <input id="textSubmit" type="submit" value="Enter"/>
-    </form>
-
-    <script type='text/javascript'>
-      ////////////////////////////////
-      // UI
-      ////////////////////////////////
-
-      var CanvasElement = document.getElementById('canvas');
-      var StatusElement = document.getElementById('status');
-      var ProgressElement = document.getElementById('progress');
-      var ControlsFormElement = document.getElementById('controlsForm');
-      var PackageVersionElement = document.getElementById('packageVersion');
-      var AddonFields = 0;
-
-      HTMLSelectElement.prototype.contains = function( value ) {
-        for ( var i = 0, l = this.options.length; i < l; i++ ) {
-          if ( this.options[i].value == value ) {
-            return true;
-          }
-        }
-        return false;
-      };
-
-      var URLParams;
-
-      var GetSelectedPackageVersion = _ => {
-        let val = '';
-        if (PackageVersionElement.selectedIndex > -1) {
-          val = PackageVersionElement.options[PackageVersionElement.selectedIndex].value;
-          if (document.getElementById('lowend').checked
-              && PackageVersionElement.contains(`${val}-lowend`))
-            val = `${val}-lowend`;
-        } else
-          val = '{{{ PACKAGE_VERSION }}}';
-        return val;
-      };
-
-      var DeleteNode = (node) => {
-        node.querySelectorAll('*').forEach(n => n.remove());
-        node.remove();
-      };
-
-      var HideContent = () => {
-        StatusElement.hidden = false;
-        ProgressElement.hidden = false;
-        document.getElementById('startbtn').style.display = "none";
-        document.getElementById('addons').style.display = "none";
-        document.getElementById('controls').style.display = "none";
-        document.getElementById('help').style.display = "none";
-        document.getElementById('footer').style.display = "none";
-        document.getElementById('copyright').style.display = "none";
-        document.getElementById('resetbtn').style.display = "inline-block";
-      };
-
-      var ShowContent = () => {
-        StatusElement.hidden = true;
-        ProgressElement.hidden = true;
-        document.getElementById('startbtn').style.display = "inline-block";
-        document.getElementById('addons').style.display = "block";
-        document.getElementById('controls').style.display = "block";
-        document.getElementById('help').style.display = "block";
-        document.getElementById('footer').style.display = "block";
-        document.getElementById('copyright').style.display = "block";
-        document.getElementById('resetbtn').style.display = "none";
-      };
-
-      var StartLoad = async () => {
-        if (!UserAgentIsiOS() && !UserAgentIsAndroid() && !UserAgentIsMobile()) {
-          let adviceHTML = "<p>To play in Fullscreen, press F11.</p>";
-          if (document.getElementById("useMouse").checked)
-            adviceHTML += "<p>To use the mouse, click inside the game.</p>"
-          document.getElementById('loadingAdvice').innerHTML = adviceHTML;
-        } else {
-          document.getElementById('loadingAdvice').innerHTML = '<p>To move the camera, swipe on an empty area of the screen.</p><p>If a button "sticks", press the "Menu" button to unstick it.</p>';
-        }
-
-        SaveFormToStorage(ControlsFormElement);
-        window.removeEventListener('focus', CheckVersion, false);
-
-        PackageVersion = GetSelectedPackageVersion();
-        await UXInstallProgram(false, PackageVersion); // hides the UI
-        await GetWasm(PackageVersion);
-        let scriptSrc = `data/${PackageVersion}/srb2.js`;
-        let script = document.createElement('script');
-        script.setAttribute('src',scriptSrc);
-        document.head.appendChild(script);
-        document.body.classList.add('calledRun');
-      };
-
-      var DrawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
-
-      var ShowValueRange = (elem, suffix, rangeValues) => {
-        document.getElementById(`${elem.id}Value`).innerText = `${rangeValues[elem.value]}${suffix}`;
-      };
-
-      var ShowValue = (elem, suffix, overrideTest, override) => {
-        if (typeof overrideTest !== 'undefined' && overrideTest(elem))
-          document.getElementById(`${elem.id}Value`).innerText = override;
-        else
-          document.getElementById(`${elem.id}Value`).innerText = `${elem.value}${suffix}`;
-      };
-
-      var SaveFormToStorage = (form) => {
-        let inputs = form.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-          let val = input.type === 'checkbox' ? input.checked
-                    : input.type === 'select-one' ? (input.selectedIndex > -1 ? input.options[input.selectedIndex].value : '')
-                    : input.value
-          // Don't save the field if it's specified in the URL query string,
-          // because that's a forced override.
-          if (input.type !== 'file' && (!URLParams.has(input.id) || URLParams.get(input.id) != val) && !input.classList.contains('nosave'))
-            localStorage.setItem(`${form.id}_${input.id}`, val);
-        });
-      };
-
-      var LoadFormFromStorage = (form) => {
-        let inputs = form.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-          let val;
-          if(URLParams.has(input.id))
-            val = URLParams.get(input.id);
-          else
-            val = localStorage.getItem(`${form.id}_${input.id}`);
-          if (val !== null && !input.readOnly && input.type !== 'file' && !input.classList.contains('nosave')) {
-            if (input.type === 'checkbox')
-              input.checked = (val === "true");
-            else if (input.type === 'select-one')
-              for (let i = 0; i < input.length; i++) {
-                let option = input.options[i];
-                if (option.value === val) {
-                  input.selectedIndex = i;
-                  break;
-                }
-              }
-            else
-              input.value = val;
-          }
-        });
-      };
-
-      var HandleInput = (e) => {
-        let val = e.target.type === 'checkbox' ? e.target.checked
-                  : e.target.type === 'select-one' ? (e.target.selectedIndex > -1 ? e.target.options[e.target.selectedIndex].value : '')
-                  : e.target.value
-        // Don't save the field if it's specified in the URL query string,
-        // because that's a forced override.
-        if (e.target.type !== 'file' && (!URLParams.has(e.target.id) || URLParams.get(e.target.id) != val) && !e.target.classList.contains('nosave'))
-          localStorage.setItem(`${ControlsFormElement.id}_${e.target.id}`, val);
-        BuildControlArguments();
-        document.getElementById("systemArguments").value = SystemArgumentsToString();
-      };
-
-      var AddFormEventListeners = (form, event, callback, settings) => {
-        let inputs = form.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => input.addEventListener(event, callback, settings));
-      };
-
-      var DeleteAddonField = (elem) => {
-        DeleteNode(elem);
-        if (!document.getElementById("addonFilesContainer").querySelectorAll('.addonFilesField:not([id=addonFilesTemplate])').length)
-          AddAddonField();
-      };
-
-      var HandleDeleteAddon = (e) => {
-        DeleteAddonField(e.target.parentElement);
-        BuildControlArguments();
-        document.getElementById("systemArguments").value = SystemArgumentsToString();
-      }
-
-      var HandleFileInput = (e) => {
-        if (e.target.files.length) {
-          let name = e.target.files[0].name;
-          // truncate name ourselves, because overflow: hidden bugs the layout
-          if (name.length > 16)
-            name = `${name.substring(0, 16)}...`;
-          e.target.parentElement.querySelector('label').innerText = name;
-        }
-      };
-
-      var AddAddonField = () => {
-        let newField = document.getElementById("addonFilesTemplate").cloneNode(true);
-        newField.id = `addonFilesField${AddonFields}`;
-        newField.querySelector('input[type=file]').id = `addonFiles${AddonFields}`;
-        newField.querySelector('input[type=file]').addEventListener('input', HandleFileInput, false);
-        newField.querySelector('input[type=file]').addEventListener('input', HandleInput, false);
-        newField.querySelector('label').htmlFor = `addonFiles${AddonFields}`;
-        // iOS file inputs do not emit input events, so let's expose
-        // the input element itself so the user can see the filename.
-        if (UserAgentIsiOS()) {
-          newField.querySelector('label').style.display = 'none';
-          newField.querySelector('input[type=file]').classList.add('addonButton');
-          newField.querySelector('input[type=file]').style.display = 'inline-block';
-        }
-        newField.querySelector('.addonDelete').addEventListener('click', HandleDeleteAddon, false);
-        newField.style.display = 'block';
-        document.getElementById("addonFilesContainer").insertBefore(newField, null);
-        AddonFields++;
-      };
-
-      var InitializeiOSLanding = () => {
-        if (UserAgentIsiOS()) {
-          if (!IsStandalone()) {
-            document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
-            document.getElementById("addons").style.display = "none";
-            document.getElementById("controls").style.display = "none";
-            document.getElementById("help").style.display = "none";
-            document.getElementById("notes").style.display = "none";
-            return true;
-          }
-        }
-      };
-
-      var InitializeFormFields = () => {
-        URLParams = new URLSearchParams(window.location.search);
-
-        LoadFormFromStorage(ControlsFormElement);
-
-        // Use 200p low-end by default; the user can upgrade if they choose.
-        if (localStorage.getItem('controlsForm_resizeHeight') === null)
-          document.getElementById('resizeHeight').value = 200;
-        if (localStorage.getItem('controlsForm_lowend') === null)
-          document.getElementById('lowend').checked = true;
-
-        if (UserAgentIsiOS()) {
-            // blob downloading does not work on iOS < 13, and data URIs
-            // simply don't work in standalone mode.
-            // I also don't know if this actually works on 13 standalone.
-            if (GetiOSVersion()[0] < 13)
-              document.getElementById('downloadUserData').style.display = "none";
-        }
-        
-        ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
-
-        ShowValueRange(document.getElementById('drawDistance'), '', DrawDistanceRange);
-
-        AddFormEventListeners(ControlsFormElement, 'input', HandleInput, false);
-
-        if (PackageVersionElement.length < 2)
-          document.getElementById('packageVersionRow').style.display = 'none';
-
-        BuildControlArguments();
-        document.getElementById("systemArguments").value = SystemArgumentsToString();
-
-        if (UserAgentIsAndroid())
-          document.getElementById("androidNotice").style.display = "block";
-        
-        if (UserAgentIsMobile()) {
-          if (IsStandalone())
-            document.getElementById("fullscreenNotice").style.display = "none";
-          else
-            document.getElementById("fullscreenNotice").innerText = "To play in fullscreen, try adding this web page to your Home Screen.";
-        }
-
-        if (UserAgentIsiOS() && IsStandalone()) {
-          document.getElementById("fullscreenRow").style.display = "none";
-          document.getElementById("fullscreen").checked = true;
-        }
-      };
-
-      var InitializeAddons = () => {
-        AddAddonField();
-        document.getElementById("addonButtonAdd").addEventListener('click', AddAddonField, false);
-        Sortable.create(document.getElementById('addonFilesContainer'), {
-          handle: '.addonHandle',
-          onEnd: () => {
-            BuildControlArguments();
-            document.getElementById("systemArguments").value = SystemArgumentsToString();
-          }
-        });
-      };
-
-      var InitializeSections = () => {
-        document.getElementById('addons').open = (localStorage.getItem('addons') === 'true');
-        document.getElementById('addonsHelp').open = (localStorage.getItem('addonsHelp') === 'true'
-          || localStorage.getItem('addonsHelp') === null);
-        document.getElementById('controls').open = (localStorage.getItem('controls') === 'true');
-        document.getElementById('advancedControls').open = (localStorage.getItem('advancedControls') === 'true');
-
-        document.getElementById('addons').addEventListener('toggle', function(e) {
-          localStorage.setItem('addons', event.target.open);
-        }, false);
-
-        document.getElementById('addonsHelp').addEventListener('toggle', function(e) {
-          localStorage.setItem('addonsHelp', event.target.open);
-        }, false);
-
-        document.getElementById('controls').addEventListener('toggle', function(e) {
-          localStorage.setItem('controls', event.target.open);
-        }, false);
-
-        document.getElementById('advancedControls').addEventListener('toggle', function(e) {
-          localStorage.setItem('advancedControls', event.target.open);
-        }, false);
-      };
-
-      window.addEventListener('load', function() {
-        if (!InitializeiOSLanding()) {
-          InitializeAddons();
-          InitializeFormFields();
-          InitializeSections();
-        }
-      }, {once: true});
-    </script>
-  </body>
+	<head>
+		<!--
+		@licstart
+		SONIC ROBO BLAST 2
+		-----------------------------------------------------------------------------
+		Copyright (C) 1993-1996 by id Software, Inc.
+		Copyright (C) 1998-2000 by DooM Legacy Team.
+		Copyright (C) 1999-2020 by Sonic Team Junior.
+		
+		This program is free software: you can redistribute it and/or modify
+		it under the terms of the GNU General Public License as published by
+		the Free Software Foundation, either version 2 of the License, or
+		(at your option) any later version.
+
+		This program is distributed in the hope that it will be useful,
+		but WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+		GNU General Public License for more details.
+
+		You should have received a copy of the GNU General Public License
+		along with this program.  If not, see <https://www.gnu.org/licenses/>.
+		@licend
+		-->
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<link rel="icon" href="assets/srb2.png" sizes="256x256" type="image/png">
+		<meta property="og:title" content="Sonic Robo Blast 2 for Web">
+		<meta property="og:description" content="Play this 3D Sonic the Hedgehog fangame in your web browser! Works on PC, Chromebook, iPhone, and Android.">
+		<meta property="og:image" content="{{{ URL }}}/assets/landing.png">
+		<meta property="og:url" content="{{{ URL }}}">
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+		<link rel="apple-touch-icon" href="assets/srb2.png">
+		<meta name="apple-mobile-web-app-title" content="SRB2">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+		<link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/mazmazz/idb-keyval@idb-version/dist/idb-keyval-iife.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/es6-promise-pool@2.5.0/es6-promise-pool.min.js"></script>
+		<script src="platform.js"></script>
+		<!-- {{{ GTAG }}} -->
+
+		<title>Sonic Robo Blast 2</title>
+		<style>
+			html, body {
+				height: 100%;
+			}
+
+			body {
+				font-family: 'Segoe UI', sans-serif;
+				margin: 0;
+				padding: none;
+				background-color: #000;
+				background-image: 
+					linear-gradient(90deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.80) 10%, rgba(0,0,0,0.80) 90%, rgba(0,0,0,0.25) 100%),
+					url(assets/background.jpg);
+				background-size: cover;
+				background-attachment: fixed;
+				background-position: center;
+				color: #ffffff;
+			}
+
+			body.startedMainLoop {
+				background-image: none;
+			}
+
+			body.startedMainLoop #content {
+				display: none;
+			}
+
+			a {
+				color: rgb(107, 161, 255);
+			}
+
+			a:visited {
+				color: #7f6bd1;
+			}
+
+			@media (min-width: 320px) {
+				#logo {
+					width: 120%;
+					height: auto;
+					margin: 0 -10%;
+				}
+
+				#systemArguments, #userArguments {
+					width: 120%;
+					margin: 0 -10%;
+				}
+			}
+
+			@media (min-width: 481px) {
+				#logo {
+					width: 90%;
+					height: auto;
+				}
+
+				#systemArguments, #userArguments {
+					width: 90%;
+				}
+			}
+
+			@media (min-width: 641px) {
+				#logo {
+					width: 60%;
+					height: auto;
+				}
+
+				#systemArguments, #userArguments {
+					width: 60%;
+				}
+			}
+
+			@media (min-width: 1281px) {
+				#logo {
+					width: 40%;
+					height: auto;
+				}
+
+				#systemArguments, #userArguments {
+					width: 40%;
+				}
+			}
+
+			#status-cont {
+				display: inline-block;
+				font-weight: bold;
+				text-align: center;
+				margin: auto 10%;
+			}
+
+			#progress {
+				height: 20px;
+				width: 256px;
+			}
+
+			#canvas, #keyCapture {
+					position: fixed;
+					top: 0;
+					left: 0;
+					width: 100% !important;
+					height: 100% !important;
+					opacity: 0;
+			}
+
+			#keyCapture {
+				opacity: 0;
+				background-color: rgba(0,0,0,0);
+				border: 0;
+				color: rgba(0,0,0,0);
+				z-index: -99999;
+			}
+
+			#textForm {
+				display: flex;
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				width: 100%;
+				height: 2.5em;
+				z-index: -99999;
+				opacity: 0;
+			}
+
+			#textCapture {
+				flex-grow: 1;
+			}
+
+			#textSubmit {
+				width: 6.66em;
+			}
+
+			#content {
+				width: 100%;
+				height: 100%;
+				overflow-y: auto;
+				text-align: center;
+				display: grid;
+			}
+
+			button, .button {
+				width: 160px;
+				height: 48px;
+				margin: 0.1em;
+				background-color: darkgray;
+				background-image: linear-gradient(black, darkgray);
+				border: 0.1em gray solid;
+				border-radius: 2px;
+				color: white;
+				font-weight: bold;
+				text-align: center;
+				line-height: 2.5em;
+				display: inline-block;
+				cursor: default;
+			}
+
+			.blueButton {
+				background-color: mediumblue;
+				background-image: linear-gradient(black, mediumblue);
+				border-color: mediumblue;
+			}
+
+			.yellowButton {
+				background-color: goldenrod;
+				background-image: linear-gradient(black, goldenrod);
+				border-color: goldenrod;
+			}
+
+			.redButton {
+				background-image: linear-gradient(black, crimson);
+				border-color: crimson;
+			}
+
+			#startbtn {
+				background-color: yellow;
+				color: black;
+				background-image: linear-gradient(yellow, orange);
+				border: 0.1em orange solid;
+				font-weight: bolder;
+				font-size: 1.25em;
+				line-height: normal;
+				cursor: pointer;
+			}
+
+			#notes {
+				display: inline-block;
+				text-align: start;
+			}
+
+			summary {
+				margin: 0.75em 0;
+				font-size: 1.2em;
+			}
+
+			#addonFilesTemplate {
+				display: none;
+			}
+
+			.addonFilesField {
+				display: inline-block;
+				width: 100%;
+				margin: 0.1em 0;
+			}
+
+			#resetbtn {
+				display: none;
+			}
+
+			.addonFilesField .addonButton {
+				width: 2.5em;
+			}
+
+			.addonFilesField label,
+			.addonFilesField input[type=file] {
+				width: 10em;
+				height: 2.5em;
+				margin: 0;
+				cursor: pointer;
+			}
+
+			.addonFilesField input[type=file] {
+				font-size: 1em;
+				display: none;
+			}
+
+			.addonFilesField .addonDelete,
+			.addonFilesField .addonHandle {
+				width: 2.5em;
+				height: 2.5em;
+			}
+
+			#addonButtonAdd {
+				width: 15.4em;
+				height: 2.5em;
+				margin: 0.1em 0;
+			}
+
+			#androidNotice {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="content">
+			<div id="status-cont" class="emscripten">
+				<div id="header">
+					<p>
+						<img id="logo" src="assets/srb2logo.png"/>
+					</p>
+				</div>
+				<div id="details">
+					<p>
+						<button id="startbtn" onclick="StartLoad()">Play</button>
+						<span hidden class="emscripten" id="status"></span>
+					</p>
+					<progress value="0" max="100" id="progress" hidden=1></progress>
+					<p>
+						<button id="resetbtn" class="button" onclick="javascript:window.location.reload()">Cancel</button>
+					</p>
+					<div id="loadingAdvice"></div>
+				</div>
+				<form id="controlsForm" action="javascript:void(0);">
+					<details id="addons">
+						<summary>Mods</summary>
+						<div id="addonFilesContainer">
+							<div class="addonFilesField" id="addonFilesTemplate">
+								<div class="addonButton addonDelete button redButton">-</div><!--
+								--><input type="file" id="addonFiles" class="button yellowButton"/><!--
+								--><label for="addonFiles" class="button yellowButton">Load File</label><!--
+								--><div class="addonButton addonHandle button">&#x2b81;</div>
+							</div>
+						</div>
+						<div id="addonButtonAdd" class="button blueButton">+</div>
+						<p>
+							<input type="checkbox" id="addonStartup" checked/>
+							<label for="addonStartup">Load Mods on Startup</label>
+						</p>
+						<details id="addonsHelp">
+							<summary>Mod Help</summary>
+							<p>You may load one or more mods here. Drag each mod to change its loading order.</p>
+							<p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
+							<p>To load savegames and gamedata, place them in a folder titled <code>.srb2</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
+							<p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
+						</details>
+					</details>
+					<details id="controls">
+						<summary>Settings</summary>
+						<p>
+							<label for="resizeHeight">Resolution</label>
+							<input type="range" id="resizeHeight" name="resizeHeight" oninput="ShowValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
+								min="200" max="900" value="200" step="100"/>
+							<span id="resizeHeightValue"></span>
+						</p>
+						<!--<p id="fullscreenRow">
+							<input type="checkbox" id="fullscreen" checked/>
+							<label for="fullscreen">Fullscreen</label>
+						</p>-->
+						<p>
+							<input type="checkbox" id="playMusic" checked/>
+							<label for="playMusic">Play Music</label>
+							<input type="checkbox" id="playSound" checked/>
+							<label for="playSound">Play Sounds</label>
+						</p>
+						<p>
+							<input type="checkbox" id="useMouse" checked/>
+							<label for="useMouse">Use Mouse</label>
+						</p>
+						<details id="storageControls">
+							<summary>Storage</summary>
+							<button id="downloadUserData" class="yellowButton" onclick="if(UserAgentIsiOS() && GetiOSVersion()[0] < 13) { alert('User data cannot be downloaded on iOS devices.'); } else DownloadFS(); return false;">Download User Data</button>
+							<button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
+							<button onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
+						</details>
+						<details id="advancedControls">
+							<summary>Advanced</summary>
+							<p>
+								<p>
+									<label for="drawDistance">Draw Distance</label>
+									<input type="range" id="drawDistance" name="drawDistance" oninput="ShowValueRange(this, '', DrawDistanceRange);"
+										min="0" max="10" value="5" step="1"/>
+									<span id="drawDistanceValue"></span>
+								</p>
+								<p>
+									<input type="checkbox" id="shadow" checked/>
+									<label for="shadow">Render Shadows</label>
+									<input type="checkbox" id="midisoundfont" class="nosave"/>
+									<label for="midisoundfont">Reset Soundfont</label>
+								</p>
+							</p>
+							<p>
+								<span id="packageVersionRow">
+									<label for="packageVersion">Version</label>
+									<select id="packageVersion">
+										<!-- {{{ PACKAGE_VERSION_LIST }}} -->
+									</select>
+								</span>
+								<input type="checkbox" id="lowend"/>
+								<label for="lowend">Prefer Low-End</label>
+							</p>
+							<p>
+								<label for="userArguments">Command Line</label><br/>
+								<textarea id="systemArguments" rows="2" readonly></textarea><br/>
+								<textarea id="userArguments" rows="2" placeholder="Custom Arguments"></textarea>
+							</p>
+						</details>
+					</details>
+				</form>
+				<details id="help">
+					<summary>Help</summary>
+					<p>Game Notes:</p>
+					<p>If this game crashes, try enabling "Low-End" mode under Settings > Advanced.</p>
+					<p id="fullscreenNotice">Toggle fullscreen by pressing F11, which should enter your browser's fullscreen mode.</p>
+					<p>No online multiplayer: to play netgames, download the PC version at <a href="//www.srb2.org" target="_blank">srb2.org</a>.</p>
+					<p>Game controllers should work.</p>
+					<div id="androidNotice">
+						<p>If the music is slow, try disabling Low-End mode under Advanced Settings.</p>
+						<p style="color: red;">There is a native Android port available on <a href="https://github.com/Jimita/SRB2/releases" target="_blank">GitHub</a>. Where possible, install this port for better performance!</p>
+					</div>
+				</details>
+				<details id="footer">
+					<summary>About</summary>
+					<p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
+					<p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
+					<p>
+						Follow the <a href="https://discord.gg/fMuddqH" target="_blank">SRB2 for Web Updates Discord</a> for news and support!
+					</p>
+					<p><a href="https://github.com/mazmazz/SRB2-emscripten/issues">View issues</a> / <a href="https://github.com/mazmazz/SRB2-emscripten">View source</a></p>
+					<p>Contributors:</p>
+					<p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
+					<p>Follow SRB2:</p>
+					<p><a href="https://www.srb2.org">Website</a> / <a href="https://twitter.com/SonicTeamJr">Twitter</a> / <a href="https://discord.com/invite/pYDXzpX">Discord</a></p>
+					<p style="font-size:xx-small;">
+						SRB2 Web Version: {{{ SHELL_VERSION }}}
+					</p>
+					<span id="newVersion"></span>
+					<p style="font-size:xx-small;">
+						This software is licensed under GNU General Public License Version 2. See license text at <a href="https://opensource.org/licenses/GPL-2.0" target="_blank">https://opensource.org/licenses/GPL-2.0</a>.
+					</p>
+					<p style="font-size:xx-small;">
+						The <a href="https://musical-artifacts.com/artifacts/400" target="_blank">Florestan Basic GM GS</a> soundfont is created by <a href="http://dev.nando.audio" target="_blank">Nando Florestan</a>.
+					</p>
+					<p style="font-size:xx-small;">
+						Original design and content is copyright 1998-2020 Sonic Team Junior. All non-original material is copyrighted by their respective owners, and no copyright infringement is intended.
+					</p>
+				</details>
+				<div id="copyright">
+					<p style="font-size:xx-small;">
+						Sonic Robo Blast 2 and Sonic Team Junior are in no way affiliated with SEGA&reg; or Sonic Team.
+					</p>
+					<p style="font-size:xx-small;">
+						Sonic the Hedgehog is a trademark of SEGA&reg;<br/>
+						The copyrights of "Sonic the Hedgehog" and all associated characters, names, terms, art, and music thereof belong to SEGA&reg;
+					</p>
+					<p style="font-size:xx-small;">
+						{{{ MAINTAINER }}}
+					</p>
+				</div>
+			</div>
+		</div>
+		
+		<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" style="z-index:-9999;"></canvas>
+
+		<textarea id="keyCapture" oncontextmenu="event.preventDefault()" tabindex="-1"></textarea>
+
+		<form id="textForm" onsubmit="InjectText();" action="javascript:void(0);" autocomplete="off">
+			<input id="textCapture" tabindex="-1" placeholder="Console Command" disabled/>
+			<input id="textSubmit" type="submit" value="Enter"/>
+		</form>
+
+		<script type='text/javascript'>
+			////////////////////////////////
+			// UI
+			////////////////////////////////
+
+			var CanvasElement = document.getElementById('canvas');
+			var StatusElement = document.getElementById('status');
+			var ProgressElement = document.getElementById('progress');
+			var ControlsFormElement = document.getElementById('controlsForm');
+			var PackageVersionElement = document.getElementById('packageVersion');
+			var AddonFields = 0;
+
+			HTMLSelectElement.prototype.contains = function( value ) {
+				for ( var i = 0, l = this.options.length; i < l; i++ ) {
+					if ( this.options[i].value == value ) {
+						return true;
+					}
+				}
+				return false;
+			};
+
+			var URLParams;
+
+			var GetSelectedPackageVersion = _ => {
+				let val = '';
+				if (PackageVersionElement.selectedIndex > -1) {
+					val = PackageVersionElement.options[PackageVersionElement.selectedIndex].value;
+					if (document.getElementById('lowend').checked
+							&& PackageVersionElement.contains(`${val}-lowend`))
+						val = `${val}-lowend`;
+				} else
+					val = '{{{ PACKAGE_VERSION }}}';
+				return val;
+			};
+
+			var DeleteNode = (node) => {
+				node.querySelectorAll('*').forEach(n => n.remove());
+				node.remove();
+			};
+
+			var HideContent = () => {
+				StatusElement.hidden = false;
+				ProgressElement.hidden = false;
+				document.getElementById('startbtn').style.display = "none";
+				document.getElementById('addons').style.display = "none";
+				document.getElementById('controls').style.display = "none";
+				document.getElementById('help').style.display = "none";
+				document.getElementById('footer').style.display = "none";
+				document.getElementById('copyright').style.display = "none";
+				document.getElementById('resetbtn').style.display = "inline-block";
+			};
+
+			var ShowContent = () => {
+				StatusElement.hidden = true;
+				ProgressElement.hidden = true;
+				document.getElementById('startbtn').style.display = "inline-block";
+				document.getElementById('addons').style.display = "block";
+				document.getElementById('controls').style.display = "block";
+				document.getElementById('help').style.display = "block";
+				document.getElementById('footer').style.display = "block";
+				document.getElementById('copyright').style.display = "block";
+				document.getElementById('resetbtn').style.display = "none";
+			};
+
+			var StartLoad = async () => {
+				if (!UserAgentIsiOS() && !UserAgentIsAndroid() && !UserAgentIsMobile()) {
+					let adviceHTML = "<p>To play in Fullscreen, press F11.</p>";
+					if (document.getElementById("useMouse").checked)
+						adviceHTML += "<p>To use the mouse, click inside the game.</p>"
+					document.getElementById('loadingAdvice').innerHTML = adviceHTML;
+				} else {
+					document.getElementById('loadingAdvice').innerHTML = '<p>To move the camera, swipe on an empty area of the screen.</p><p>If a button "sticks", press the "Menu" button to unstick it.</p>';
+				}
+
+				SaveFormToStorage(ControlsFormElement);
+				window.removeEventListener('focus', CheckVersion, false);
+
+				PackageVersion = GetSelectedPackageVersion();
+				await UXInstallProgram(false, PackageVersion); // hides the UI
+				await GetWasm(PackageVersion);
+				let scriptSrc = `data/${PackageVersion}/srb2.js`;
+				let script = document.createElement('script');
+				script.setAttribute('src',scriptSrc);
+				document.head.appendChild(script);
+				document.body.classList.add('calledRun');
+			};
+
+			var DrawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
+
+			var ShowValueRange = (elem, suffix, rangeValues) => {
+				document.getElementById(`${elem.id}Value`).innerText = `${rangeValues[elem.value]}${suffix}`;
+			};
+
+			var ShowValue = (elem, suffix, overrideTest, override) => {
+				if (typeof overrideTest !== 'undefined' && overrideTest(elem))
+					document.getElementById(`${elem.id}Value`).innerText = override;
+				else
+					document.getElementById(`${elem.id}Value`).innerText = `${elem.value}${suffix}`;
+			};
+
+			var SaveFormToStorage = (form) => {
+				let inputs = form.querySelectorAll('input, textarea, select');
+				inputs.forEach(input => {
+					let val = input.type === 'checkbox' ? input.checked
+										: input.type === 'select-one' ? (input.selectedIndex > -1 ? input.options[input.selectedIndex].value : '')
+										: input.value
+					// Don't save the field if it's specified in the URL query string,
+					// because that's a forced override.
+					if (input.type !== 'file' && (!URLParams.has(input.id) || URLParams.get(input.id) != val) && !input.classList.contains('nosave'))
+						localStorage.setItem(`${form.id}_${input.id}`, val);
+				});
+			};
+
+			var LoadFormFromStorage = (form) => {
+				let inputs = form.querySelectorAll('input, textarea, select');
+				inputs.forEach(input => {
+					let val;
+					if(URLParams.has(input.id))
+						val = URLParams.get(input.id);
+					else
+						val = localStorage.getItem(`${form.id}_${input.id}`);
+					if (val !== null && !input.readOnly && input.type !== 'file' && !input.classList.contains('nosave')) {
+						if (input.type === 'checkbox')
+							input.checked = (val === "true");
+						else if (input.type === 'select-one')
+							for (let i = 0; i < input.length; i++) {
+								let option = input.options[i];
+								if (option.value === val) {
+									input.selectedIndex = i;
+									break;
+								}
+							}
+						else
+							input.value = val;
+					}
+				});
+			};
+
+			var HandleInput = (e) => {
+				let val = e.target.type === 'checkbox' ? e.target.checked
+									: e.target.type === 'select-one' ? (e.target.selectedIndex > -1 ? e.target.options[e.target.selectedIndex].value : '')
+									: e.target.value
+				// Don't save the field if it's specified in the URL query string,
+				// because that's a forced override.
+				if (e.target.type !== 'file' && (!URLParams.has(e.target.id) || URLParams.get(e.target.id) != val) && !e.target.classList.contains('nosave'))
+					localStorage.setItem(`${ControlsFormElement.id}_${e.target.id}`, val);
+				BuildControlArguments();
+				document.getElementById("systemArguments").value = SystemArgumentsToString();
+			};
+
+			var AddFormEventListeners = (form, event, callback, settings) => {
+				let inputs = form.querySelectorAll('input, textarea, select');
+				inputs.forEach(input => input.addEventListener(event, callback, settings));
+			};
+
+			var DeleteAddonField = (elem) => {
+				DeleteNode(elem);
+				if (!document.getElementById("addonFilesContainer").querySelectorAll('.addonFilesField:not([id=addonFilesTemplate])').length)
+					AddAddonField();
+			};
+
+			var HandleDeleteAddon = (e) => {
+				DeleteAddonField(e.target.parentElement);
+				BuildControlArguments();
+				document.getElementById("systemArguments").value = SystemArgumentsToString();
+			}
+
+			var HandleFileInput = (e) => {
+				if (e.target.files.length) {
+					let name = e.target.files[0].name;
+					// truncate name ourselves, because overflow: hidden bugs the layout
+					if (name.length > 16)
+						name = `${name.substring(0, 16)}...`;
+					e.target.parentElement.querySelector('label').innerText = name;
+				}
+			};
+
+			var AddAddonField = () => {
+				let newField = document.getElementById("addonFilesTemplate").cloneNode(true);
+				newField.id = `addonFilesField${AddonFields}`;
+				newField.querySelector('input[type=file]').id = `addonFiles${AddonFields}`;
+				newField.querySelector('input[type=file]').addEventListener('input', HandleFileInput, false);
+				newField.querySelector('input[type=file]').addEventListener('input', HandleInput, false);
+				newField.querySelector('label').htmlFor = `addonFiles${AddonFields}`;
+				// iOS file inputs do not emit input events, so let's expose
+				// the input element itself so the user can see the filename.
+				if (UserAgentIsiOS()) {
+					newField.querySelector('label').style.display = 'none';
+					newField.querySelector('input[type=file]').classList.add('addonButton');
+					newField.querySelector('input[type=file]').style.display = 'inline-block';
+				}
+				newField.querySelector('.addonDelete').addEventListener('click', HandleDeleteAddon, false);
+				newField.style.display = 'block';
+				document.getElementById("addonFilesContainer").insertBefore(newField, null);
+				AddonFields++;
+			};
+
+			var InitializeiOSLanding = () => {
+				if (UserAgentIsiOS()) {
+					if (!IsStandalone()) {
+						document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
+						document.getElementById("addons").style.display = "none";
+						document.getElementById("controls").style.display = "none";
+						document.getElementById("help").style.display = "none";
+						document.getElementById("notes").style.display = "none";
+						return true;
+					}
+				}
+			};
+
+			var InitializeFormFields = () => {
+				URLParams = new URLSearchParams(window.location.search);
+
+				LoadFormFromStorage(ControlsFormElement);
+
+				// Use 200p low-end by default; the user can upgrade if they choose.
+				if (localStorage.getItem('controlsForm_resizeHeight') === null)
+					document.getElementById('resizeHeight').value = 200;
+				if (localStorage.getItem('controlsForm_lowend') === null)
+					document.getElementById('lowend').checked = true;
+
+				if (UserAgentIsiOS()) {
+						// blob downloading does not work on iOS < 13, and data URIs
+						// simply don't work in standalone mode.
+						// I also don't know if this actually works on 13 standalone.
+						if (GetiOSVersion()[0] < 13)
+							document.getElementById('downloadUserData').style.display = "none";
+				}
+				
+				ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
+
+				ShowValueRange(document.getElementById('drawDistance'), '', DrawDistanceRange);
+
+				AddFormEventListeners(ControlsFormElement, 'input', HandleInput, false);
+
+				if (PackageVersionElement.length < 2)
+					document.getElementById('packageVersionRow').style.display = 'none';
+
+				BuildControlArguments();
+				document.getElementById("systemArguments").value = SystemArgumentsToString();
+
+				if (UserAgentIsAndroid())
+					document.getElementById("androidNotice").style.display = "block";
+				
+				if (UserAgentIsMobile()) {
+					if (IsStandalone())
+						document.getElementById("fullscreenNotice").style.display = "none";
+					else
+						document.getElementById("fullscreenNotice").innerText = "To play in fullscreen, try adding this web page to your Home Screen.";
+				}
+
+				if (UserAgentIsiOS() && IsStandalone()) {
+					document.getElementById("fullscreenRow").style.display = "none";
+					document.getElementById("fullscreen").checked = true;
+				}
+			};
+
+			var InitializeAddons = () => {
+				AddAddonField();
+				document.getElementById("addonButtonAdd").addEventListener('click', AddAddonField, false);
+				Sortable.create(document.getElementById('addonFilesContainer'), {
+					handle: '.addonHandle',
+					onEnd: () => {
+						BuildControlArguments();
+						document.getElementById("systemArguments").value = SystemArgumentsToString();
+					}
+				});
+			};
+
+			var InitializeSections = () => {
+				document.getElementById('addons').open = (localStorage.getItem('addons') === 'true');
+				document.getElementById('addonsHelp').open = (localStorage.getItem('addonsHelp') === 'true'
+					|| localStorage.getItem('addonsHelp') === null);
+				document.getElementById('controls').open = (localStorage.getItem('controls') === 'true');
+				document.getElementById('advancedControls').open = (localStorage.getItem('advancedControls') === 'true');
+
+				document.getElementById('addons').addEventListener('toggle', function(e) {
+					localStorage.setItem('addons', event.target.open);
+				}, false);
+
+				document.getElementById('addonsHelp').addEventListener('toggle', function(e) {
+					localStorage.setItem('addonsHelp', event.target.open);
+				}, false);
+
+				document.getElementById('controls').addEventListener('toggle', function(e) {
+					localStorage.setItem('controls', event.target.open);
+				}, false);
+
+				document.getElementById('advancedControls').addEventListener('toggle', function(e) {
+					localStorage.setItem('advancedControls', event.target.open);
+				}, false);
+			};
+
+			window.addEventListener('load', function() {
+				if (!InitializeiOSLanding()) {
+					InitializeAddons();
+					InitializeFormFields();
+					InitializeSections();
+				}
+			}, {once: true});
+		</script>
+	</body>
 </html>
