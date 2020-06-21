@@ -1385,6 +1385,12 @@ void D_SRB2Main(void)
 
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	VID_PrepareModeList(); // Regenerate Modelist according to cv_fullscreen
+
+#if defined(__EMSCRIPTEN__)
+	EM_ASM({
+		UpdateFullscreenStatus();
+	});
+#endif
 #endif
 
 	// set user default mode or mode set at cmdline
