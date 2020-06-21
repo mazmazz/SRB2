@@ -49,6 +49,10 @@
 #include "i_joy.h"
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h> // EM_ASM_INT
+#endif
+
 UINT16 objectsdrawn = 0;
 
 //
@@ -1637,7 +1641,14 @@ void ST_drawTouchMenuInput(void)
 	drawbtn(KEY_ENTER, 0x1D); // right arrow
 	drawbtn(KEY_CONSOLE, '$');
 #if defined(__EMSCRIPTEN__)
-	drawbtn(KEY_F11, 0x17); // up/down arrow
+	{
+		boolean isiOS = EM_ASM_INT({
+			return UserAgentIsiOS();
+		});
+		if (!isiOS) {
+			drawbtn(KEY_F11, 0x17); // up/down arrow
+		}
+	}
 #endif
 
 #undef drawbtn

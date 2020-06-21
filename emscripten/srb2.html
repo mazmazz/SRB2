@@ -555,7 +555,7 @@
         document.head.appendChild(script);
         document.body.classList.add('calledRun');
 
-        if (document.getElementById('fullscreen').checked)
+        if (!document.getElementById('fullscreen').checked)
           EnterFullscreen(true);
       };
 
@@ -2188,7 +2188,7 @@
         // Don't bother with standalone, because they're already fullscreen
         if (!IsStandalone() && (StartedMainLoop || force)) {
           try {
-            await document.documentElement.requestFullscreen();
+            await document.body.requestFullscreen();
           } catch (err) { 
             console.log('EnterFullscreen error, passing...', err);
           } // sometimes fails, but the viewport actually resizes
