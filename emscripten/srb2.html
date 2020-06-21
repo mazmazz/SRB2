@@ -31,6 +31,7 @@
     <meta property="og:image" content="{{{ URL }}}/assets/landing.png">
     <meta property="og:url" content="{{{ URL }}}">
     <meta name="twitter:card" content="summary_large_image">
+    <link rel="manifest" href="srb2.webmanifest">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -554,6 +555,11 @@
         document.head.appendChild(script);
         document.body.classList.add('calledRun');
 
+        try {
+          if (AddToHomescreen !== null)
+            AddToHomescreen.remove();
+        } catch(e) { }
+
         // Doesn't always work, but that's okay; user can toggle in-game
         EnterFullscreen(true);
       };
@@ -668,17 +674,28 @@
         AddonFields++;
       };
 
-      var InitializeiOSLanding = () => {
+      var InitializePWA = () => {
         if (UserAgentIsiOS()) {
           if (!IsStandalone()) {
-            document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
+            let homescreenAdvice = "";
+            if (UserAgentIsiPad())
+              homescreenAdvice = '<p>To play, tap the "Share" icon on the upper-right corner of the screen.</p>';
+            else
+              homescreenAdvice = '<p>To play, tap the "Share" icon on the bottom of the screen.</p>';
+            homescreenAdvice += '<p>Then, tap "Add to Home Screen"</p>';
+            document.getElementById("details").innerHTML = homescreenAdvice;
             document.getElementById("addons").style.display = "none";
             document.getElementById("controls").style.display = "none";
             document.getElementById("help").style.display = "none";
             document.getElementById("notes").style.display = "none";
-            return true;
+            return false;
           }
+        } else {
+          // Chrome Android: Allow PWA prompt by registering service worker
+          if ('serviceWorker' in navigator)
+            navigator.serviceWorker.register('service-worker.js');
         }
+        return true;
       };
 
       var InitializeFormFields = () => {
@@ -760,7 +777,7 @@
       };
 
       window.addEventListener('load', function() {
-        if (!InitializeiOSLanding()) {
+        if (InitializePWA()) {
           InitializeAddons();
           InitializeFormFields();
           InitializeSections();
@@ -898,7 +915,7 @@
       // Utilities
       ////////////////////////////////
       
-      var UserAgentIsiPad = () => ((/iPad/.test(navigator.platform) ||
+      var UserAgentIsiPad = () => ((!!window.navigator.userAgent.match(/iPad/i) || /iPad/.test(navigator.platform) ||
           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
           !window.MSStream);
 

@@ -14,5 +14,7 @@ gtag.txt
 landing/*
 !landing/README.md
 !landing/assets
+!landing/srb2.webmanifest
+!landing/service-worker.js
 *.zip
 __pycache__
