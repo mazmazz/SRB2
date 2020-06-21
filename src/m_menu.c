@@ -326,9 +326,9 @@ static void M_AssignJoystick(INT32 choice);
 static void M_ChangeControl(INT32 choice);
 
 #ifdef TOUCHINPUTS
-static void M_LoadTouchControlLayout(void);
-static void M_ClearTouchControlLayout(void);
-static void M_CustomizeTouchControls(void);
+static void M_LoadTouchControlLayout(INT32 choice);
+static void M_ClearTouchControlLayout(INT32 choice);
+static void M_CustomizeTouchControls(INT32 choice);
 #endif
 
 // Video & Sound
@@ -12202,8 +12202,9 @@ static boolean M_TouchPresetActiveMessage(void)
 	return false;
 }
 
-static void M_CustomizeTouchControls(void)
+static void M_CustomizeTouchControls(INT32 choice)
 {
+	(void)choice;
 	if (!M_TouchPresetActiveMessage())
 	{
 		TS_SetupCustomization();
@@ -12211,8 +12212,9 @@ static void M_CustomizeTouchControls(void)
 	}
 }
 
-static void M_LoadTouchControlLayout(void)
+static void M_LoadTouchControlLayout(INT32 choice)
 {
+	(void)choice;
 	if (!M_TouchPresetActiveMessage())
 	{
 		TS_OpenLayoutList();
@@ -12230,8 +12232,9 @@ static void M_LayoutClearResponse(INT32 ch)
 	//M_StartMessage(M_GetText("Layout cleared.\n" PRESS_A_KEY_MESSAGE),NULL,MM_NOTHING);
 }
 
-static void M_ClearTouchControlLayout(void)
+static void M_ClearTouchControlLayout(INT32 choice)
 {
+	(void)choice;
 	if (!M_TouchPresetActiveMessage())
 	{
 		TS_OpenLayoutList();
