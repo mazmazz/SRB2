@@ -1642,10 +1642,12 @@ void ST_drawTouchMenuInput(void)
 	drawbtn(KEY_CONSOLE, '$');
 #if defined(__EMSCRIPTEN__)
 	{
-		boolean isiOS = EM_ASM_INT({
+		// Hide the fullscreen button from iOS.
+		// Even if it is supported on iOS>=12, it only works on video elements
+		boolean hideButton = EM_ASM_INT({
 			return UserAgentIsiOS();
 		});
-		if (!isiOS) {
+		if (!hideButton) {
 			drawbtn(KEY_F11, 0x17); // up/down arrow
 		}
 	}
