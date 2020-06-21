@@ -154,6 +154,7 @@ static UINT32 serverlistpage;
 static UINT8 numsaves = 0;
 static saveinfo_t* savegameinfo = NULL; // Extra info about the save games.
 static patch_t *savselp[7];
+static patch_t *staticp;
 
 INT16 startmap; // Mario, NiGHTS, or just a plain old normal game?
 
@@ -4403,11 +4404,9 @@ static fixed_t staticalong = 0;
 
 static void M_DrawStaticBox(fixed_t x, fixed_t y, INT32 flags, fixed_t w, fixed_t h)
 {
-	patch_t *patch;
 	fixed_t sw, pw;
 
-	patch = W_CachePatchName("LSSTATIC", PU_PATCH);
-	pw = SHORT(patch->width) - (sw = w*2); //FixedDiv(w, scale); -- for scale FRACUNIT/2
+	pw = SHORT(staticp->width) - (sw = w*2); //FixedDiv(w, scale); -- for scale FRACUNIT/2
 
 	/*if (pw > 0) -- model code for modders providing weird LSSTATIC
 	{
@@ -4420,11 +4419,9 @@ static void M_DrawStaticBox(fixed_t x, fixed_t y, INT32 flags, fixed_t w, fixed_
 	if (staticalong > pw) // simplified for base LSSTATIC
 		staticalong -= pw;
 
-	V_DrawCroppedPatch(x<<FRACBITS, y<<FRACBITS, FRACUNIT/2, flags, patch, staticalong, 0, sw, h*2); // FixedDiv(h, scale)); -- for scale FRACUNIT/2
+	V_DrawCroppedPatch(x<<FRACBITS, y<<FRACBITS, FRACUNIT/2, flags, staticp, staticalong, 0, sw, h*2); // FixedDiv(h, scale)); -- for scale FRACUNIT/2
 
 	staticalong += sw; //M_RandomRange(sw/2, 2*sw); -- turns out less randomisation looks better because immediately adjacent frames can't end up close to each other
-
-	W_UnlockCachedPatch(patch);
 }
 
 //
@@ -5449,6 +5446,8 @@ static void M_CacheLevelPlatter(void)
 	levselp[1][0] = W_CachePatchName("SLCT1LVW", PU_PATCH);
 	levselp[1][1] = W_CachePatchName("SLCT2LVW", PU_PATCH);
 	levselp[1][2] = W_CachePatchName("BLANKLVW", PU_PATCH);
+
+	staticp = W_CachePatchName("LSSTATIC", PU_PATCH);
 }
 
 //
@@ -8429,6 +8428,8 @@ static void M_CacheLoadGameData(void)
 	savselp[3] = W_CachePatchName("GAMEDONE", PU_PATCH);
 	savselp[4] = W_CachePatchName("BLACXLVL", PU_PATCH);
 	savselp[5] = W_CachePatchName("BLANKLVL", PU_PATCH);
+
+	staticp = W_CachePatchName("LSSTATIC", PU_PATCH);
 }
 
 static void M_DrawLoadGameData(void)
