@@ -1942,6 +1942,13 @@
           );
       };
 
+      var PreActivateAudio = () => {
+        if (UserAgentIsiOS())
+          window.addEventListener('touchend', ActivateAudio, {once: true});
+        else
+          ActivateAudio();
+      };
+
       var HandleViewportChange = () => {
         ChangeResolution();
       };
@@ -1949,7 +1956,7 @@
       window.addEventListener('load', function() {
         if(UserAgentIsiOS()) {
           if(IsStandalone()) {
-            window.addEventListener('touchend', ActivateAudio, {once: true});
+            PreActivateAudio();
             window.addEventListener('resize', HandleViewportChange, false);
           }
         }
@@ -1971,8 +1978,15 @@
         if ('SDL2' in Module 
             && Module['SDL2'] instanceof Object 
             && 'audioContext' in Module['SDL2'] 
-            && Module['SDL2'].audioContext)
+            && Module['SDL2'].audioContext
+            && Module['SDL2'].audioContext.status !== 'closed')
           Module['SDL2'].audioContext.resume();
+        else {
+          if ('SDL2' in Module 
+              && Module['SDL2'] instanceof Object)
+            Module['SDL2'].audioContext = null;
+          PreActivateAudio();
+        }
       };
 
       var PauseLoop = () => {
@@ -2006,10 +2020,7 @@
               || !SDL2.audioContext 
               || SDL2.audioContext.status === 'closed') {
             SDL2.audioContext = null;
-            if (UserAgentIsiOS())
-              window.addEventListener('touchend', ActivateAudio, {once: true});
-            else
-              ActivateAudio();
+            PreActivateAudio();
           } else
             ResumeAudioContext();
           ResumeLoop();
