@@ -317,14 +317,15 @@
           </p>
         </div>
         <div id="details">
-          <p>To play SRB2 for Web, go to <a href="https://srb2web.surge.sh">https://srb2web.surge.sh</a>.</p>
+          <p>To play SRB2 for Web, go to <a href="https://mazmazz.github.io/srb2web">https://mazmazz.github.io/srb2web</a>.</p>
+          <p><strong style="color:red;">This web page will go dead soon! Update your bookmarks to the link above so you can access the latest version!</strong></p>
           <p class="noniOS">First, save a backup of your game data here. Then, you can upload it onto the new website.</p>
           <p class="isiOS">You should wipe your Program Data here because it is unusable in the new web site. You will download a new copy of the Program Data at the new site.</p>
         </div>
         <div>
           <button class="noniOS" class="redButton" onclick="if (confirm('Are you sure? Once you download your user data, you cannot retrieve it from this page again.')) { DownloadFS().then(_=>ResetProgramData(true, _=>alert('Program data reset.'))).then(_=>DeleteFS('/home/web_user/.srb2', true, _=>alert('User data wiped. You can upload your backup onto the new web site.'))).catch(err=>alert(`Error -- if you did not yet download your user data, then it may be safe.\n\n${err}`)); } return false;">Back up and Wipe</button>
           <button class="isiOS" class="redButton" onclick="if (confirm('Are you sure? You will be unable to retrieve your user data from this page again.')) { ResetProgramData(true, _=>alert('Program data reset.')).then(_=>DeleteFS('/home/web_user/.srb2', true, _=>alert('User data wiped.'))).catch(err=>alert(`Error -- try wiping your program data in the iOS Safari settings.\n\n${err}`)); } return false;">Wipe Program Data</button>
-          <button class="yellowButton" onclick="window.location.href='https:\/\/srb2web.surge.sh'; return false;">Go to App</button>
+          <button class="yellowButton" onclick="alert('This web page will go dead soon!\n\nUpdate your bookmarks to https:\/\/mazmazz.github.io/srb2web so you can access the latest version.'); window.location.href='https:\/\/mazmazz.github.io/srb2web'; return false;">Go to App</button>
         </div>
         <details id="footer">
           <summary>About</summary>
