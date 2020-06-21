@@ -84,6 +84,10 @@
 
 #include "fastcmp.h" // textmap parsing
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
+
 //
 // Map MD5, calculated on level load.
 // Sent to clients in PT_SERVERINFO.
@@ -3384,6 +3388,13 @@ boolean P_LoadLevel(boolean fromnetsave)
 	maptol = mapheaderinfo[gamemap-1]->typeoflevel;
 	gametyperules = gametypedefaultrules[gametype];
 
+#if defined(__EMSCRIPTEN__)
+	EM_ASM({
+		if (!UserAgentIsiOS())
+			SuspendAudioContext();
+	});
+#endif
+
 	CON_Drawer(); // let the user know what we are going to do
 	I_FinishUpdate(); // page flip or blit buffer
 
@@ -3572,7 +3583,14 @@ boolean P_LoadLevel(boolean fromnetsave)
 	P_MapStart();
 
 	if (!P_LoadMapFromFile())
+	{
+#if defined(__EMSCRIPTEN__)
+		EM_ASM({
+			ResumeAudioContext();
+		});
+#endif
 		return false;
+	}
 
 #ifdef FWAD
 	S_PreloadMapMusic();
@@ -3663,6 +3681,12 @@ boolean P_LoadLevel(boolean fromnetsave)
 		P_PreTicker(2);
 		LUAh_MapLoad();
 	}
+
+#if defined(__EMSCRIPTEN__)
+	EM_ASM({
+		ResumeAudioContext();
+	});
+#endif
 
 	// No render mode, stop here.
 	if (rendermode == render_none)
