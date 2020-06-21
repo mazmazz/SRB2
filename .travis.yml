@@ -476,6 +476,7 @@ matrix:
 #        - os: osx
 #          #Default: macOS 10.13 and Xcode 9.4.1
     allow_failures:
+      - os: windows
       - compiler: clang-3.5
       - compiler: clang-3.6
       - compiler: clang-3.7
