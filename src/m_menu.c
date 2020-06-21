@@ -326,7 +326,9 @@ static void M_AssignJoystick(INT32 choice);
 static void M_ChangeControl(INT32 choice);
 
 #ifdef TOUCHINPUTS
-static void M_CustomizeTouchControls(INT32 choice);
+static void M_LoadTouchControlLayout(void);
+static void M_ClearTouchControlLayout(void);
+static void M_CustomizeTouchControls(void);
 #endif
 
 // Video & Sound
@@ -392,6 +394,9 @@ static void M_DrawRoomMenu(void);
 #endif
 static void M_DrawJoystick(void);
 static void M_DrawSetupMultiPlayerMenu(void);
+#ifdef TOUCHINPUTS
+static void M_DrawTouchControlsMenu(void);
+#endif
 
 // Handling functions
 static boolean M_ExitPandorasBox(void);
@@ -1266,6 +1271,9 @@ static menuitem_t OP_TouchControlsMenu[] =
 	                      NULL, "Preset Scale", &cv_touchguiscale,        20},
 
 	{IT_STRING | IT_CALL, NULL, "Customize...", M_CustomizeTouchControls, 40},
+	{IT_STRING | IT_CALL, NULL, "Manage Layouts...", M_LoadTouchControlLayout, 50},
+
+	{IT_STRING | IT_CALL, NULL, "Reset Current Layout", M_ClearTouchControlLayout, 70},
 };
 
 static menuitem_t OP_TouchCustomizationMenu[] =
@@ -2157,9 +2165,17 @@ menu_t OP_TouchOptionsDef = DEFAULTMENUSTYLE(
 	MTREE3(MN_OP_MAIN, MN_OP_P1CONTROLS, MN_OP_TOUCHSCREEN),
 	"M_CONTRO", OP_TouchOptionsMenu, &OP_P1ControlsDef, 35, 30);
 
-menu_t OP_TouchControlsDef = DEFAULTMENUSTYLE(
+menu_t OP_TouchControlsDef = {
 	MTREE4(MN_OP_MAIN, MN_OP_P1CONTROLS, MN_OP_TOUCHSCREEN, MN_OP_TOUCHCONTROLS),
-	"M_CONTRO", OP_TouchControlsMenu, &OP_TouchOptionsDef, 35, 30);
+	"M_CONTRO",
+	sizeof (OP_TouchControlsMenu)/sizeof (menuitem_t),
+	&OP_TouchOptionsDef,
+	OP_TouchControlsMenu,
+	M_DrawTouchControlsMenu,
+	35, 40,
+	0,
+	NULL
+};
 
 menu_t OP_TouchCustomizationDef = {
 	MTREE4(MN_OP_MAIN, MN_OP_P1CONTROLS, MN_OP_TOUCHSCREEN, MN_OP_TOUCHCONTROLS),
@@ -3461,7 +3477,7 @@ boolean M_Responder(event_t *ev)
 						continue;
 
 					// Check if your finger touches this button.
-					if (G_FingerTouchesButton(x, y, btn))
+					if (G_FingerTouchesNavigationButton(x, y, btn))
 					{
 						ch = i;
 						button = true;
@@ -3628,6 +3644,14 @@ boolean M_Responder(event_t *ev)
 		routine(ch);
 		return true;
 	}
+
+#ifdef TOUCHINPUTS
+	if (TS_IsCustomizingControls())
+	{
+		if (TS_HandleKeyEvent(ch, ev))
+			return true;
+	}
+#endif
 
 	if (currentMenu->menuitems[itemOn].status == IT_MSGHANDLER)
 	{
@@ -4130,6 +4154,11 @@ void M_Ticker(void)
 
 	if (currentMenu == &OP_ScreenshotOptionsDef)
 		M_SetupScreenshotMenu();
+
+#ifdef TOUCHINPUTS
+	if (M_IsCustomizingTouchControls())
+		TS_UpdateCustomization();
+#endif
 }
 
 //
@@ -12162,15 +12191,51 @@ static void M_Setup2PControlsMenu(INT32 choice)
 }
 
 #ifdef TOUCHINPUTS
-static void M_CustomizeTouchControls(INT32 choice)
+static boolean M_TouchPresetActiveMessage(void)
 {
-	(void)choice;
-	if (cv_touchpreset.value != touchpreset_none)
+	if (G_TouchPresetActive())
+	{
 		M_StartMessage(M_GetText("You must have no preset selected\nto access this menu.\n\n" PRESS_A_KEY_MESSAGE), NULL, MM_NOTHING);
-	else
+		return true;
+	}
+
+	return false;
+}
+
+static void M_CustomizeTouchControls(void)
+{
+	if (!M_TouchPresetActiveMessage())
 	{
 		TS_SetupCustomization();
 		M_SetupNextMenu(&OP_TouchCustomizationDef);
+	}
+}
+
+static void M_LoadTouchControlLayout(void)
+{
+	if (!M_TouchPresetActiveMessage())
+	{
+		TS_OpenLayoutList();
+		M_SetupNextMenu(&OP_TouchCustomizationDef);
+	}
+}
+
+static void M_LayoutClearResponse(INT32 ch)
+{
+	if (ch != 'y' && ch != KEY_ENTER)
+		return;
+
+	TS_ClearLayout();
+	S_StartSound(NULL, sfx_appear);
+	//M_StartMessage(M_GetText("Layout cleared.\n" PRESS_A_KEY_MESSAGE),NULL,MM_NOTHING);
+}
+
+static void M_ClearTouchControlLayout(void)
+{
+	if (!M_TouchPresetActiveMessage())
+	{
+		TS_OpenLayoutList();
+		M_StartMessage(M_GetText("Are you sure you want to\nclear the current layout?\n\n("CONFIRM_MESSAGE")\n"),M_LayoutClearResponse,MM_YESNO);
 	}
 }
 
@@ -12498,6 +12563,28 @@ static void M_DrawCameraOptionsMenu(void)
 			P_MoveChaseCamera(&players[displayplayer], &camera, false);
 	}
 }
+
+#ifdef TOUCHINPUTS
+static void M_DrawTouchControlsMenu(void)
+{
+	INT32 x;
+	INT32 flags = V_ALLOWLOWERCASE;
+	const char *string;
+
+	if ((usertouchlayoutnum >= 0) && (!G_TouchPresetActive()))
+	{
+		char *name = TS_GetShortLayoutName((touchlayouts + usertouchlayoutnum), 16);
+		string = va(M_GetText("\x82""Currrent layout: \x80""%s"), name);
+	}
+	else
+		string = M_GetText("\x86""No layout selected");
+
+	x = (BASEVIDWIDTH - V_StringWidth(string, flags)) >> 1;
+	V_DrawString(x, 30, flags, string);
+
+	M_DrawGenericMenu();
+}
+#endif
 
 // ===============
 // VIDEO MODE MENU
