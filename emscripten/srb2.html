@@ -1727,6 +1727,8 @@
         DeleteNode(document.getElementById('content'));
         // unlock mouse by default
         UnlockMouse(true);
+        // attach fullscreen event listener
+        document.addEventListener('fullscreenchange', HandleFullscreenChange, true);
       };
 
       var ErrorCrashed = false;
@@ -2230,7 +2232,9 @@
         Module.ccall('update_fullscreen_status', null, ['number'], [(document.fullscreenElement !== null)]);
       };
 
-      var HandleFullscreenChange = () => {
+      var HandleFullscreenChange = (e) => {
+        // Prevent any other handlers from mucking up fullscreen
+        e.stopPropagation();
         if (StartedMainLoop) {
           if (AllowWindowResize())
             ChangeResolution();
@@ -2266,7 +2270,7 @@
 
       window.addEventListener('mousedown', LockMouse, false);
       document.addEventListener('pointerlockchange', _=>UnlockMouse(), false);
-      document.addEventListener('fullscreenchange', HandleFullscreenChange, false);
+      // add fullscreenchange event as late as possible, i.e., on main loop
       window.addEventListener('load', _=>{
         document.addEventListener('keydown', CaptureFullscreenKey, true);
         document.addEventListener('keyup', CaptureFullscreenKey, true);
