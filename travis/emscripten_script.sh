@@ -51,19 +51,19 @@ fi
 ################################
 
 # Recall regular build OBJ
-rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-if [[ -d "$HOME/srb2_cache/em-objs-normal/${BUILD}" ]]; then
-    cp -r "$HOME/srb2_cache/em-objs-normal/${BUILD}" "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-fi
+# rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+# mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+# if [[ -d "$HOME/srb2_cache/em-objs-normal/${BUILD}" ]]; then
+#     cp -r "$HOME/srb2_cache/em-objs-normal/${BUILD}" "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+# fi
 
 # Make regular build
 emmake make -C src/ $DEBUGCMD
 
 # Cache regular build OBJ
-rm -rf "$HOME/srb2_cache/em-objs-normal/${BUILD}";
-mkdir -p "$HOME/srb2_cache/em-objs-normal/${BUILD}";
-cp -r "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}" "$HOME/srb2_cache/em-objs-normal/${BUILD}/"
+# rm -rf "$HOME/srb2_cache/em-objs-normal/${BUILD}";
+# mkdir -p "$HOME/srb2_cache/em-objs-normal/${BUILD}";
+# cp -r "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}" "$HOME/srb2_cache/em-objs-normal/${BUILD}/"
 
 # Package landing for regular build
 python3 emscripten/emscripten-package.py ${PACKAGE_VERSION} \
@@ -76,19 +76,19 @@ python3 emscripten/emscripten-package.py ${PACKAGE_VERSION} \
 ################################
 
 # Recall low-end build OBJ
-rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-if [[ -d "$HOME/srb2_cache/em-objs-lowend/${BUILD}" ]]; then
-    cp -r "$HOME/srb2_cache/em-objs-lowend/${BUILD}" "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-fi
+# rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+# mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+# if [[ -d "$HOME/srb2_cache/em-objs-lowend/${BUILD}" ]]; then
+#     cp -r "$HOME/srb2_cache/em-objs-lowend/${BUILD}" "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+# fi
 
 # Make low-end build
 emmake make -C src/ NOASYNCIFY=1 $DEBUGCMD
 
 # Cache low-end build OBJ
-rm -rf "$HOME/srb2_cache/em-objs-lowend/${BUILD}";
-mkdir -p "$HOME/srb2_cache/em-objs-lowend/${BUILD}";
-cp -r "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}" "$HOME/srb2_cache/em-objs-lowend/${BUILD}"
+# rm -rf "$HOME/srb2_cache/em-objs-lowend/${BUILD}";
+# mkdir -p "$HOME/srb2_cache/em-objs-lowend/${BUILD}";
+# cp -r "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}" "$HOME/srb2_cache/em-objs-lowend/${BUILD}"
 
 # Generate no-assets ZIP without GTAG or maintainer
 python3 emscripten/emscripten-package.py ${PACKAGE_VERSION}-lowend \
