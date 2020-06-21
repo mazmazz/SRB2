@@ -767,7 +767,7 @@ static void Submenu_LayoutList_Rename(INT32 x, INT32 y, touchfinger_t *finger, e
 	(void)event;
 
 	touchcust_layoutlist_renaming = layout;
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 	I_RaiseScreenKeyboard(layout->name, MAXTOUCHLAYOUTNAME);
 #endif
 }
