@@ -31,6 +31,7 @@
     <meta property="og:image" content="{{{ URL }}}/assets/landing.png">
     <meta property="og:url" content="{{{ URL }}}">
     <meta name="twitter:card" content="summary_large_image">
+    <link rel="manifest" href="srb2.webmanifest">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -164,6 +165,7 @@
           left: 0;
           width: 100% !important;
           height: 100% !important;
+          padding: 0 !important;
           opacity: 0;
       }
 
@@ -355,10 +357,6 @@
                 min="200" max="900" value="200" step="100"/>
               <span id="resizeHeightValue"></span>
             </p>
-            <!--<p id="fullscreenRow">
-              <input type="checkbox" id="fullscreen" checked/>
-              <label for="fullscreen">Fullscreen</label>
-            </p>-->
             <p>
               <input type="checkbox" id="playMusic" checked/>
               <label for="playMusic">Play Music</label>
@@ -556,6 +554,14 @@
         script.setAttribute('src',scriptSrc);
         document.head.appendChild(script);
         document.body.classList.add('calledRun');
+
+        try {
+          if (AddToHomescreen !== null)
+            AddToHomescreen.remove();
+        } catch(e) { }
+
+        // Doesn't always work, but that's okay; user can toggle in-game
+        EnterFullscreen(true);
       };
 
       var DrawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
@@ -668,17 +674,28 @@
         AddonFields++;
       };
 
-      var InitializeiOSLanding = () => {
+      var InitializePWA = () => {
         if (UserAgentIsiOS()) {
           if (!IsStandalone()) {
-            document.getElementById("details").innerHTML = "<p style='font-weight: 900;'>To play, add this site to your Home Screen!</p>";
+            let homescreenAdvice = "";
+            if (UserAgentIsiPad())
+              homescreenAdvice = '<p>To play, tap the "Share" icon on the upper-right corner of the screen.</p>';
+            else
+              homescreenAdvice = '<p>To play, tap the "Share" icon on the bottom of the screen.</p>';
+            homescreenAdvice += '<p>Then, tap "Add to Home Screen"</p>';
+            document.getElementById("details").innerHTML = homescreenAdvice;
             document.getElementById("addons").style.display = "none";
             document.getElementById("controls").style.display = "none";
             document.getElementById("help").style.display = "none";
             document.getElementById("notes").style.display = "none";
-            return true;
+            return false;
           }
+        } else {
+          // Chrome Android: Allow PWA prompt by registering service worker
+          if ('serviceWorker' in navigator)
+            navigator.serviceWorker.register('service-worker.js');
         }
+        return true;
       };
 
       var InitializeFormFields = () => {
@@ -721,11 +738,6 @@
           else
             document.getElementById("fullscreenNotice").innerText = "To play in fullscreen, try adding this web page to your Home Screen.";
         }
-
-        if (UserAgentIsiOS() && IsStandalone()) {
-          document.getElementById("fullscreenRow").style.display = "none";
-          document.getElementById("fullscreen").checked = true;
-        }
       };
 
       var InitializeAddons = () => {
@@ -765,7 +777,7 @@
       };
 
       window.addEventListener('load', function() {
-        if (!InitializeiOSLanding()) {
+        if (InitializePWA()) {
           InitializeAddons();
           InitializeFormFields();
           InitializeSections();
@@ -903,15 +915,16 @@
       // Utilities
       ////////////////////////////////
       
+      var UserAgentIsiPad = () => ((!!window.navigator.userAgent.match(/iPad/i) || /iPad/.test(navigator.platform) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+          !window.MSStream);
+
       var UserAgentIsiOS = () => {
         var ua = window.navigator.userAgent;
         var iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i) || !!ua.match(/iPod/i);
         var webkit = !!ua.match(/WebKit/i);
         var iOSSafari = iOS && webkit && !ua.match(/CriOS/i) && !ua.match(/FxiOS/i);
-        var iPad13 = (/iPad|iPhone|iPod/.test(navigator.platform) ||
-          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
-          !window.MSStream;
-        return iOSSafari || iPad13;
+        return iOSSafari || UserAgentIsiPad();
       };
 
       var GetiOSVersion = () => {
@@ -1716,6 +1729,8 @@
         DeleteNode(document.getElementById('content'));
         // unlock mouse by default
         UnlockMouse(true);
+        // attach fullscreen event listener
+        document.addEventListener('fullscreenchange', HandleFullscreenChange, true);
       };
 
       var ErrorCrashed = false;
@@ -2020,7 +2035,7 @@
               || !SDL2
               || !(SDL2 instanceof Object)
               || !('audioContext' in SDL2)
-              || !SDL2.audioContext 
+              || !SDL2.audioContext
               || SDL2.audioContext.status === 'closed') {
             SDL2.audioContext = null;
             PreActivateAudio();
@@ -2187,6 +2202,48 @@
         }
       };
 
+      var EnterFullscreen = async (force = false) => {
+        // Don't bother with standalone, because they're already fullscreen
+        if (!IsStandalone() && (StartedMainLoop || force)) {
+          try {
+            await document.body.requestFullscreen();
+          } catch (err) { 
+            console.log('EnterFullscreen error, passing...', err);
+          } // sometimes fails, but the viewport actually resizes
+        }
+      };
+
+      var ExitFullscreen = async (force = false) => {
+        if (!IsStandalone() && (StartedMainLoop || force)) {
+          try {
+            await document.exitFullscreen();
+          } catch (err) { 
+            console.log('ExitFullscreen error, passing...', err);
+          } // sometimes fails, but the viewport actually resizes
+        }
+      };
+
+      var ToggleFullscreen = async () => {
+        if (document.fullscreenElement === null)
+          await EnterFullscreen();
+        else
+          await ExitFullscreen();
+      };
+
+      var UpdateFullscreenStatus = () => {
+        Module.ccall('update_fullscreen_status', null, ['number'], [(document.fullscreenElement !== null)]);
+      };
+
+      var HandleFullscreenChange = (e) => {
+        // Prevent any other handlers from mucking up fullscreen
+        e.stopPropagation();
+        if (StartedMainLoop) {
+          if (AllowWindowResize())
+            ChangeResolution();
+          UpdateFullscreenStatus();
+        }
+      };
+
       var GetViewportWidth = () => {
         // if (UserAgentIsAndroid()) {
         //   if (document.fullscreenElement) // chrome android weirdness
@@ -2207,19 +2264,9 @@
           return document.documentElement.clientHeight;
       };
 
-      var CaptureFullscreenKey = (e) => {
-        // Let F11 do fullscreen
-        if (e instanceof KeyboardEvent && e.key === 'F11')
-          e.stopPropagation();
-      };
-
       window.addEventListener('mousedown', LockMouse, false);
       document.addEventListener('pointerlockchange', _=>UnlockMouse(), false);
-      window.addEventListener('load', _=>{
-        document.addEventListener('keydown', CaptureFullscreenKey, true);
-        document.addEventListener('keyup', CaptureFullscreenKey, true);
-        document.addEventListener('keypress', CaptureFullscreenKey, true);
-      }, {once:true});
+      // add fullscreenchange event as late as possible, i.e., on main loop
     </script>
     <!-- {{{ SCRIPT }}} -->
   </body>

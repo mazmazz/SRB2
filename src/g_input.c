@@ -2019,6 +2019,14 @@ void G_PositionTouchNavigation(void)
 		nav[KEY_CONSOLE].hidden = false;
 	}
 
+#if defined(__EMSCRIPTEN__)
+	// Fullscreen
+	touchnavigation[KEY_F11].w = wnav;
+	touchnavigation[KEY_F11].h = hnav;
+	touchnavigation[KEY_F11].x = touchnavigation[KEY_ENTER].x;
+	touchnavigation[KEY_F11].y = touchnavigation[KEY_ENTER].y + touchnavigation[KEY_ENTER].h + (8 * FRACUNIT);
+#endif
+
 	// Normalize all buttons
 	G_NormalizeTouchConfig(nav, NUMKEYS);
 }

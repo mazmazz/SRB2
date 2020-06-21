@@ -1,0 +1,15 @@
+{
+  "background_color": "black",
+  "description": "A 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "assets/srb2-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ],
+  "name": "Sonic Robo Blast 2",
+  "short_name": "SRB2",
+  "start_url": "index.html"
+}

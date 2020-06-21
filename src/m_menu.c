@@ -75,6 +75,9 @@
 #if SDL_VERSION_ATLEAST(2,0,0)
 #include "sdl/sdlmain.h" // JOYSTICK_HOTPLUG
 #endif
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
 #endif
 
 #ifdef PC_DOS
@@ -1394,10 +1397,9 @@ static menuitem_t OP_VideoOptionsMenu[] =
 #if !defined(__EMSCRIPTEN__)
 	// TODO: Handle vertical resolution in-game (200p, 400p, 800p, etc.)
 	{IT_STRING | IT_CALL,  NULL, "Set Resolution...",       M_VideoModeMenu,          6},
-
+#endif
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	{IT_STRING|IT_CVAR,      NULL, "Fullscreen",             &cv_fullscreen,         11},
-#endif
 #endif
 	{IT_STRING | IT_CVAR, NULL, "Vertical Sync",                &cv_vidwait,         16},
 #ifdef HWRENDER
@@ -3634,6 +3636,16 @@ boolean M_Responder(event_t *ev)
 		CON_Toggle();
 		return true;
 	}
+#if defined(__EMSCRIPTEN__)
+	// Re-use as a fullscreen key
+	if (ch == KEY_F11)
+	{
+		EM_ASM({
+			ToggleFullscreen();
+		});
+		return true;
+	}
+#endif
 #endif
 
 	// Handle menuitems which need a specific key handling

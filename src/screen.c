@@ -33,6 +33,9 @@
 #include "g_game.h" // ditto
 #include "p_local.h" // P_AutoPause()
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
 
 #if defined (USEASM) && !defined (NORUSEASM)//&& (!defined (_MSC_VER) || (_MSC_VER <= 1200))
 #define RUSEASM //MSC.NET can't patch itself
@@ -495,6 +498,18 @@ void SCR_SetDefaultMode(void)
 void SCR_ChangeFullscreen(void)
 {
 #if defined(__EMSCRIPTEN__)
+	// This really needs to go in i_video.c
+	if (!M_CheckParm("-win") && allow_fullscreen && graphics_started)
+	{
+		if (cv_fullscreen.value)
+			EM_ASM({
+				EnterFullscreen();
+			});
+		else
+			EM_ASM({
+				ExitFullscreen();
+			});
+	}
 	return;
 #endif
 #ifdef DIRECTFULLSCREEN
