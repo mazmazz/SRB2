@@ -64,6 +64,9 @@ static char *touchcust_deferredmessage = NULL;
 
 static touchlayout_t *touchcust_layoutlist_renaming = NULL;
 
+// private declaration
+static boolean SetupNewButtonSubmenu(touchfinger_t *finger);
+
 // ==========
 // Prototypes
 // ==========
@@ -1814,6 +1817,17 @@ static void Submenu_AddNewButton_NewButtonAction(INT32 x, INT32 y, touchfinger_t
 	finger->y = y;
 }
 
+static void Submenu_AddNewButton_ClearAction(INT32 x, INT32 y, touchfinger_t *finger, event_t *event)
+{
+	INT32 i;
+	ClearAllSelections();
+	for (i = 0; i < num_gamecontrols; i++)
+		RemoveButton(&usertouchcontrols[i]);
+	CloseSubmenu();
+	SetupNewButtonSubmenu(NULL);
+	S_StartSound(NULL, sfx_skid);
+}
+
 //
 // Layout list submenu
 //
@@ -2142,13 +2156,25 @@ static boolean SetupNewButtonSubmenu(touchfinger_t *finger)
 
 	TOUCHCUST_NEXTSUBMENUBUTTON
 
+	// "Clear" button
+	btn->w = 32;
+	btn->h = 24;
+	btn->x = (lastbtn->x - btn->w) - 4;
+	btn->y = lastbtn->y;
+
+	btn->color = 35;
+	btn->name = "CLR";
+	btn->action = Submenu_AddNewButton_ClearAction;
+
+	TOUCHCUST_NEXTSUBMENUBUTTON
+
 	// "Exit" button
 	btn->w = 42;
 	btn->h = 24;
 	btn->x = (lastbtn->x - btn->w) - 4;
 	btn->y = lastbtn->y;
 
-	btn->color = 35;
+	btn->color = 16;
 	btn->name = "EXIT";
 	btn->action = Submenu_Generic_ExitAction;
 
@@ -2180,8 +2206,11 @@ static boolean SetupNewButtonSubmenu(touchfinger_t *finger)
 	}
 
 	// Set last finger position
-	touchcust_addbutton_x = finger->x;
-	touchcust_addbutton_y = finger->y;
+	if (finger)
+	{
+		touchcust_addbutton_x = finger->x;
+		touchcust_addbutton_y = finger->y;
+	}
 
 	// Returns true if any item was added to the list.
 	return (touchcust_submenu_listsize > 0);
