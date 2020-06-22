@@ -24,9 +24,9 @@ if [[ "$GTAG" != "" ]]; then
 fi
 if [[ "$PACKAGE_VERSION" == "" ]]; then
     PACKAGE_VERSION="${TRAVIS_COMMIT:0:8}";
-    PACKAGE_FILENAME="-${TRAVIS_JOB_ID}";
+    PACKAGE_FILENAME="${TRAVIS_JOB_ID}-";
 else
-    PACKAGE_FILENAME="-${TRAVIS_COMMIT:0:8}-${TRAVIS_JOB_ID}";
+    PACKAGE_FILENAME="${TRAVIS_JOB_ID}-${TRAVIS_COMMIT:0:8}-";
 fi
 if [[ "$BASE_VERSION" != "" ]]; then
     BASE_VERSION="--base-version ${BASE_VERSION}";
@@ -95,14 +95,14 @@ python3 emscripten/emscripten-package.py ${PACKAGE_VERSION}-lowend \
     --package-versions ${PACKAGE_VERSION} ${PACKAGE_VERSION}-lowend \
     --default-package-version ${PACKAGE_VERSION} ${BASE_VERSION} \
     --build-dir "bin/Emscripten/${BUILD}" --data-dir "${__ASSET_DIRECTORY}-lowend" \
-    --out-zip-no-assets "emscripten/srb2-web-${PACKAGE_VERSION}${PACKAGE_FILENAME}-no-assets.zip"
+    --out-zip-no-assets "emscripten/srb2-web-${PACKAGE_FILENAME}${PACKAGE_VERSION}-no-assets.zip"
 
 # Generate full ZIP with GTAG and maintainer
 python3 emscripten/emscripten-package.py ${PACKAGE_VERSION}-lowend \
     --package-versions ${PACKAGE_VERSION} ${PACKAGE_VERSION}-lowend \
     --default-package-version ${PACKAGE_VERSION} ${BASE_VERSION} ${GTAG} ${MAINTAINER} ${MAINTAINER_URL} \
     --skip-build --skip-data \
-    --out-zip "emscripten/srb2-web-${PACKAGE_VERSION}${PACKAGE_FILENAME}.zip"
+    --out-zip "emscripten/srb2-web-${PACKAGE_FILENAME}${PACKAGE_VERSION}.zip"
 
 # Reset current dir
 cd $TRAVIS_BUILD_DIR/build
