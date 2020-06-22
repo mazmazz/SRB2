@@ -33,6 +33,10 @@
 #include "ts_custom.h"
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h> // EM_ASM_INT
+#endif
+
 #define MAXMOUSESENSITIVITY 100 // sensitivity steps
 
 static CV_PossibleValue_t mousesens_cons_t[] = {{1, "MIN"}, {MAXMOUSESENSITIVITY, "MAX"}, {0, NULL}};
@@ -1961,8 +1965,8 @@ void G_PositionTouchNavigation(void)
 	INT32 corneroffsetynav = 8 * FRACUNIT;
 	INT32 wnav = 32 * FRACUNIT;
 	INT32 hnav = 32 * FRACUNIT;
-	INT32 smallwnav = 24 * FRACUNIT;
-	INT32 smallhnav = 24 * FRACUNIT;
+	INT32 smallwnav = 28 * FRACUNIT;
+	INT32 smallhnav = 28 * FRACUNIT;
 #else
 	INT32 corneroffsetxnav = 4 * FRACUNIT;
 	INT32 corneroffsetynav = 4 * FRACUNIT;
@@ -2020,11 +2024,22 @@ void G_PositionTouchNavigation(void)
 	}
 
 #if defined(__EMSCRIPTEN__)
-	// Fullscreen
-	touchnavigation[KEY_F11].w = wnav;
-	touchnavigation[KEY_F11].h = hnav;
-	touchnavigation[KEY_F11].x = touchnavigation[KEY_ENTER].x;
-	touchnavigation[KEY_F11].y = touchnavigation[KEY_ENTER].y + touchnavigation[KEY_ENTER].h + (8 * FRACUNIT);
+	{
+		// Hide the fullscreen button from iOS.
+		// Even if it is supported on iOS>=12, it only works on video elements
+		boolean hideButton = EM_ASM_INT({
+			return UserAgentIsiOS();
+		});
+		if (touchnavigationstatus.customizingcontrols || hideButton)
+			nav[KEY_F11].hidden = true;
+		else
+		{
+			nav[KEY_F11].w = wnav;
+			nav[KEY_F11].h = hnav;
+			nav[KEY_F11].x = nav[KEY_ENTER].x;
+			nav[KEY_F11].y = nav[KEY_ENTER].y + nav[KEY_ENTER].h + (8 * FRACUNIT);
+		}
+	}
 #endif
 
 	// Normalize all buttons
