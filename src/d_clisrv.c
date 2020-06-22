@@ -2130,7 +2130,7 @@ static boolean CL_ServerConnectionTicker(boolean viams, const char *tmpsave, tic
 
 		if ((key == KEY_ESCAPE || key == KEY_JOY1+1)
 #ifdef TOUCHINPUTS
-		|| (fingerok && G_FingerTouchesButton(x, y, &touchnavigation[KEY_ESCAPE]))
+		|| (fingerok && G_FingerTouchesNavigationButton(x, y, &touchnavigation[KEY_ESCAPE]))
 #endif
 		) {
 			CONS_Printf(M_GetText("Network game synchronization aborted.\n"));
@@ -2147,7 +2147,7 @@ static boolean CL_ServerConnectionTicker(boolean viams, const char *tmpsave, tic
 		{
 			if ((key == KEY_ENTER || key == 'y')
 #ifdef TOUCHINPUTS
-			|| (fingerok && G_FingerTouchesButton(x, y, &touchnavigation[KEY_ENTER]))
+			|| (fingerok && G_FingerTouchesNavigationButton(x, y, &touchnavigation[KEY_ENTER]))
 #endif
 			)
 				cl_mode = CL_DOWNLOADINGWASCONFIRMED;

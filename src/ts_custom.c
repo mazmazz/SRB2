@@ -2235,7 +2235,7 @@ static boolean CheckNavigation(INT32 x, INT32 y)
 			continue;
 
 		// Check if your finger touches this button.
-		if (G_FingerTouchesButton(x, y, btn))
+		if (G_FingerTouchesNavigationButton(x, y, btn))
 			return true;
 	}
 
