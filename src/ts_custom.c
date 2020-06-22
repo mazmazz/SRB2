@@ -1855,6 +1855,26 @@ static void Submenu_AddNewButton_ClearAction(INT32 x, INT32 y, touchfinger_t *fi
 	S_StartSound(NULL, sfx_skid);
 }
 
+static void Submenu_AddNewButton_ResetAction(INT32 x, INT32 y, touchfinger_t *finger, event_t *event)
+{
+	INT32 i;
+	(void)x;
+	(void)y;
+	(void)finger;
+	(void)event;
+
+	ClearAllSelections();
+	for (i = 0; i < num_gamecontrols; i++)
+	{
+		RemoveButton(&usertouchcontrols[i]);
+		// reset hidden value so that all buttons are properly populated
+		usertouchcontrols[i].hidden = false;
+	}
+	G_DefaultCustomTouchControls(usertouchcontrols);
+	CloseSubmenu();
+	S_StartSound(NULL, sfx_strpst);
+}
+
 //
 // Layout list submenu
 //
@@ -2192,6 +2212,18 @@ static boolean SetupNewButtonSubmenu(touchfinger_t *finger)
 	btn->color = 35;
 	btn->name = "CLR";
 	btn->action = Submenu_AddNewButton_ClearAction;
+
+	TOUCHCUST_NEXTSUBMENUBUTTON
+
+	// "Reset" button
+	btn->w = 42;
+	btn->h = 24;
+	btn->x = (lastbtn->x - btn->w) - 4;
+	btn->y = lastbtn->y;
+
+	btn->color = 212;
+	btn->name = "RSET";
+	btn->action = Submenu_AddNewButton_ResetAction;
 
 	TOUCHCUST_NEXTSUBMENUBUTTON
 
