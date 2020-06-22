@@ -1197,6 +1197,11 @@
 
       var StripLeadingSeparators = (fn) => fn.replace(/^\/*/, '');
 
+      // Determines whether to fill progress bar with download status
+      // We don't do this until there's only one job left, to keep
+      // from confusing progress due to parallel downloads.
+      var SetDownloadProgress = false;
+
       var ResetProgramData = async (manageLoop = true, callback = null) => {
         // Delete specific files in IndexedDB /home/web_user -> FILE_DATA
         // and delete everything in EM_PRELOAD_CACHE -> METADATA, PACKAGES
@@ -1262,9 +1267,35 @@
 
           if (!remoteFile.ok)
             throw remoteFile;
-          
-          remoteFile = await remoteFile.arrayBuffer();
-          remoteFile = new Uint8Array(remoteFile);
+
+          // Set up progress reader
+          // https://javascript.info/fetch-progress
+          let reader = remoteFile.body.getReader();
+          // NOTE: If response is gzipped, Content-Length is not accurate.
+          let contentLength = Number(remoteFile.headers.get('Content-Length'));
+          let receivedLength = 0;
+          let chunks = [];
+
+          // This looks like a busy wait, but we're awaiting reader content.
+          while(true) {
+            const {done, value} = await reader.read();
+            if (done)
+              break;
+            chunks.push(value);
+            receivedLength += value.length;
+            //console.log(`Received ${receivedLength} of ${contentLength}`)
+            if (SetDownloadProgress)
+              ProgressElement.value = Math.min(99, (receivedLength/contentLength)*100);
+          }
+
+          // concatenate chunks into single Uint8Array
+          let chunksAll = new Uint8Array(receivedLength);
+          let position = 0;
+          for(let chunk of chunks) {
+            chunksAll.set(chunk, position);
+            position += chunk.length;
+          }
+          remoteFile = chunksAll;
 
           // Log a reference to this version in all the parent bases
           await InstallProgramFileReferences(name, version, fullBase);
@@ -1504,8 +1535,9 @@
           // TODO: This is not accurate. In future, we can somehow reference the pool and check pool._pending
           // for more descriptive values
           if (typeof name === 'undefined') {
-            console.log(`InstallProgram: Finished install (${curVal}/${maxVal}`);
+            console.log(`InstallProgram: Finished install (${curVal}/${maxVal})`);
             StatusElement.innerText = `Retrieving Data (${Math.min(maxVal-1)} of ${maxVal})...`;
+            SetDownloadProgress = true;
           } else {
             console.log(`InstallProgram: Retrieving ${name} (${curVal}/${maxVal})`)
             //StatusElement.innerText = `Retrieving ${name.split('/').pop()}...`;
