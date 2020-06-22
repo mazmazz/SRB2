@@ -300,6 +300,10 @@ void TS_NewLayout(void)
 
 void TS_ClearLayout(void)
 {
+	INT32 i;
+	// reset hidden value so that all buttons are properly populated
+	for (i = 0; i < num_gamecontrols; i++)
+		usertouchcontrols[i].hidden = false;
 	G_DefaultCustomTouchControls(usertouchcontrols);
 	userlayoutsaved = false;
 }
@@ -1820,6 +1824,11 @@ static void Submenu_AddNewButton_NewButtonAction(INT32 x, INT32 y, touchfinger_t
 static void Submenu_AddNewButton_ClearAction(INT32 x, INT32 y, touchfinger_t *finger, event_t *event)
 {
 	INT32 i;
+	(void)x;
+	(void)y;
+	(void)finger;
+	(void)event;
+
 	ClearAllSelections();
 	for (i = 0; i < num_gamecontrols; i++)
 		RemoveButton(&usertouchcontrols[i]);
