@@ -799,7 +799,7 @@
           // Check Web Version
           ////////////////////////////////
 
-          let response = await fetch("version-shell.txt");
+          let response = await fetch("version-shell.txt", NoCacheInit);
           let data = await response.text();
           
           console.log(`SRB2 Web Version: {{{ SHELL_VERSION }}}`);
@@ -831,7 +831,7 @@
             try {
               // get data
               let authorUrl = 'https://raw.githubusercontent.com/mazmazz/SRB2-emscripten/emscripten-new/emscripten/author-update.txt';
-              let authorResponse = await fetch(authorUrl, {mode: 'cors'});
+              let authorResponse = await fetch(authorUrl, {mode: 'cors', cache: 'no-store', headers: NoCacheHeaders});
               if (!authorResponse.ok)
                 throw(`Author update check status: ${authorResponse.status}`);
               data = await authorResponse.text();
@@ -877,7 +877,7 @@
           // Don't check program version more than once a page load
           let updateCount = localStorage.getItem('srb2program_update');
           if (!updateCount || !parseInt(updateCount))
-            response = await fetch("version-package.txt");
+            response = await fetch("version-package.txt", NoCacheInit);
           else
             throw("Already checked program version.");
           
@@ -982,6 +982,17 @@
           y = Math.ceil(height);
         }
         return {x:x, y:y};
+      };
+
+      // https://stackoverflow.com/a/29246795
+      var NoCacheHeaders = new Headers();
+      NoCacheHeaders.append('pragma', 'no-cache');
+      NoCacheHeaders.append('cache-control', 'no-cache');
+
+      var NoCacheInit = {
+        method: 'GET',
+        cache: 'no-store',
+        headers: NoCacheHeaders
       };
 
       ////////////////////////////////
@@ -1263,7 +1274,7 @@
         let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
 
         try {
-          let remoteFile = await fetch(`data/${version}/${name}`);
+          let remoteFile = await fetch(`data/${version}/${name}`, NoCacheInit);
 
           if (!remoteFile.ok)
             throw remoteFile;
@@ -1346,7 +1357,7 @@
 
         try {
           // Check server's MD5 file for the current version.
-          let remoteMd5 = await fetch(`data/${version}/${name}.md5`);
+          let remoteMd5 = await fetch(`data/${version}/${name}.md5`, NoCacheInit);
           if (!remoteMd5.ok) {
             // Server's MD5 was not found: check the "base" version for the file.
             if (base && base.length && base[0])
@@ -1483,7 +1494,7 @@
                 break; // no circular references, thanks
             } else {
               // If IDB doesn't have the _BASE, then check the server
-              childBaseVer = await fetch(`data/${baseVer}/_BASE`);
+              childBaseVer = await fetch(`data/${baseVer}/_BASE`, NoCacheInit);
               if (!childBaseVer.ok)
                 // assume no base version, but don't store anything
                 // in case this was an error.
