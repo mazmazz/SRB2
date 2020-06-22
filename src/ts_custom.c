@@ -1160,21 +1160,23 @@ static void MoveButtonTo(touchconfig_t *btn, INT32 x, INT32 y)
 //
 static void OffsetButtonBy(touchconfig_t *btn, fixed_t offsx, fixed_t offsy)
 {
-	fixed_t w = (BASEVIDWIDTH * FRACUNIT);
-	fixed_t h = (BASEVIDHEIGHT * FRACUNIT);
-
+	fixed_t orgx = ((BASEVIDWIDTH-(vid.width/vid.dupx))/2) * FRACUNIT;
+	fixed_t orgy = ((BASEVIDHEIGHT-(vid.height/vid.dupy))/2) * FRACUNIT;
+	fixed_t w = ((vid.width/vid.dupx) * FRACUNIT) - abs(orgx);
+	fixed_t h = ((vid.height/vid.dupy) * FRACUNIT) - abs(orgy);
+	
 	G_DenormalizeCoords(&btn->x, &btn->y);
 
 	btn->x += offsx;
 	btn->y += offsy;
 
-	if (btn->x < 0)
-		btn->x = 0;
+	if (btn->x < orgx)
+		btn->x = orgx;
 	if (btn->x + btn->w > w)
 		btn->x = (w - btn->w);
 
-	if (btn->y < 0)
-		btn->y = 0;
+	if (btn->y < orgy)
+		btn->y = orgy;
 	if (btn->y + btn->h > h)
 		btn->y = (h - btn->h);
 
@@ -2510,15 +2512,20 @@ static void DrawGrid(void)
 	INT32 scol = 15;
 	INT32 salpha = 2;
 
-	for (i = 0; i < BASEVIDWIDTH; i += TOUCHSMALLGRIDSIZE)
-		V_DrawFadeFill(i-1, 0, 1, BASEVIDHEIGHT, 0, scol, salpha);
-	for (i = 0; i < BASEVIDHEIGHT; i += TOUCHSMALLGRIDSIZE)
-		V_DrawFadeFill(0, i-1, BASEVIDWIDTH, 1, 0, scol, salpha);
+	INT32 originx = (BASEVIDWIDTH-(vid.width/vid.dupx))/2;
+	INT32 originy = (BASEVIDHEIGHT-(vid.height/vid.dupy))/2;
+	INT32 screenw = (vid.width/vid.dupx)-originx;
+	INT32 screenh = (vid.height/vid.dupy)-originy;
 
-	for (i = 0; i < BASEVIDWIDTH; i += TOUCHGRIDSIZE)
-		V_DrawFadeFill(i-1, 0, 1, BASEVIDHEIGHT, 0, col, alpha);
-	for (i = 0; i < BASEVIDHEIGHT; i += TOUCHGRIDSIZE)
-		V_DrawFadeFill(0, i-1, BASEVIDWIDTH, 1, 0, col, alpha);
+	for (i = originx; i < screenw; i += TOUCHSMALLGRIDSIZE)
+		V_DrawFadeFill(i-1, originy, 1, screenh, 0, scol, salpha);
+	for (i = originy; i < screenh; i += TOUCHSMALLGRIDSIZE)
+		V_DrawFadeFill(originx, i-1, screenw, 1, 0, scol, salpha);
+
+	for (i = originx; i < screenw; i += TOUCHGRIDSIZE)
+		V_DrawFadeFill(i-1, originy, 1, screenh, 0, col, alpha);
+	for (i = originy; i < screenh; i += TOUCHGRIDSIZE)
+		V_DrawFadeFill(originx, i-1, screenw, 1, 0, col, alpha);
 }
 
 static void DrawButtonOption(touchcust_option_e opt, touchconfig_t *btn, touchcust_buttonstatus_t *btnstatus)
