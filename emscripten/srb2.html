@@ -2157,8 +2157,9 @@
         TextCaptureElement.disabled = true;
         KeyCaptureElement.removeEventListener('touchend', HandleTouchKeyboard, false);
         if (ActiveCaptureElement === TextCaptureElement) {
-          TextCaptureElement.removeEventListener('keydown', CaptureKeyEvent, true);
-          TextCaptureElement.removeEventListener('keyup', CaptureKeyEvent, true);
+          TextCaptureElement.removeEventListener('keydown', HandleKey, true);
+          TextCaptureElement.removeEventListener('keyup', HandleKey, true);
+          TextCaptureElement.removeEventListener('keypress', HandleKey, true);
         }
       };
 
