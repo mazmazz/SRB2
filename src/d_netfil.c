@@ -128,6 +128,12 @@ UINT8 *PutFileNeeded(void)
 		// Don't put android.pk3 in the list
 		if (!strcmp(wadfilename, "android.pk3"))
 			continue;
+#else
+#ifdef USE_EMSCRIPTEN_PK3
+		// Don't put emscripten.pk3 in the list
+		if (!strcmp(wadfilename, "emscripten.pk3"))
+			continue;
+#endif
 #endif
 
 		filestatus = 1; // Importance - not really used any more, holds 1 by default for backwards compat with MS
@@ -376,9 +382,15 @@ INT32 CL_CheckFiles(void)
 		{
 			boolean important = (wadfiles[j]->important);
 
-#ifdef USE_ANDROID_PK3
+#if defined(USE_ANDROID_PK3) || defined(USE_EMSCRIPTEN_PK3)
 			nameonly(strcpy(wadfilename, wadfiles[j]->filename));
+#ifdef USE_ANDROID_PK3
 			if (!strcmp(wadfilename, "android.pk3"))
+#else
+#ifdef USE_EMSCRIPTEN_PK3
+			if (!strcmp(wadfilename, "emscripten.pk3"))
+#endif
+#endif
 				important = false;
 #endif
 
@@ -1015,9 +1027,10 @@ void Got_Filetxpak(void)
 		&& strcmp(filename, "music.dta")
 #ifdef USE_ANDROID_PK3
 		&& strcmp(filename, "android.pk3")
-#endif
-#if defined(__EMSCRIPTEN__)
+#else
+#ifdef USE_EMSCRIPTEN_PK3
 		&& strcmp(filename, "emscripten.pk3")
+#endif
 #endif
 		))
 		I_Error("Tried to download \"%s\"", filename);

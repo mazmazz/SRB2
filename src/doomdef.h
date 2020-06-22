@@ -162,6 +162,11 @@ extern char logfilename[1024];
 #define USE_ANDROID_PK3
 #endif
 
+// Load Emscripten assets
+#if defined(__EMSCRIPTEN__)
+#define USE_EMSCRIPTEN_PK3
+#endif
+
 // Use .kart extension addons
 //#define USE_KART
 

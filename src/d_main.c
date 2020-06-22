@@ -1073,11 +1073,11 @@ static void IdentifyVersion(void)
 #ifdef USE_ANDROID_PK3
 	// Android assets
 	D_AddFile(FILEPATH("android.pk3"));
-#endif
-
-#if defined(__EMSCRIPTEN__)
+#else
+#ifdef USE_EMSCRIPTEN_PK3
 	// Emscripten assets
 	D_AddFile(FILEPATH("emscripten.pk3"));
+#endif
 #endif
 
 #if !defined (HAVE_SDL) || defined (HAVE_MIXER)
@@ -1315,10 +1315,7 @@ void D_SRB2Main(void)
 #ifdef USE_PATCH_DTA
 	mainwads++;
 #endif
-#ifdef USE_ANDROID_PK3
-	mainwads++;
-#endif
-#if defined(__EMSCRIPTEN__)
+#if defined(USE_ANDROID_PK3) || defined(USE_EMSCRIPTEN_PK3)
 	mainwads++;
 #endif
 
@@ -1338,10 +1335,9 @@ void D_SRB2Main(void)
 #endif
 #ifdef USE_ANDROID_PK3
 	W_VerifyFileMD5(4, ASSET_HASH_ANDROID_PK3); // android.pk3
-#endif
-#if 0
-#if defined(__EMSCRIPTEN__)
-	W_VerifyFileMD5(4, ASSET_HASH_EMSCRIPTEN_PK3); // android.pk3
+#else
+#ifdef USE_EMSCRIPTEN_PK3
+	W_VerifyFileMD5(4, ASSET_HASH_EMSCRIPTEN_PK3); // emscripten.pk3
 #endif
 #endif
 	// don't check music.dta because people like to modify it, and it doesn't matter if they do

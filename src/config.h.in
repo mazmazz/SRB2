@@ -39,10 +39,9 @@
 #endif
 #ifdef USE_ANDROID_PK3
 #define ASSET_HASH_ANDROID_PK3 "543c6ae0237e52c984503be12aa58f63"
-#endif
-#if 0
-#if defined(__EMSCRIPTEN__)
-#define ASSET_HASH_EMSCRIPTEN_PK3 ""
+#else
+#ifdef USE_EMSCRIPTEN_PK3
+#define ASSET_HASH_EMSCRIPTEN_PK3 "8a7fed7446fe16156691ec6e792aa6a7"
 #endif
 #endif
 
