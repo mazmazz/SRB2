@@ -51,8 +51,8 @@ fi
 ################################
 
 # Recall regular build OBJ
-# rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-# mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
 # if [[ -d "$HOME/srb2_cache/em-objs-normal/${BUILD}" ]]; then
 #     cp -r "$HOME/srb2_cache/em-objs-normal/${BUILD}" "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
 # fi
@@ -76,8 +76,8 @@ python3 emscripten/emscripten-package.py ${PACKAGE_VERSION} \
 ################################
 
 # Recall low-end build OBJ
-# rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
-# mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+rm -rf "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
+mkdir -p "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
 # if [[ -d "$HOME/srb2_cache/em-objs-lowend/${BUILD}" ]]; then
 #     cp -r "$HOME/srb2_cache/em-objs-lowend/${BUILD}" "$TRAVIS_BUILD_DIR/objs/Emscripten/SDL/${BUILD}";
 # fi
