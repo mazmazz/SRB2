@@ -83,7 +83,7 @@ static void OffsetButtonBy(touchconfig_t *btn, fixed_t offsx, fixed_t offsy);
 static void SnapButtonToGrid(touchconfig_t *btn);
 static fixed_t RoundSnapCoord(fixed_t a, fixed_t b);
 
-static void UpdateJoystickBase(touchconfig_t *btn);
+#define UpdateJoystickBase(btn) TS_UpdateJoystickBase(btn, btn->x, btn->y)
 static void UpdateJoystickSize(touchconfig_t *btn);
 static void NormalizeDPad(void);
 
@@ -1242,7 +1242,7 @@ static void SnapButtonToGrid(touchconfig_t *btn)
 //
 // Updates the joystick
 //
-static void UpdateJoystickBase(touchconfig_t *btn)
+void TS_UpdateJoystickBase(touchconfig_t *btn, INT32 nonormx, INT32 nonormy)
 {
 	fixed_t scale, xscale, yscale;
 	INT32 jw, jh;
@@ -1250,8 +1250,8 @@ static void UpdateJoystickBase(touchconfig_t *btn)
 	TS_GetJoystick(NULL, NULL, &jw, &jh, false);
 
 	// Must not be normalized!
-	touch_joystick_x = btn->x;
-	touch_joystick_y = btn->y;
+	touch_joystick_x = nonormx;
+	touch_joystick_y = nonormy;
 
 	// Update joystick size
 	UpdateJoystickSize(btn);
