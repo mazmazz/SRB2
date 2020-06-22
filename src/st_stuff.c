@@ -1652,7 +1652,9 @@ void ST_drawTouchMenuInput(void)
 	drawbtn(KEY_ESCAPE, 0x1C); // left arrow
 	drawbtn(KEY_ENTER, 0x1D); // right arrow
 	drawbtn(KEY_CONSOLE, '$');
+#if defined(__EMSCRIPTEN__)
 	drawbtn(KEY_F11, 0x17); // up/down arrow
+#endif
 
 #undef drawbtn
 }
