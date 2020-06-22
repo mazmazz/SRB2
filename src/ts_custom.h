@@ -74,6 +74,7 @@ void TS_DrawCustomization(void);
 
 fixed_t TS_GetDefaultScale(void);
 void TS_GetJoystick(INT32 *x, INT32 *y, INT32 *w, INT32 *h, boolean tiny);
+void TS_UpdateJoystickBase(touchconfig_t *btn, INT32 nonormx, INT32 nonormy);
 
 #define MTOUCH_SNAPTOSMALLGRID
 

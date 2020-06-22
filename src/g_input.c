@@ -1844,7 +1844,28 @@ static touchconfigstatus_t usertouchconfigstatus;
 
 void G_DefaultCustomTouchControls(touchconfig_t *config)
 {
+	fixed_t orgx = ((BASEVIDWIDTH-(vid.width/vid.dupx))/2) * FRACUNIT;
+	fixed_t orgy = ((BASEVIDHEIGHT-(vid.height/vid.dupy))/2) * FRACUNIT;
+	fixed_t orgxnorm = FixedDiv(orgx, BASEVIDWIDTH * FRACUNIT);
+	fixed_t orgynorm = FixedDiv(orgy, BASEVIDHEIGHT * FRACUNIT);
+
 	G_BuildTouchPreset(config, &usertouchconfigstatus, tms_joystick, TS_GetDefaultScale(), false);
+
+	// Offset the positions to account for dynres
+	if (orgx || orgy)
+	{
+		INT32 i;
+		for (i = 0; i < num_gamecontrols; i++)
+		{
+			if (config[i].w) // does it exist?
+			{
+				config[i].x += orgxnorm;
+				config[i].y += orgynorm;
+				if (i == gc_joystick)
+					TS_UpdateJoystickBase(&config[i], touch_joystick_x + orgx, touch_joystick_y + orgy);
+			}
+		}
+	}
 }
 
 void G_PositionTouchButtons(void)
