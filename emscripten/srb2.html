@@ -1208,10 +1208,8 @@
 
       var StripLeadingSeparators = (fn) => fn.replace(/^\/*/, '');
 
-      // Determines whether to fill progress bar with download status
-      // We don't do this until there's only one job left, to keep
-      // from confusing progress due to parallel downloads.
-      var SetDownloadProgress = false;
+      // Track which download to show on the progess bar
+      var DownloadProgressTargetSize = 0;
 
       var ResetProgramData = async (manageLoop = true, callback = null) => {
         // Delete specific files in IndexedDB /home/web_user -> FILE_DATA
@@ -1295,7 +1293,12 @@
             chunks.push(value);
             receivedLength += value.length;
             //console.log(`Received ${receivedLength} of ${contentLength}`)
-            if (SetDownloadProgress)
+            
+            // Update progress bar with the biggest file currently downloading
+            if (DownloadProgressTargetSize < contentLength)
+              DownloadProgressTargetSize = contentLength;
+
+            if (DownloadProgressTargetSize == contentLength)
               ProgressElement.value = Math.min(99, (receivedLength/contentLength)*100);
           }
 
@@ -1548,12 +1551,12 @@
           if (typeof name === 'undefined') {
             console.log(`InstallProgram: Finished install (${curVal}/${maxVal})`);
             StatusElement.innerText = `Retrieving Data (${Math.min(maxVal-1)} of ${maxVal})...`;
-            SetDownloadProgress = true;
           } else {
             console.log(`InstallProgram: Retrieving ${name} (${curVal}/${maxVal})`)
             //StatusElement.innerText = `Retrieving ${name.split('/').pop()}...`;
             StatusElement.innerText = `Retrieving Data (${Math.min(curVal, maxVal-1)} of ${maxVal})...`;
           }
+          DownloadProgressTargetSize = 0;
           ProgressElement.value = percent;
         },
         () => {
