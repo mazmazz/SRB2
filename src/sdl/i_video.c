@@ -1391,6 +1391,23 @@ void I_StartupMouse(void)
 }
 
 #ifdef TOUCHINPUTS
+#if defined (__EMSCRIPTEN__)
+void SKC_CopyToBuffer(char *text, size_t length)
+{
+	if (textinputbuffer == NULL)
+		return;
+
+	if (text == NULL)
+		return;
+	
+	// Don't trust the length parameter
+	length = min(strlen(text), textbufferlength);
+
+	strncpy(textinputbuffer, text, length);
+	textinputbuffer[min(length, textbufferlength-1)] = 0;
+}
+#endif
+
 void I_RaiseScreenKeyboard(char *buffer, size_t length)
 {
 	textinputbuffer = buffer;
@@ -1398,6 +1415,14 @@ void I_RaiseScreenKeyboard(char *buffer, size_t length)
 	textinputcallback = NULL;
 	SDL_StartTextInput();
 #if defined(__EMSCRIPTEN__)
+	{
+		boolean isAndroid = EM_ASM_INT({
+			return UserAgentIsAndroid();
+		});
+		// "default" keyboard handler; can be overridden
+		if (isAndroid)
+			textinputcallback = &SKC_CopyToBuffer;
+	}
 	EM_ASM({
 		I_RaiseScreenKeyboard();
 	});
