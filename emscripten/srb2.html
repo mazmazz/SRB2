@@ -388,7 +388,7 @@
                   </select>
                 </span>
                 <input type="checkbox" id="lowend"/>
-                <label for="lowend">Prefer Low-End</label>
+                <label for="lowend">Use Low-End Mode if Available</label>
               </p>
               <p>
                 <label for="userArguments">Command Line</label><br/>
@@ -426,19 +426,19 @@
           <p>If this game crashes, try enabling "Low-End" mode under Settings > Advanced.</p>
           <p id="fullscreenNotice">Toggle fullscreen by pressing F11, which should enter your browser's fullscreen mode.</p>
           <p>No online multiplayer: to play netgames, download the PC version at <a href="//www.srb2.org" target="_blank">srb2.org</a>.</p>
-          <p>Game controllers should work.</p>
+          <p>Some game controllers may work.</p>
           <div id="androidNotice">
             <p>If the music is slow, try disabling Low-End mode under Advanced Settings.</p>
             <p style="color: red;">There is a native Android port available on <a href="https://github.com/Jimita/SRB2/releases" target="_blank">GitHub</a>. Where possible, install this port for better performance!</p>
           </div>
+          <p>
+            Follow the <a href="https://discord.gg/fMuddqH" target="_blank">SRB2 for Web Updates Discord</a> for news and frequently asked questions!
+          </p>
         </details>
         <details id="footer">
           <summary>About</summary>
           <p>Sonic Robo Blast 2 is a 3D Sonic the Hedgehog fangame inspired by the original Sonic games of the 1990s.</p>
           <p>This project allows you to play SRB2 on your web browser, including iPhone and iPad.</p>
-          <p>
-            Follow the <a href="https://discord.gg/fMuddqH" target="_blank">SRB2 for Web Updates Discord</a> for news and support!
-          </p>
           <p><a href="https://github.com/mazmazz/SRB2-emscripten/issues">View issues</a> / <a href="https://github.com/mazmazz/SRB2-emscripten">View source</a></p>
           <p>Contributors:</p>
           <p><a href="https://github.com/mazmazz">mazmazz</a> / <a href="https://github.com/heyjoeway">heyjoeway</a> / <a href="https://github.com/Jimita">Jimita</a></p>
@@ -740,10 +740,10 @@
           document.getElementById("androidNotice").style.display = "block";
         
         if (UserAgentIsMobile()) {
-          if (IsStandalone())
+          if (UserAgentIsiOS())
             document.getElementById("fullscreenNotice").style.display = "none";
           else
-            document.getElementById("fullscreenNotice").innerText = "To play in fullscreen, try adding this web page to your Home Screen.";
+            document.getElementById("fullscreenNotice").innerText = "You can toggle fullscreen in-game by tapping the Fullscreen button in the pause menu, or by going to Video Options.";
         }
       };
 
