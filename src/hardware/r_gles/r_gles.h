@@ -59,12 +59,18 @@ void SetStates(void);
 #endif
 
 /* 1.0 Miscellaneous functions */
+#ifdef STATIC_OPENGL
+#define pglClear glClear
+#define pglGetIntegerv glGetIntegerv
+#define pglGetString glGetString
+#else
 typedef void (*PFNglClear) (GLbitfield mask);
 extern PFNglClear pglClear;
 typedef void (*PFNglGetIntegerv) (GLenum pname, GLint *params);
 extern PFNglGetIntegerv pglGetIntegerv;
 typedef const GLubyte *(*PFNglGetString) (GLenum name);
 extern PFNglGetString pglGetString;
+#endif
 
 // ==========================================================================
 //                                                                     GLOBAL
