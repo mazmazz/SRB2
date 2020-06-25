@@ -173,6 +173,12 @@ ifndef NOOPENMPT
 HAVE_OPENMPT=1
 endif
 
+ifndef NOHW
+ifdef GLES2
+GLES=1
+endif
+endif
+
 ifdef MINGW
 include win32/Makefile.cfg
 endif #ifdef MINGW
@@ -681,8 +687,20 @@ endif
 
 else
 ifdef SDL
+ifdef GLES
+ifdef GLES2
+OPENGL_NAME=r_gles2.o
+OPENGL_SOURCES=hardware/r_gles/r_gles2.c hardware/r_gles/r_gles.h
+else
+OPENGL_NAME=r_gles1.o
+OPENGL_SOURCES=hardware/r_gles/r_gles1.c hardware/r_gles/r_gles.h
+endif
+else
+OPENGL_NAME=r_opengl.o
+OPENGL_SOURCES=hardware/r_opengl/r_opengl.c hardware/r_opengl/r_opengl.h
+endif
 ifdef MINGW
-$(OBJDIR)/r_opengl.o: hardware/r_opengl/r_opengl.c hardware/r_opengl/r_opengl.h \
+$(OBJDIR)/$(OPENGL_NAME): $(OPENGL_SOURCES) \
  doomdef.h doomtype.h g_state.h m_swap.h hardware/hw_drv.h screen.h \
  command.h hardware/hw_data.h hardware/hw_glide.h hardware/hw_defs.h \
  hardware/hw_md2.h hardware/hw_glob.h hardware/hw_main.h hardware/hw_clip.h \
@@ -691,7 +709,7 @@ $(OBJDIR)/r_opengl.o: hardware/r_opengl/r_opengl.c hardware/r_opengl/r_opengl.h 
  p_mobj.h doomdata.h d_ticcmd.h r_defs.h hardware/hw_dll.h
 	$(CC) $(CFLAGS) $(WFLAGS) -c $< -o $@
 else
-$(OBJDIR)/r_opengl.o: hardware/r_opengl/r_opengl.c hardware/r_opengl/r_opengl.h \
+$(OBJDIR)/$(OPENGL_NAME): $(OPENGL_SOURCES) \
  doomdef.h doomtype.h g_state.h m_swap.h hardware/hw_drv.h screen.h \
  command.h hardware/hw_data.h hardware/hw_glide.h hardware/hw_defs.h \
  hardware/hw_md2.h hardware/hw_glob.h hardware/hw_main.h hardware/hw_clip.h \
@@ -718,6 +736,9 @@ $(OBJDIR)/depend.dep:
 	$(CC) $(CFLAGS) -MM $(INTERFACE)/*.c >> $(OBJDIR)/depend.ped
 ifndef NOHW
 	$(CC) $(CFLAGS) -MM hardware/*.c >> $(OBJDIR)/depend.ped
+ifdef GLES
+	$(CC) $(CFLAGS) -MM hardware/r_gles/*.c >> $(OBJDIR)/depend.ped
+endif
 endif
 	$(CC) $(CFLAGS) -MM blua/*.c >> $(OBJDIR)/depend.ped
 	@sed -e 's,\(.*\)\.o: ,$(subst /,\/,$(OBJDIR))\/&,g' < $(OBJDIR)/depend.ped > $(OBJDIR)/depend.dep

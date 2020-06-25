@@ -32,6 +32,24 @@ else()
 	set(SRB2_SDL2_SOUNDIMPL sdl_sound.c)
 endif()
 
+if(${SRB2_CONFIG_GLES})
+	set(SRB2_SDL2_OPENGL_SOURCES
+		ogl_es_sdl.c
+	)
+
+	set(SRB2_SDL2_OPENGL_HEADERS
+		ogl_es_sdl.h
+	)
+else()
+	set(SRB2_SDL2_OPENGL_SOURCES
+		ogl_sdl.c
+	)
+
+	set(SRB2_SDL2_OPENGL_HEADERS
+		ogl_sdl.h
+	)
+endif()
+
 set(SRB2_SDL2_SOURCES
 	dosstr.c
 	endtxt.c
@@ -43,8 +61,8 @@ set(SRB2_SDL2_SOURCES
 	i_ttf.c
 	i_video.c
 	#IMG_xpm.c
-	ogl_sdl.c
 
+	${SRB2_SDL2_OPENGL_SOURCES}
 	${SRB2_SDL2_SOUNDIMPL}
 )
 
@@ -52,8 +70,8 @@ set(SRB2_SDL2_HEADERS
 	endtxt.h
 	hwsym_sdl.h
 	i_ttf.h
-	ogl_sdl.h
 	sdlmain.h
+	${SRB2_SDL2_OPENGL_HEADERS}
 )
 
 source_group("Interface Code" FILES ${SRB2_SDL2_SOURCES} ${SRB2_SDL2_HEADERS})
