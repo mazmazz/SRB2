@@ -39,25 +39,6 @@
 #include <emscripten.h>
 #endif
 
-#ifdef HAVE_REGAL
-#include <GL/regal.h>
-
-static void regalerr( GLenum err ) {
-    const char * errstr = NULL;
-    switch( err ) {
-        case GL_INVALID_ENUM: errstr = "INVALID ENUM"; break;
-        case GL_INVALID_OPERATION: errstr = "INVALID OPERATION"; break;
-        case GL_INVALID_VALUE: errstr = "INVALID VALUE"; break;
-        default:
-            printf("Got a GL error: %d!\n", err );
-            break;
-    }
-    if( errstr ) {
-        printf("Got a GL error: %s\n", errstr );
-    }
-}
-#endif
-
 #ifdef _MSC_VER
 #include <windows.h>
 #pragma warning(default : 4214 4244)
@@ -1831,9 +1812,6 @@ static SDL_bool Impl_CreateContext(void)
 			I_Error("Failed to create a GL context: %s\n", SDL_GetError());
 		}
 		SDL_GL_MakeCurrent(window, sdlglcontext);
-#ifdef HAVE_REGAL
-		RegalMakeCurrent((RegalSystemContext)sdlglcontext);
-#endif
 	}
 	else
 #endif
@@ -2352,10 +2330,6 @@ void VID_StartupOpenGL(void)
 		else
 			vid_opengl_state = HWD.pfnInit(I_Error) ? 1 : -1; // let load the OpenGL library
 
-#ifdef HAVE_REGAL
-		RegalSetErrorCallback(regalerr);
-#endif
-
 		if (vid_opengl_state == -1)
 		{
 			rendermode = render_soft;
@@ -2622,9 +2596,6 @@ void I_ShutdownGraphics(void)
 #endif
 	if (sdlglcontext)
 	{
-#ifdef HAVE_REGAL
-		RegalDestroyContext((RegalSystemContext)sdlglcontext);
-#endif
 		SDL_GL_DeleteContext(sdlglcontext);
 	}
 #endif
