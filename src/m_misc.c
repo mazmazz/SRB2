@@ -1301,6 +1301,11 @@ void M_StopMovie(void)
 		default:
 			return;
 	}
+#if defined(__EMSCRIPTEN__)
+	EM_ASM(
+		FS.syncfs(function (err) { console.log(err); });
+	);
+#endif
 	moviemode = MM_OFF;
 	CONS_Printf(M_GetText("Movie mode disabled.\n"));
 #endif
@@ -1568,6 +1573,12 @@ void M_DoScreenShot(void)
 		ret = WritePCXfile(va(pandf,pathname,freename), linear, vid.width, vid.height, screenshot_palette);
 #endif
 	}
+
+#if defined(__EMSCRIPTEN__)
+	EM_ASM(
+		FS.syncfs(function (err) { console.log(err); });
+	);
+#endif
 
 failure:
 	if (ret)
