@@ -1997,11 +1997,11 @@ void G_DoPlayDemo(char *defdemoname)
 
 #if defined(__EMSCRIPTEN__)
 	{
-		boolean isiOS = EM_ASM_INT({
-			return UserAgentIsiOS();
+		boolean timingByRaf = EM_ASM_INT({
+			return TimingByRequestAnimationFrame;
 		});
 		// Make the browser push frames as fast as possible
-		if (timingdemo && isiOS)
+		if (timingdemo && !timingByRaf)
 			emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
 	}
 #endif
@@ -2397,11 +2397,11 @@ void G_StopDemo(void)
 {
 #if defined(__EMSCRIPTEN__)
 	{
-		boolean isiOS = EM_ASM_INT({
-			return UserAgentIsiOS();
+		boolean timingByRaf = EM_ASM_INT({
+			return TimingByRequestAnimationFrame;
 		});
 		// Reset timing to normal
-		if (timingdemo && isiOS)
+		if (timingdemo && !timingByRaf)
 			emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 1000/NEWTICRATE);
 	}
 #endif

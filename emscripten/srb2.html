@@ -1765,6 +1765,8 @@
       // Emscripten Module -- Runtime Parameters
       ////////////////////////////////
 
+      var TimingByRequestAnimationFrame = false;
+
       var StartedMainLoop = false;
       var StartedMainLoopCallback = () => {
         document.getElementById('canvas').style.zIndex = "9999";

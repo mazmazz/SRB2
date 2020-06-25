@@ -799,19 +799,19 @@ void D_SRB2Loop(void)
 
 #if defined(__EMSCRIPTEN__)
 	{
-		boolean isiOS = EM_ASM_INT({
-			return UserAgentIsiOS();
+		boolean timingByRaf = EM_ASM_INT({
+			return TimingByRequestAnimationFrame;
 		});
 		EM_ASM({
 			StartedMainLoopCallback();
 		});
-		if (isiOS)
-			// Timing done by setTimeout. Enforce NEWTICRATE to appease error handler.
-			emscripten_set_main_loop(D_SRB2LoopIter, 1000/NEWTICRATE, 0);
-		else
+		if (timingByRaf)
 			// Timing done by requestAnimationFrame, which fires whenever possible.
 			// we do a timing check in main loop to not exceed NEWTICRATE
 			emscripten_set_main_loop(D_SRB2LoopIter, 0, 0);
+		else
+			// Timing done by setTimeout. Enforce NEWTICRATE to appease error handler.
+			emscripten_set_main_loop(D_SRB2LoopIter, 1000/NEWTICRATE, 0);
 	}
 #else
 	for (;;)
