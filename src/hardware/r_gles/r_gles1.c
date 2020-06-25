@@ -91,6 +91,91 @@ FUNCPRINTF void DBG_Printf(const char *lpFmt, ...)
 	CONS_Printf("%s\n", str);
 }
 
+#ifdef STATIC_OPENGL
+/* 1.0 functions */
+/* Miscellaneous */
+#define pglClearColor glClearColor
+#define pglColorMask glColorMask
+#define pglAlphaFunc glAlphaFunc
+#define pglBlendFunc glBlendFunc
+#define pglCullFace glCullFace
+#define pglPolygonOffset glPolygonOffset
+#define pglScissor glScissor
+#define pglEnable glEnable
+#define pglDisable glDisable
+#define pglGetFloatv glGetFloatv
+
+/* Depth Buffer */
+#define pglClearDepthf glClearDepthf
+#define pglDepthFunc glDepthFunc
+#define pglDepthMask glDepthMask
+#define pglDepthRangef glDepthRangef
+
+/* Transformation */
+#define pglMatrixMode glMatrixMode
+#define pglViewport glViewport
+#define pglPushMatrix glPushMatrix
+#define pglPopMatrix glPopMatrix
+#define pglLoadIdentity glLoadIdentity
+#define pglMultMatrixf glMultMatrixf
+#define pglRotatef glRotatef
+#define pglScalef glScalef
+#define pglTranslatef glTranslatef
+
+/* Drawing Functions */
+#define pglColor4f glColor4f
+#define pglVertexPointer glVertexPointer
+#define pglNormalPointer glNormalPointer
+#define pglTexCoordPointer glTexCoordPointer
+#define pglColorPointer glColorPointer
+#define pglDrawArrays glDrawArrays
+#define pglDrawElements glDrawElements
+#define pglEnableClientState glEnableClientState
+#define pglDisableClientState glDisableClientState
+
+/* Lighting */
+#define pglShadeModel glShadeModel
+#define pglLightfv glLightfv
+#define pglLightModelfv glLightModelfv
+#define pglMaterialfv glMaterialfv
+
+/* Raster functions */
+#define pglPixelStorei glPixelStorei
+#define pglReadPixels glReadPixels
+
+/* Texture mapping */
+#define pglTexEnvi glTexEnvi
+#define pglTexParameteri glTexParameteri
+#define pglTexImage2D glTexImage2D
+
+/* Fog */
+#define pglFogf glFogf
+#define pglFogfv glFogfv
+
+/* 1.1 functions */
+/* texture objects */ //GL_EXT_texture_object
+#define pglGenTextures glGenTextures
+#define pglDeleteTextures glDeleteTextures
+#define pglBindTexture glBindTexture
+/* texture mapping */ //GL_EXT_copy_texture
+#define pglCopyTexImage2D glCopyTexImage2D
+#define pglCopyTexSubImage2D glCopyTexSubImage2D
+#define pglGenerateMipmap glGenerateMipmap
+
+/* 1.3 functions for multitexturing */
+#define pglActiveTexture glActiveTexture
+#define pglMultiTexCoord2f glMultiTexCoord2f
+#define pglMultiTexCoord2fv glMultiTexCoord2fv
+#define pglClientActiveTexture glClientActiveTexture
+
+/* 1.5 functions for buffers */
+#define pglGenBuffers glGenBuffers
+#define pglBindBuffer glBindBuffer
+#define pglBufferData glBufferData
+#define pglDeleteBuffers glDeleteBuffers
+
+#else //!STATIC_OPENGL
+
 /* 1.0 functions */
 /* Miscellaneous */
 typedef void (*PFNglClearColor) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
@@ -229,6 +314,7 @@ typedef void (*PFNglBufferData) (GLenum target, GLsizei size, const GLvoid *data
 static PFNglBufferData pglBufferData;
 typedef void (*PFNglDeleteBuffers) (GLsizei n, const GLuint *buffers);
 static PFNglDeleteBuffers pglDeleteBuffers;
+#endif
 
 /* 1.2 Parms */
 /* GL_CLAMP_TO_EDGE_EXT */
@@ -254,6 +340,7 @@ static PFNglDeleteBuffers pglDeleteBuffers;
 
 boolean SetupGLfunc(void)
 {
+#ifndef STATIC_OPENGL
 #define GETOPENGLFUNC(func, proc) \
 	func = GetGLFunc(#proc); \
 	if (!func) \
@@ -326,6 +413,7 @@ boolean SetupGLfunc(void)
 
 #undef GETOPENGLFUNC
 
+#endif
 	return true;
 }
 
@@ -333,6 +421,7 @@ boolean SetupGLfunc(void)
 // This is stupid -- even some of the oldest usable OpenGL hardware today supports 1.3-level featureset.
 boolean SetupGLFunc13(void)
 {
+#ifndef STATIC_OPENGL
 	pglActiveTexture = GetGLFunc("glActiveTexture");
 	pglMultiTexCoord2f = GetGLFunc("glMultiTexCoord2f");
 	pglClientActiveTexture = GetGLFunc("glClientActiveTexture");
@@ -343,7 +432,7 @@ boolean SetupGLFunc13(void)
 	pglBindBuffer = GetGLFunc("glBindBuffer");
 	pglBufferData = GetGLFunc("glBufferData");
 	pglDeleteBuffers = GetGLFunc("glDeleteBuffers");
-
+#endif
 	return true;
 }
 
