@@ -721,7 +721,8 @@
         // Use 200p low-end by default; the user can upgrade if they choose.
         if (localStorage.getItem('controlsForm_resizeHeight') === null)
           document.getElementById('resizeHeight').value = 200;
-        if (localStorage.getItem('controlsForm_lowend') === null)
+        // Android defaults to normal mode due to audio stuttering in low-end.
+        if (localStorage.getItem('controlsForm_lowend') === null && !UserAgentIsAndroid())
           document.getElementById('lowend').checked = true;
         
         ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
