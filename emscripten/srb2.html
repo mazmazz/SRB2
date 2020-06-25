@@ -284,7 +284,8 @@
         cursor: pointer;
       }
 
-      .addonFilesField input[type=file] {
+      .addonFilesField input[type=file],
+      #storage input[type=file] {
         font-size: 1em;
         display: none;
       }
@@ -341,13 +342,9 @@
               <input type="checkbox" id="addonStartup" checked/>
               <label for="addonStartup">Load Mods on Startup</label>
             </p>
-            <details id="addonsHelp">
-              <summary>Mod Help</summary>
-              <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
-              <p>Or, you may load ZIP files. They will be available in the Addons Menu.</p>
-              <p>To load savegames and gamedata, place them in a folder titled <code>.srb2</code> within the ZIP file. Your stored gamedata will be overwritten.</p>
-              <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
-            </details>
+            <p>You may load one or more mods here. Drag each mod to change its loading order.</p>
+            <p>Or, you may load multiple mods in a single ZIP file. They will be available in the Addons Menu.</p>
+            <p><a href="https://mb.srb2.org/forumdisplay.php?f=116" target="_blank">You may download mods here</a>.</p>
           </details>
           <details id="controls">
             <summary>Settings</summary>
@@ -367,12 +364,6 @@
               <input type="checkbox" id="useMouse" checked/>
               <label for="useMouse">Use Mouse</label>
             </p>
-            <details id="storageControls">
-              <summary>Storage</summary>
-              <button id="downloadUserData" class="yellowButton" onclick="if(UserAgentIsiOS() && GetiOSVersion()[0] < 13) { alert('User data cannot be downloaded on iOS devices.'); } else DownloadFS(); return false;">Download User Data</button>
-              <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
-              <button onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')); return false;">Delete User Data</button>
-            </details>
             <details id="advancedControls">
               <summary>Advanced</summary>
               <p>
@@ -404,6 +395,28 @@
                 <textarea id="systemArguments" rows="2" readonly></textarea><br/>
                 <textarea id="userArguments" rows="2" placeholder="Custom Arguments"></textarea>
               </p>
+            </details>
+          </details>
+          <details id="storage">
+            <summary>Storage</summary>
+            <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
+            <input type="file" id="importData" class="button blueButton" onchange="if (this.files.length) { if (this.files[0].name.endsWith('.zip')) { alert('Your data will be imported when you start the game.'); } else { alert('You must select a ZIP file.'); } }"/>
+            <button class="blueButton" onclick="document.getElementById('importData').click()">Import User Data</button>
+            <p>To import savegames and gamedata, create a ZIP file and make a folder within named "<code>.srb2</code>". Place all files in this folder.</p>
+            <p>Your stored user data will be overwritten.</p>
+            <details>
+              <summary>Export User Data</summary>
+              <button class="yellowButton" onclick="alert(`Exporting logs.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2/logs', 'srb2-logs'); return false;">Export Logs</button>
+              <button class="yellowButton" onclick="alert(`Exporting screenshots.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2/screenshots', 'srb2-screenshots'); return false;">Export Screenshots</button>
+              <button class="yellowButton" onclick="alert(`Exporting movies.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2/movies', 'srb2-movies'); return false;">Export Movies</button>
+              <button class="yellowButton" onclick="alert(`Exporting user data.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2', 'srb2-data'); return false;">Export All User Data</button>
+            </details>
+            <details>
+              <summary>Delete User Data</summary>
+              <button onclick="if (confirm('Are you sure? All your logs will be deleted!')) DeleteFS('/home/web_user/.srb2/logs', true, _=>alert('Logs deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete Logs</button>
+              <button onclick="if (confirm('Are you sure? All your screenshots will be deleted!')) DeleteFS('/home/web_user/.srb2/screenshots', true, _=>alert('Screenshots deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete Screenshots</button>
+              <button onclick="if (confirm('Are you sure? All your movies will be deleted!')) DeleteFS('/home/web_user/.srb2/movies', true, _=>alert('Movies deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete Movies</button>
+              <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete All User Data</button>
             </details>
           </details>
         </form>
@@ -515,6 +528,7 @@
         document.getElementById('startbtn').style.display = "none";
         document.getElementById('addons').style.display = "none";
         document.getElementById('controls').style.display = "none";
+        document.getElementById('storage').style.display = "none";
         document.getElementById('help').style.display = "none";
         document.getElementById('footer').style.display = "none";
         document.getElementById('copyright').style.display = "none";
@@ -685,6 +699,7 @@
             homescreenAdvice += '<p>Then, tap "Add to Home Screen"</p>';
             document.getElementById("details").innerHTML = homescreenAdvice;
             document.getElementById("addons").style.display = "none";
+            document.getElementById("storage").style.display = "none";
             document.getElementById("controls").style.display = "none";
             document.getElementById("help").style.display = "none";
             document.getElementById("notes").style.display = "none";
@@ -708,14 +723,6 @@
           document.getElementById('resizeHeight').value = 200;
         if (localStorage.getItem('controlsForm_lowend') === null)
           document.getElementById('lowend').checked = true;
-
-        if (UserAgentIsiOS()) {
-            // blob downloading does not work on iOS < 13, and data URIs
-            // simply don't work in standalone mode.
-            // I also don't know if this actually works on 13 standalone.
-            if (GetiOSVersion()[0] < 13)
-              document.getElementById('downloadUserData').style.display = "none";
-        }
         
         ShowValue(document.getElementById('resizeHeight'), 'p', (elem) => { return elem.value > 800; }, 'Full');
 
@@ -752,35 +759,10 @@
         });
       };
 
-      var InitializeSections = () => {
-        document.getElementById('addons').open = (localStorage.getItem('addons') === 'true');
-        document.getElementById('addonsHelp').open = (localStorage.getItem('addonsHelp') === 'true'
-          || localStorage.getItem('addonsHelp') === null);
-        document.getElementById('controls').open = (localStorage.getItem('controls') === 'true');
-        document.getElementById('advancedControls').open = (localStorage.getItem('advancedControls') === 'true');
-
-        document.getElementById('addons').addEventListener('toggle', function(e) {
-          localStorage.setItem('addons', event.target.open);
-        }, false);
-
-        document.getElementById('addonsHelp').addEventListener('toggle', function(e) {
-          localStorage.setItem('addonsHelp', event.target.open);
-        }, false);
-
-        document.getElementById('controls').addEventListener('toggle', function(e) {
-          localStorage.setItem('controls', event.target.open);
-        }, false);
-
-        document.getElementById('advancedControls').addEventListener('toggle', function(e) {
-          localStorage.setItem('advancedControls', event.target.open);
-        }, false);
-      };
-
       window.addEventListener('load', function() {
         if (InitializePWA()) {
           InitializeAddons();
           InitializeFormFields();
-          InitializeSections();
         }
       }, {once: true});
 
@@ -1085,7 +1067,7 @@
         }));
       };
 
-      var DownloadFS = (downloadPath, manageLoop = true, callback = null) => {
+      var DownloadFS = (downloadPath, filename = null, manageLoop = true, callback = null) => {
         // Emscripten file store is an IndexedDB, name /home/web_user, object FILE_DATA,
         // version 21.
         // idb-keyval doesn't take in a version parameter (forces 1),
@@ -1094,6 +1076,8 @@
         let customStore = new idbKeyval.Store('/home/web_user', 'FILE_DATA', 21);
         if (typeof downloadPath === 'undefined')
           downloadPath = '/home/web_user/.srb2';
+        if (!filename)
+          filename = 'srb2-data';
 
         if (manageLoop && StartedMainLoop)
           PauseLoop();
@@ -1121,7 +1105,29 @@
           .then(_ => zip);
         })
         .then(zip => zip.generateAsync({type:'blob'}))
-        .then(blob => Promise.resolve(saveAs(blob, 'srb2-data.zip')))
+        .then(blob => {
+          if (UserAgentIsiOS()) {
+            let fd = new FormData();
+            fd.append('file', blob);
+            fd.append('expires', '30m');
+            return fetch('https://file.io', {
+              method: 'POST',
+              mode: 'cors',
+              body: fd
+            })
+            .then(r=>r.json())
+            .then(resp=>{
+              if ('link' in resp)
+                alert(`Your download is ready:\n\n${resp['link']}\n\nLong tap and copy this link into Safari to save your data. It is valid for the next 30 minutes.`);
+              else if ('message' in resp)
+                throw `Error uploading user data: ${resp['message']}`;
+              else
+                throw 'Error uploading user data';
+            });
+          }
+          else
+            return Promise.resolve(saveAs(blob, `${filename}.zip`));
+        })
         .catch(err => { console.log(`DownloadFS: ${err}`); alert(`Error downloading user data: ${err}`); })
         .finally(_ => {
           if (typeof callback === 'function')
@@ -1140,7 +1146,7 @@
         if (typeof deletePath === 'undefined')
           throw 'DeleteFS: Must specify a path';
 
-        if (FS) {
+        if (typeof FS !== 'undefined' && FS instanceof Object) {
           try {
             FS.unlink(`${deletePath}`);
           } catch (e) { 
@@ -1173,7 +1179,10 @@
           return Promise.all(promises)
         })
         .then(_ => SyncFS(true)) // commit changes to the memory FS
-        .catch(err => console.log(`DeleteFS: ${err}`))
+        .catch(err => {
+          console.log(`DeleteFS: ${err}`);
+          throw err;
+        })
         .finally(_ => {
           if (typeof callback === 'function')
             callback();
@@ -1612,7 +1621,10 @@
           });
           return Promise.all(files)
           .then(SyncFS)
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            console.log(err);
+            throw err;
+          });
         });
       };
 
@@ -1636,7 +1648,8 @@
 
       var LoadAddons = () => {
         let addons = [];
-        let inputs = document.getElementById("addonFilesContainer").querySelectorAll(".addonFilesField:not([id=addonFilesTemplate]) input[type=file]");
+        let inputs = Array.from(document.getElementById("addonFilesContainer").querySelectorAll(".addonFilesField:not([id=addonFilesTemplate]) input[type=file]"));
+        inputs.push(document.getElementById('importData'));
         inputs.forEach((input) => {
           if (input.files.length) {
             if (input.files[0].name.endsWith('.zip'))
