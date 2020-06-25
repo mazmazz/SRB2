@@ -488,6 +488,7 @@ if(${SRB2_CONFIG_HWRENDER})
 	)
 
 	if(${SRB2_CONFIG_GLES})
+		add_definitions(-DHAVE_GLES)
 		if(${SRB2_CONFIG_GLES2})
 			add_definitions(-DHAVE_GLES2)
 			set(SRB2_R_OPENGL_SOURCES
