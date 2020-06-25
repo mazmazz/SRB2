@@ -1996,9 +1996,14 @@ void G_DoPlayDemo(char *defdemoname)
 	demo_start = true;
 
 #if defined(__EMSCRIPTEN__)
-	// Make the browser push frames as fast as possible
-	if (timingdemo)
-		emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+	{
+		boolean isiOS = EM_ASM_INT({
+			return UserAgentIsiOS();
+		});
+		// Make the browser push frames as fast as possible
+		if (timingdemo && isiOS)
+			emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+	}
 #endif
 }
 
@@ -2391,8 +2396,14 @@ ATTRNORETURN void FUNCNORETURN G_StopMetalRecording(boolean kill)
 void G_StopDemo(void)
 {
 #if defined(__EMSCRIPTEN__)
-	if (timingdemo)
-		emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 1000/NEWTICRATE);
+	{
+		boolean isiOS = EM_ASM_INT({
+			return UserAgentIsiOS();
+		});
+		// Reset timing to normal
+		if (timingdemo && isiOS)
+			emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 1000/NEWTICRATE);
+	}
 #endif
 	Z_Free(demobuffer);
 	demobuffer = NULL;

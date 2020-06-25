@@ -677,7 +677,9 @@ static void D_SRB2LoopIter(void)
 
 	if (!realtics && !singletics)
 	{
+#if !defined(__EMSCRIPTEN__)
 		I_Sleep();
+#endif
 		return;
 	}
 
@@ -796,10 +798,21 @@ void D_SRB2Loop(void)
 		V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(W_GetNumForName("CONSBACK"), PU_CACHE));
 
 #if defined(__EMSCRIPTEN__)
-	emscripten_set_main_loop(D_SRB2LoopIter, 35, 0);
-	EM_ASM({
-		StartedMainLoopCallback();
-	});
+	{
+		boolean isiOS = EM_ASM_INT({
+			return UserAgentIsiOS();
+		});
+		EM_ASM({
+			StartedMainLoopCallback();
+		});
+		if (isiOS)
+			// Timing done by setTimeout. Enforce NEWTICRATE to appease error handler.
+			emscripten_set_main_loop(D_SRB2LoopIter, 1000/NEWTICRATE, 0);
+		else
+			// Timing done by requestAnimationFrame, which fires whenever possible.
+			// we do a timing check in main loop to not exceed NEWTICRATE
+			emscripten_set_main_loop(D_SRB2LoopIter, 0, 0);
+	}
 #else
 	for (;;)
 	{
