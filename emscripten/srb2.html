@@ -364,6 +364,10 @@
               <input type="checkbox" id="useMouse" checked/>
               <label for="useMouse">Use Mouse</label>
             </p>
+            <p>
+              <input type="checkbox" id="offline" class="nosave"/>
+              <label for="offline">Work Offline</label>
+            </p>
             <details id="advancedControls">
               <summary>Advanced</summary>
               <p>
@@ -388,7 +392,7 @@
                   </select>
                 </span>
                 <input type="checkbox" id="lowend"/>
-                <label for="lowend">Prefer Low-End</label>
+                <label for="lowend">Use Low-End Mode if Available</label>
               </p>
               <p>
                 <label for="userArguments">Command Line</label><br/>
@@ -563,9 +567,9 @@
         PackageVersion = GetSelectedPackageVersion();
         await UXInstallProgram(false, PackageVersion); // hides the UI
         await GetWasm(PackageVersion);
-        let scriptSrc = `data/${PackageVersion}/srb2.js`;
+        let js = await GetJs(PackageVersion);
         let script = document.createElement('script');
-        script.setAttribute('src',scriptSrc);
+        script.setAttribute('src',js);
         document.head.appendChild(script);
         document.body.classList.add('calledRun');
 
@@ -1198,8 +1202,8 @@
       // Files to download on first run
       var InstallFiles = [];
 
-      // Files to download on full install (currently unused)
-      //var FullInstallFiles = [];
+      // Files to download on full install
+      var FullInstallFiles = [];
 
       // Don't delete these files on lump unload
       var PersistentLumpFiles = [];
@@ -1367,6 +1371,18 @@
           }
         } catch (e) { } // fail silently; oh well, we tried.
 
+        // THIS IS A MASSIVE HACK TO CHECK THE VARIABLE LIKE THIS!
+        // SOMEDAY, PASS THIS VARIABLE THROUGH THE MAZE OF FUNCTION PARAMETERS!
+        let offline = document.getElementById('offline');
+        if (offline)
+          offline = offline.checked;
+        if (offline) {
+          if (!RequiredFiles.includes(name))
+            return Promise.resolve(); // shrug, we don't need this file.
+          else
+            throw `Cannot retrieve required file: ${file}`;
+        }
+
         try {
           // Check server's MD5 file for the current version.
           let remoteMd5 = await fetch(`data/${version}/${name}.md5`, NoCacheInit);
@@ -1446,13 +1462,14 @@
 
       var GetVersionFileLists = async (version = '{{{ PACKAGE_VERSION }}}') => {
         let fileLists = {'_INSTALL': InstallFiles,
-                         //'_FULLINSTALL': FullInstallFiles,
+                         '_FULLINSTALL': FullInstallFiles,
                          '_PERSISTENT': PersistentLumpFiles,
                          '_STARTUP': StartupFiles,
                          '_REQUIRED': RequiredFiles};
         // Download all file lists
         try {
-          await CheckInstallFileList(Object.keys(fileLists), version, true, null, null);
+          let offline = document.getElementById('offline').checked;
+          await CheckInstallFileList(Object.keys(fileLists), version, !offline, null, null);
         } catch (e) { console.error('GetVersionFileLists error: ^^^^^'); }
 
         // Populate local file lists
@@ -1495,6 +1512,9 @@
         try {
           // On a brand-new setup, the store SHOULD be first created here.
           let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
+          let offline = document.getElementById('offline');
+          if (offline)
+            offline = offline.checked;
           do {
             // Check IDB first
             childBaseVer = await idbKeyval.get(CompositeKey('_BASE', baseVer), customStore);
@@ -1504,6 +1524,8 @@
                 baseVer = childBaseVer;
               } else
                 break; // no circular references, thanks
+            } else if (offline) {
+              break; // no bases we can retrieve
             } else {
               // If IDB doesn't have the _BASE, then check the server
               childBaseVer = await fetch(`data/${baseVer}/_BASE`, NoCacheInit);
@@ -1543,16 +1565,23 @@
 
       var InstallProgram = async (full = false, version = '{{{ PACKAGE_VERSION }}}', checkServer = false, progressCallback = null, finishedCallback = null) => {
         let bases = await GetVersionBases(version);
+        let files;
         await GetVersionFileLists(version);
-        let files = [...InstallFiles]; // if re-implementing FullInstallFiles, do it here and check for `full`
+        if (full)
+          files = [...InstallFiles, ...FullInstallFiles];
+        else
+          files = [...InstallFiles];
         return CheckInstallFileList(files, version, checkServer, progressCallback, finishedCallback);
       };
 
       // UX Function
       var UXInstallProgram = (full, version = '{{{ PACKAGE_VERSION }}}') => {
+        let offline;
         HideContent();
         // TODO checkServer -- check for internet connection
-        return InstallProgram(full, version, true, (name, curVal, maxVal) => {
+        if (document.getElementById('offline').checked)
+          offline = true;
+        return InstallProgram(full, version, !offline, (name, curVal, maxVal) => {
           // Progress callback
           let percent = Math.round(Math.min(curVal, maxVal-1)/maxVal*100);
           // TODO: This is not accurate. In future, we can somehow reference the pool and check pool._pending
