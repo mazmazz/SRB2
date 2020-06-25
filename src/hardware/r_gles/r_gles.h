@@ -17,6 +17,12 @@
 #define GL_GLEXT_PROTOTYPES
 #undef DRIVER_STRING
 
+#if defined(__EMSCRIPTEN__)
+#ifdef HAVE_REGAL
+#include <GL/Regal.h>
+#endif
+#endif
+
 #ifdef HAVE_GLES2
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
