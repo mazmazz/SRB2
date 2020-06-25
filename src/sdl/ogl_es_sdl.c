@@ -34,9 +34,11 @@
 #include "hwsym_sdl.h"
 #include "../m_argv.h"
 
+#ifndef STATIC_OPENGL
 PFNglClear pglClear;
 PFNglGetIntegerv pglGetIntegerv;
 PFNglGetString pglGetString;
+#endif
 
 /**	\brief SDL video display surface
 */
@@ -49,11 +51,13 @@ void *GetGLFunc(const char *proc)
 
 boolean LoadGL(void)
 {
+#ifndef STATIC_OPENGL
 	if (SDL_GL_LoadLibrary(NULL) != 0)
 	{
 		CONS_Alert(CONS_ERROR, "Could not load OpenGL Library: %s\nFalling back to Software mode.\n", SDL_GetError());
 		return 0;
 	}
+#endif
 	return SetupGLfunc();
 }
 
