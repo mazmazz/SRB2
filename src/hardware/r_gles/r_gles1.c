@@ -136,7 +136,12 @@ FUNCPRINTF void DBG_Printf(const char *lpFmt, ...)
 /* Lighting */
 #define pglShadeModel glShadeModel
 #define pglLightfv glLightfv
+#if defined(__EMSCRIPTEN__)
+// dodge LEGACY_GL_EMULATION exception by stubbing
+#define pglLightModelfv(a, b)
+#else
 #define pglLightModelfv glLightModelfv
+#endif
 #define pglMaterialfv glMaterialfv
 
 /* Raster functions */
@@ -160,7 +165,12 @@ FUNCPRINTF void DBG_Printf(const char *lpFmt, ...)
 /* texture mapping */ //GL_EXT_copy_texture
 #define pglCopyTexImage2D glCopyTexImage2D
 #define pglCopyTexSubImage2D glCopyTexSubImage2D
+#if defined(__EMSCRIPTEN__)
+// LEGACY_GL_EMULATION cannot link glGenerateMipmap nor glGenerateMipmapOES
+#define pglGenerateMipmap(target) pglTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE)
+#else
 #define pglGenerateMipmap glGenerateMipmap
+#endif
 
 /* 1.3 functions for multitexturing */
 #define pglActiveTexture glActiveTexture
