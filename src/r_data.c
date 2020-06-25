@@ -749,6 +749,11 @@ static void R_GrowTextures(INT32 count)
 		M_Memcpy(newtexturewidth, texturewidth, (oldnumtexes * sizeof(void *)));
 		M_Memcpy(newtextureheight, textureheight, (oldnumtexes * sizeof(void *)));
 		M_Memcpy(newtexturetranslation, texturetranslation, ((oldnumtexes+1) * sizeof(*texturetranslation)));
+
+		// texturecache addresses "use" zone memory blocks
+		for (i = 0; i < oldnumtexes; i++)
+			if (newtexturecache[i])
+				Z_SetUser(newtexturecache[i], (void **)&newtexturecache[i]);
 	}
 	if (textures)
 		Z_Free(textures);
