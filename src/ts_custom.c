@@ -1998,7 +1998,7 @@ static void Submenu_AddNewButton_ClearAction(INT32 x, INT32 y, touchfinger_t *fi
 		RemoveButton(&usertouchcontrols[i]);
 	CloseSubmenu();
 	SetupNewButtonSubmenu(NULL);
-	S_StartSound(NULL, sfx_skid);
+	S_StartSound(NULL, sfx_wdjump);
 }
 
 static void Submenu_AddNewButton_ResetAction(INT32 x, INT32 y, touchfinger_t *finger, event_t *event)
@@ -2010,13 +2010,8 @@ static void Submenu_AddNewButton_ResetAction(INT32 x, INT32 y, touchfinger_t *fi
 	(void)event;
 
 	ClearAllSelections();
-	for (i = 0; i < num_gamecontrols; i++)
-	{
-		RemoveButton(&usertouchcontrols[i]);
-		// reset hidden value so that all buttons are properly populated
-		usertouchcontrols[i].hidden = false;
-	}
-	G_DefaultCustomTouchControls(usertouchcontrols);
+	TS_BuildLayoutFromPreset(usertouchcontrols);
+	M_Memcpy(&touchcontrols, usertouchcontrols, sizeof(touchconfig_t) * num_gamecontrols);
 	CloseSubmenu();
 	S_StartSound(NULL, sfx_strpst);
 }
