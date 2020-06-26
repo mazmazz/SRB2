@@ -306,6 +306,10 @@ void TS_NewLayout(void)
 
 void TS_ClearLayout(void)
 {
+	INT32 i;
+	// reset hidden value so that all buttons are properly populated
+	for (i = 0; i < num_gamecontrols; i++)
+		usertouchcontrols[i].hidden = false;
 	// AAAANNDD this is where I would put my
 	// function that clears touchlayout_t...
 	// IF I HAD ONE!!!!
@@ -1998,7 +2002,7 @@ static void Submenu_AddNewButton_ClearAction(INT32 x, INT32 y, touchfinger_t *fi
 		RemoveButton(&usertouchcontrols[i]);
 	CloseSubmenu();
 	SetupNewButtonSubmenu(NULL);
-	S_StartSound(NULL, sfx_wdjump);
+	S_StartSound(NULL, sfx_appear);
 }
 
 static void Submenu_AddNewButton_ResetAction(INT32 x, INT32 y, touchfinger_t *finger, event_t *event)
@@ -2010,6 +2014,9 @@ static void Submenu_AddNewButton_ResetAction(INT32 x, INT32 y, touchfinger_t *fi
 	(void)event;
 
 	ClearAllSelections();
+	// reset hidden value so that all buttons are properly populated
+	for (i = 0; i < num_gamecontrols; i++)
+		usertouchcontrols[i].hidden = false;
 	TS_BuildLayoutFromPreset(usertouchcontrols);
 	M_Memcpy(&touchcontrols, usertouchcontrols, sizeof(touchconfig_t) * num_gamecontrols);
 	CloseSubmenu();
