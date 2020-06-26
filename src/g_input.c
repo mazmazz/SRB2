@@ -104,6 +104,7 @@ static CV_PossibleValue_t touchpreset_cons_t[] = {
 
 consvar_t cv_touchstyle = {"touch_movementstyle", "Joystick", CV_SAVE|CV_CALL|CV_NOINIT, touchstyle_cons_t, G_UpdateTouchControls, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_touchpreset = {"touch_preset", "Default", CV_SAVE|CV_CALL|CV_NOINIT, touchpreset_cons_t, G_TouchPresetChanged, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_touchlayout = {"touch_layout", "None", CV_SAVE|CV_CALL|CV_NOINIT, NULL, TS_LoadLayoutFromCVar, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_touchcamera = {"touch_camera", "On", CV_SAVE|CV_CALL|CV_NOINIT, CV_OnOff, G_UpdateTouchControls, 0, NULL, NULL, 0, 0, NULL};
 
 static CV_PossibleValue_t touchguiscale_cons_t[] = {{FRACUNIT/2, "MIN"}, {3 * FRACUNIT, "MAX"}, {0, NULL}};
@@ -1348,6 +1349,7 @@ void G_DefineDefaultControls(void)
 
 	CV_RegisterVar(&cv_touchcamera);
 	CV_RegisterVar(&cv_touchpreset);
+	CV_RegisterVar(&cv_touchlayout);
 	CV_RegisterVar(&cv_touchstyle);
 
 	CV_RegisterVar(&cv_touchguiscale);
@@ -1583,7 +1585,7 @@ static void G_MarkDPadButtons(touchconfig_t *controls)
 	controls[gc_straferight].dpad = true;
 }
 
-static void G_BuildTouchPreset(touchconfig_t *controls, touchconfigstatus_t *status, touchmovementstyle_e tms, fixed_t scale, boolean tiny)
+void G_BuildTouchPreset(touchconfig_t *controls, touchconfigstatus_t *status, touchmovementstyle_e tms, fixed_t scale, boolean tiny)
 {
 	fixed_t x, y, w, h;
 	fixed_t dx, dy, dw, dh;
@@ -1868,34 +1870,6 @@ static void G_HidePlayerControlButtons(touchconfigstatus_t *status)
 	}
 }
 
-static touchconfigstatus_t usertouchconfigstatus;
-
-void G_DefaultCustomTouchControls(touchconfig_t *config)
-{
-	fixed_t orgx = ((BASEVIDWIDTH-(vid.width/vid.dupx))/2) * FRACUNIT;
-	fixed_t orgy = ((BASEVIDHEIGHT-(vid.height/vid.dupy))/2) * FRACUNIT;
-	fixed_t orgxnorm = FixedDiv(orgx, BASEVIDWIDTH * FRACUNIT);
-	fixed_t orgynorm = FixedDiv(orgy, BASEVIDHEIGHT * FRACUNIT);
-
-	G_BuildTouchPreset(config, &usertouchconfigstatus, tms_joystick, TS_GetDefaultScale(), false);
-
-	// Offset the positions to account for dynres
-	if (orgx || orgy)
-	{
-		INT32 i;
-		for (i = 0; i < num_gamecontrols; i++)
-		{
-			if (config[i].w) // does it exist?
-			{
-				config[i].x += orgxnorm;
-				config[i].y += orgynorm;
-				if (i == gc_joystick)
-					TS_UpdateJoystickBase(&config[i], touch_joystick_x + orgx, touch_joystick_y + orgy);
-			}
-		}
-	}
-}
-
 void G_PositionTouchButtons(void)
 {
 	touchconfigstatus_t *status = &touchcontrolstatus;
@@ -1948,21 +1922,8 @@ void G_TouchPresetChanged(void)
 
 	if (!G_TouchPresetActive())
 	{
-		usertouchconfigstatus.ringslinger = true;
-		usertouchconfigstatus.ctfgametype = true;
-		usertouchconfigstatus.canpause = true;
-		usertouchconfigstatus.canviewpointswitch = true;
-		usertouchconfigstatus.cantalk = true;
-		usertouchconfigstatus.canteamtalk = true;
-
 		// Make a default custom controls set
-		if (usertouchcontrols == NULL)
-		{
-			if (usertouchcontrols == NULL)
-				usertouchcontrols = Z_Calloc(sizeof(touchconfig_t) * num_gamecontrols, PU_STATIC, NULL);
-			G_DefaultCustomTouchControls(usertouchcontrols);
-			usertouchlayout->config = usertouchcontrols;
-		}
+		TS_DefaultLayout();
 
 		// Copy custom controls
 		M_Memcpy(&touchcontrols, usertouchcontrols, sizeof(touchconfig_t) * num_gamecontrols);
