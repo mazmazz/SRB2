@@ -391,6 +391,10 @@
                 <label for="lowend">Use Low-End Mode if Available</label>
               </p>
               <p>
+                <input type="checkbox" id="rafTiming"/>
+                <label for="rafTiming">Use Fast Timing</label>
+              </p>
+              <p>
                 <label for="userArguments">Command Line</label><br/>
                 <textarea id="systemArguments" rows="2" readonly></textarea><br/>
                 <textarea id="userArguments" rows="2" placeholder="Custom Arguments"></textarea>
@@ -559,6 +563,9 @@
 
         SaveFormToStorage(ControlsFormElement);
         window.removeEventListener('focus', CheckVersion, false);
+        
+        if (document.getElementById("rafTiming").checked)
+          TimingByRequestAnimationFrame = true;
 
         PackageVersion = GetSelectedPackageVersion();
         await UXInstallProgram(false, PackageVersion); // hides the UI
