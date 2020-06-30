@@ -1047,7 +1047,7 @@
         baseDir.split('/').forEach((name) => {
           if (name.length) {
             let mode = 0;
-            try { mode = FS.lstat(`${parents}${name}`)['mode']; } catch(err) { console.log('WriteFS(): lstat info'); console.log(err); }
+            try { mode = FS.lstat(`${parents}${name}`)['mode']; } catch(err) { console.log('WriteFS(): lstat info', err);}
             if (FS.isLink(mode))
               parents = `${FS.readlink(`${parents}${name}`)}/`;
             else
@@ -1057,8 +1057,8 @@
         baseDir = parents.substring(0, parents.length-1);
         console.log(`WriteFS(): Writing ${baseDir}/${fn}: ${data.byteLength} bytes`);
         // attempt write
-        try { FS.mkdirTree(parents); } catch(err) { console.log('WriteFS(): mkdirTree info'); console.log(err); }
-        try { FS.unlink(`${baseDir}/${fn}`); } catch(err) { console.log('WriteFS(): unlink info'); console.log(err); }
+        try { FS.mkdirTree(parents); } catch(err) { console.log('WriteFS(): mkdirTree', err); }
+        try { FS.unlink(`${baseDir}/${fn}`); } catch(err) { console.log('WriteFS(): unlink', err); }
         FS.createDataFile(baseDir, fn, data, true, true);
         return Promise.resolve(true);
       };
@@ -1628,7 +1628,6 @@
             }
           });
           return Promise.all(files)
-          .then(SyncFS)
           .catch((err) => {
             console.log(err);
             throw err;
@@ -1662,11 +1661,11 @@
           if (input.files.length) {
             if (input.files[0].name.endsWith('.zip'))
               addons.push(ExtractZipFile('/addons', input.files[0]));
-            else{
+            else
               addons.push(input.files[0].arrayBuffer()
               .then((buffer) => WriteFS('/addons', input.files[0].name.replace(' ', '_'), new Uint8Array(buffer)))
               .catch((err) => { console.log('LoadAddons():'); console.log(err); })
-              );}
+              );
           }
         });
         return Promise.all(addons)
@@ -1913,6 +1912,7 @@
             }));
           })
           .then(LoadAddons)
+          .then(_ => SyncFS())
           .finally(() => removeRunDependency('mount-filesystem'));
         }],
 
