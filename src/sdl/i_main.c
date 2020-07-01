@@ -286,7 +286,6 @@ int main(int argc, char **argv)
 			FS.syncfs(true, function (err) {
 				console.log("Intial syncFS done");
 				console.log(err);
-				Module.ccall("emscripten_main");
         	});
 		} 
 		catch (err)
