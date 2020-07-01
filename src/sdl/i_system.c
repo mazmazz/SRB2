@@ -2339,6 +2339,42 @@ INT32 I_StartupSystem(void)
 }
 
 //
+// Quit-related functions
+//
+#if defined(__EMSCRIPTEN__)
+static INT32 myexit = 0;
+
+void Halt(void)
+{
+	EM_ASM({
+		window.location.reload();
+	});
+	exit(myexit);
+}
+
+void ImmediateQuit(void)
+{
+	emscripten_cancel_main_loop();
+	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
+#ifndef HAVE_ASYNCIFY
+	EM_ASM({
+		SuspendAudioContext(); // stop the stuttering
+		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
+	});
+#endif
+	EM_ASM({
+		try {
+			FS.syncfs(true, _ => {
+				Module.ccall("Halt", null, [], []);
+			});
+		} catch (e) {
+			Module.ccall("Halt", null, [], []);
+		}
+	});
+}
+#endif
+
+//
 // I_Quit
 //
 void I_Quit(void)
@@ -2382,16 +2418,10 @@ void I_Quit(void)
 death:
 	W_Shutdown();
 #if defined(__EMSCRIPTEN__)
-	emscripten_cancel_main_loop();
-	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
-#ifndef HAVE_ASYNCIFY
-	EM_ASM({
-		SuspendAudioContext(); // stop the stuttering
-		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
-	});
-#endif
-#endif
+	ImmediateQuit();
+#else
 	exit(0);
+#endif
 }
 
 void I_WaitVBL(INT32 count)
@@ -2464,16 +2494,11 @@ void I_Error(const char *error, ...)
 
 			W_Shutdown();
 #if defined(__EMSCRIPTEN__)
-			emscripten_cancel_main_loop();
-			EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
-#ifndef HAVE_ASYNCIFY
-			EM_ASM({
-				SuspendAudioContext(); // stop the stuttering
-				ErrorCrashed = true; // dirty hack to suppress the error handler during quit
-			});
-#endif
-#endif
+			myexit = -1;
+			ImmediateQuit();
+#else
 			exit(-1); // recursive errors detected
+#endif
 		}
 	}
 
@@ -2523,21 +2548,16 @@ void I_Error(const char *error, ...)
 	W_Shutdown();
 
 #if defined(__EMSCRIPTEN__)
-	emscripten_cancel_main_loop();
-	EM_ASM({noExitRuntime = false;}); // must set this to terminate runtime
-#ifndef HAVE_ASYNCIFY
-	EM_ASM({
-		SuspendAudioContext(); // stop the stuttering
-		ErrorCrashed = true; // dirty hack to suppress the error handler during quit
-	});
-#endif
-#endif
+	myexit = -1;
+	ImmediateQuit();
+#else
 
 #if defined (PARANOIA) && defined (__CYGWIN__)
 	*(INT32 *)2 = 4; //Alam: Debug!
 #endif
 
 	exit(-1);
+#endif
 }
 
 /**	\brief quit function table

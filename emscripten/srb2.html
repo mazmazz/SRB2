@@ -1823,7 +1823,7 @@
                 Module['SDL2'].audioContext.close();
             } catch(e) { }
             alert(msg);
-            window.location.reload();
+            Module.ccall("_ImmediateQuit", null, [], []);
           }
           Module['alive'].splice(index, 1);
           Module['aliveId'].splice(index, 1);

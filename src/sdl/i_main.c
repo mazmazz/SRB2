@@ -203,18 +203,19 @@ static void InitLogging(void)
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #endif
 
+#if defined(__EMSCRIPTEN__)
+int main_cont(void)
+{
+#else
 #ifdef FORCESDLMAIN
 int SDL_main(int argc, char **argv)
 #else
-#if defined(__EMSCRIPTEN__)
-int main_cont(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 #endif
 {
 	myargc = argc;
 	myargv = argv; /// \todo pull out path to exe from this string
+#endif
 
 #ifdef HAVE_TTF
 #ifdef _WIN32
@@ -274,6 +275,9 @@ int main(int argc, char **argv)
 #if defined(__EMSCRIPTEN__)
 int main(int argc, char **argv)
 {
+	myargc = argc;
+	myargv = argv;
+
     EM_ASM(
         try
 		{
@@ -286,15 +290,17 @@ int main(int argc, char **argv)
 			FS.syncfs(true, function (err) {
 				console.log("Intial syncFS done");
 				console.log(err);
+				Module.ccall("main_cont", 'number', [], []);
         	});
 		} 
 		catch (err)
 		{
 			// May have already mounted during preRun, so fail silently
 			console.log(err);
+			Module.ccall("main_cont", 'number', [], []);
 		}
     );
-	return main_cont(argc, argv);
+	return 0;
 }
 
 int change_resolution(INT32 x, INT32 y)
