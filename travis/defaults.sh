@@ -28,7 +28,7 @@
 : ${DPL_ARCHIVE_NAME}           # Name to use for deployed archives. Defaults to $TRAVIS_TAG-$TRAVIS_OS_NAME or "srb2$TRAVIS_OS_NAME-$TRAVIS_BRANCH-${TRAVIS_COMMIT:0:8}-${TRAVIS_JOB_ID}"
 
 # Asset File Parameters
-: ${ASSET_ARCHIVE_PATHS:=https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-assets.7z;https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.4-optional-assets.7z}
+: ${ASSET_ARCHIVE_PATHS:=https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.5-assets.7z;https://github.com/mazmazz/SRB2/releases/download/SRB2_assets_220/srb2-2.2.5-optional-assets.7z}
 : ${ASSET_FILES_HASHED:=srb2.pk3 zones.pk3 player.dta patch.pk3}
 : ${ASSET_FILES_DOCS:=README.txt LICENSE.txt LICENSE-3RD-PARTY.txt README-SDL.txt}
 
