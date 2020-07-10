@@ -42,7 +42,7 @@
 
 # Debian Package Parameters
 : ${PACKAGE_NAME:=srb2}
-: ${PACKAGE_VERSION:=2.2.0}
+: ${PACKAGE_VERSION:=2.2.5}
 : ${PACKAGE_SUBVERSION}         # Highly recommended to set this to reflect the distro series target (e.g., ~18.04bionic)
 : ${PACKAGE_REVISION}           # Defaults to UTC timestamp
 : ${PACKAGE_INSTALL_PATH:=/usr/games/SRB2}
@@ -58,7 +58,7 @@
 
 : ${PROGRAM_NAME:=Sonic Robo Blast 2}
 : ${PROGRAM_VENDOR:=Sonic Team Junior}
-: ${PROGRAM_VERSION:=2.2.0}
+: ${PROGRAM_VERSION:=2.2.5}
 : ${PROGRAM_DESCRIPTION:=A 3D Sonic the Hedgehog fangame inspired by the original Sonic games on the Sega Genesis.}
 : ${PROGRAM_FILENAME:=srb2}
 
