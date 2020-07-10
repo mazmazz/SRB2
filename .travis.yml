@@ -98,9 +98,10 @@ matrix:
               sources:
               - ubuntu-toolchain-r-test
               - sourceline: 'ppa:stjr/srb2'
+              - sourceline: 'ppa:linuxuprising/libpng12'
               packages:
               - libsdl2-mixer-dev
-              - libpng-dev
+              - libpng12-dev
               - libgl1-mesa-dev
               - libgme-dev
               - libopenmpt-dev
