@@ -3,9 +3,15 @@ set -e
 
 # Make Linux AppImage program data
 # https://docs.appimage.org/reference/appdir.html
-
-# PWD: {repo_root}/build
-# See deployer.sh for usage
+#
+# Before running this script, set your current working directory
+# to your CMAKE build directory. Currently, this must be
+# a direct subdirectory of your SRB2 source root.
+#
+# e.g., [SRB2_source_dir]/build
+#
+# \todo This should not have to depend on CMAKE. Adjust for explicit
+# paths instead of relative paths.
 
 __BUILD_DIR=${1:-$PWD}
 __OUTPUT_FILENAME=${2:-$__PROGRAM_FILENAME.AppImage}
