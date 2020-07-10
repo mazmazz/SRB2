@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 ##############################
-# Reconcile LDD with AppImage excludelist
+# Select Linux dependencies for inclusion into AppImage (`ldd` command)
 ##############################
 
 from urllib.request import urlopen
@@ -29,7 +29,9 @@ __WHITELIST = [
     'libogg',
     'libvorbisenc',
     'libjson',
-    'libreadline'
+    'libreadline',
+    'libwrap',
+    'libtinfo'
 ]
 
 if len(sys.argv) < 2:
