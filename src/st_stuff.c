@@ -1442,7 +1442,7 @@ static void ST_drawTouchGameInputButton(touchconfig_t *config, INT32 gctype, con
 	fixed_t dupx = vid.dupx * FRACUNIT;
 	fixed_t dupy = vid.dupy * FRACUNIT;
 
-	if (!control->hidden && !F_GetPromptHideHud(control->y / vid.dupy))
+	if (!control->hidden && !(promptblockcontrols && F_GetPromptHideHud(control->y / vid.dupy)))
 	{
 		fixed_t strx, stry;
 		fixed_t strwidth, strheight;
