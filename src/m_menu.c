@@ -9156,6 +9156,13 @@ static void M_LoadGame(INT32 choice)
 {
 	(void)choice;
 
+#if defined(__EMSCRIPTEN__)
+	// Force tutorial prompt off because we default to Simple controls.
+	// TODO: Only suppress prompt if Simple controls are enabled, and
+	// don't modify this CV value.
+	CV_SetValue(&cv_tutorialprompt, 0);
+#endif
+
 	if (tutorialmap && cv_tutorialprompt.value)
 	{
 		M_StartMessage("Do you want to \x82play a brief Tutorial\x80?\n\nWe highly recommend this because \nthe controls are slightly different \nfrom other games.\n\n" PRESS_Y_MESSAGE" or 'Enter' to go\n" PRESS_N_MESSAGE" or any key to skip\n",
