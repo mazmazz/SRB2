@@ -649,6 +649,7 @@ static tic_t oldentertics = 0;
 static void D_SRB2LoopIter(void)
 {
 	tic_t entertic = 0, realtics = 0, rendertimeout = INFTICS;
+	static lumpnum_t gstartuplumpnum;
 
 #if defined(__EMSCRIPTEN__)
 	EM_ASM({
@@ -795,7 +796,12 @@ void D_SRB2Loop(void)
 	*/
 	/* Smells like a hack... Don't fade Sonic's ass into the title screen. */
 	if (gamestate != GS_TITLESCREEN)
-		V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(W_GetNumForName("STARTUP"), PU_PATCH));
+	{
+		gstartuplumpnum = W_CheckNumForName("STARTUP");
+		if (gstartuplumpnum == LUMPERROR)
+			gstartuplumpnum = W_GetNumForName("MISSING");
+		V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(gstartuplumpnum, PU_PATCH));
+	}
 
 #if defined(__EMSCRIPTEN__)
 	{
