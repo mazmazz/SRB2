@@ -718,11 +718,12 @@
             document.getElementById("notes").style.display = "none";
             return false;
           }
-        } else {
-          // Chrome Android: Allow PWA prompt by registering service worker
-          if ('serviceWorker' in navigator)
-            navigator.serviceWorker.register('service-worker.js');
         }
+
+        // Install PWA for offline caching
+        if ('serviceWorker' in navigator)
+          navigator.serviceWorker.register('service-worker.js');
+
         return true;
       };
 
@@ -1485,8 +1486,11 @@ ${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`);
 
         try {
           // Check server's MD5 file for the current version.
-          let remoteMd5 = await fetch(`data/${version}/${name}.md5`, NoCacheInit);
-          if (!remoteMd5.ok) {
+          // This will fall-back to service worker cache if server is unavailable
+          let remoteMd5Path = `data/${version}/${name}.md5`;
+          let remoteMd5Response = await fetch(remoteMd5Path, NoCacheInit);
+
+          if (!remoteMd5Response.ok) {
             // Server's MD5 was not found: check the "base" version for the file.
             if (base && base.length && base[0])
               return await CheckInstallProgramFile(name, base.shift(), base, fullBase, checkMd5IfFileExists);
@@ -1497,20 +1501,27 @@ ${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`);
           } else {
             // Server's MD5 was found: compare it to our local MD5 for the file.
             let idbFile = await idbKeyval.get(CompositeKey(name, version), customStore);
-            remoteMd5 = await remoteMd5.text();
+            remoteMd5Text = await remoteMd5Response.text();
 
             if (idbFile && 'md5' in idbFile
-                && remoteMd5 && remoteMd5 == idbFile['md5']) {
+                && remoteMd5Text && remoteMd5Text == idbFile['md5']) {
               // The MD5's match: we're done, don't download anything.
               // Log a reference to this version in all the parent bases
               await InstallProgramFileReferences(name, version, fullBase);
               console.log(`Retrieved ${name} (${version}) from storage.`);
               return Promise.resolve(idbFile);
             }
-            else if (remoteMd5 && remoteMd5.length == 32) { // sanity check
+            else if (remoteMd5Text && remoteMd5Text.length == 32) { // sanity check
               // The MD5's do not match: store the server's MD5, and download
               // the file for the current version.
-              return await InstallProgramFile(name, version, remoteMd5, fullBase);
+              const result = await InstallProgramFile(name, version, remoteMd5Text, fullBase);
+
+              // Cache MD5 for service worker
+              const versionCache = await caches.open(version);
+              versionCache.put(remoteMd5Path, remoteMd5Response);
+
+              // Return InstallProgramFile promise
+              return Promise.resolve(result);
             } else {
               // Edge case where remote MD5 is not valid: see if there's an older file.
               if (base && base.length && base[0])
@@ -1949,20 +1960,6 @@ ${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`);
 
       var InvalidateErrorChecks = () => {
         Module['alive'].fill(true);
-      };
-
-      var GetJs = async (version = '{{{ PACKAGE_VERSION }}}') => {
-        let customStore = new idbKeyval.Store('SRB2_DATA', 'FILES', 1);
-        let js = await idbKeyval.get(CompositeKey('srb2.js', version), customStore);
-        if (!(js instanceof Object) || !('contents' in js) || !js['contents']) {
-          let msg = 'Runtime Error: Program JS not found!\n\nIf you see this error again, try resetting your program data under Settings > Storage.';
-          console.log(msg);
-          alert(msg);
-          window.location.reload();
-        } else {
-          let string = new TextDecoder('utf-8').decode(js['contents']);
-          return `data:text/javascript;base64,${btoa(string)}`;
-        }
       };
 
       var GetWasm = async (version = '{{{ PACKAGE_VERSION }}}') => {
