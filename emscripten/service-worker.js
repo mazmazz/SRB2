@@ -27,11 +27,13 @@ const PRECACHE = `_SHELL-${SHELL_VERSION}`;
 const PRECACHE_URLS = [
   'index.html',
   './', // Alias for index.html
+  './srb2.webmanifest',
   './version-shell.txt',
   './version-package.txt',
   './assets/background.jpg',
   './assets/srb2logo.png',
   './assets/srb2.png',
+  './assets/srb2-144.png',
   './libs/jszip@3.3.0/jszip.min.js',
   './libs/Sortable@1.10.1/Sortable.min.js',
   './libs/idb-keyval@mazmazz_idb-version_c088f87/dist/idb-keyval-iife.min.js',
