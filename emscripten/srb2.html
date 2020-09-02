@@ -317,12 +317,12 @@
         </div>
         <div id="details">
           <p>
-            <button id="startbtn" onclick="StartLoad()">Play</button>
+            <button id="startbtn">Play</button>
             <span hidden class="emscripten" id="status"></span>
           </p>
           <progress value="0" max="100" id="progress" hidden=1></progress>
           <p>
-            <button id="resetbtn" class="button" onclick="javascript:window.location.reload()">Cancel</button>
+            <button id="resetbtn" class="button">Cancel</button>
           </p>
           <div id="loadingAdvice"></div>
         </div>
@@ -350,7 +350,8 @@
             <summary>Settings</summary>
             <p>
               <label for="resizeHeight">Resolution</label>
-              <input type="range" id="resizeHeight" name="resizeHeight" oninput="ShowValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
+              <input type="range" id="resizeHeight" name="resizeHeight"
+                oninput="ShowValue(this, 'p', (elem) => { return elem.value > 800; }, 'Full');"
                 min="200" max="900" value="200" step="100"/>
               <span id="resizeHeightValue"></span>
             </p>
@@ -369,7 +370,8 @@
               <p>
                 <p>
                   <label for="drawDistance">Draw Distance</label>
-                  <input type="range" id="drawDistance" name="drawDistance" oninput="ShowValueRange(this, '', DrawDistanceRange);"
+                  <input type="range" id="drawDistance" name="drawDistance"
+                    oninput="ShowValueRange(this, '', DrawDistanceRange);"
                     min="0" max="10" value="5" step="1"/>
                   <span id="drawDistanceValue"></span>
                 </p>
@@ -403,24 +405,24 @@
           </details>
           <details id="storage">
             <summary>Storage</summary>
-            <button class="redButton" onclick="if (confirm('Are you sure? All installed data will be reset!\n\nYour user data will be preserved.')) ResetProgramData(true, _=>alert('Program data reset.')); return false;">Reset Program Data</button>
-            <input type="file" id="importData" class="button blueButton" onchange="if (this.files.length) { if (this.files[0].name.endsWith('.zip')) { alert('Your data will be imported when you start the game.'); } else { alert('You must select a ZIP file.'); } }"/>
-            <button class="blueButton" onclick="document.getElementById('importData').click()">Import User Data</button>
+            <button class="redButton" id="resetProgramData">Reset Program Data</button>
+            <input type="file" id="importData" class="button blueButton"/>
+            <button class="blueButton" id="importDataButton">Import User Data</button>
             <p>To import savegames and gamedata, create a ZIP file and make a folder within named "<code>.srb2</code>". Place all files in this folder.</p>
             <p>Your stored user data will be overwritten.</p>
             <details>
               <summary>Export User Data</summary>
-              <button class="yellowButton" onclick="alert(`Exporting logs.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2/logs', 'srb2-logs'); return false;">Export Logs</button>
-              <button class="yellowButton" onclick="alert(`Exporting screenshots.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2/screenshots', 'srb2-screenshots'); return false;">Export Screenshots</button>
-              <button class="yellowButton" onclick="alert(`Exporting movies.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2/movies', 'srb2-movies'); return false;">Export Movies</button>
-              <button class="yellowButton" onclick="alert(`Exporting user data.\n\n${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); DownloadFS('/home/web_user/.srb2', 'srb2-data'); return false;">Export All User Data</button>
+              <button class="yellowButton" id="exportLogs">Export Logs</button>
+              <button class="yellowButton" id="exportScreenshots">Export Screenshots</button>
+              <button class="yellowButton" id="exportMovies">Export Movies</button>
+              <button class="yellowButton" id="exportUserData">Export All User Data</button>
             </details>
             <details>
               <summary>Delete User Data</summary>
-              <button onclick="if (confirm('Are you sure? All your logs will be deleted!')) DeleteFS('/home/web_user/.srb2/logs', true, _=>alert('Logs deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete Logs</button>
-              <button onclick="if (confirm('Are you sure? All your screenshots will be deleted!')) DeleteFS('/home/web_user/.srb2/screenshots', true, _=>alert('Screenshots deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete Screenshots</button>
-              <button onclick="if (confirm('Are you sure? All your movies will be deleted!')) DeleteFS('/home/web_user/.srb2/movies', true, _=>alert('Movies deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete Movies</button>
-              <button class="redButton" onclick="if (confirm('Are you sure? All your progress will be lost!')) DeleteFS('/home/web_user/.srb2', true, _=>alert('User data deleted.')).except(e=>alert(`Delete error: ${e}`)); return false;">Delete All User Data</button>
+              <button id="deleteLogs">Delete Logs</button>
+              <button id="deleteScreenshots">Delete Screenshots</button>
+              <button id="deleteMovies">Delete Movies</button>
+              <button class="redButton" id="deleteUserData">Delete All User Data</button>
             </details>
           </details>
         </form>
@@ -583,6 +585,10 @@
 
         // Doesn't always work, but that's okay; user can toggle in-game
         EnterFullscreen(true);
+      };
+
+      var CancelLoad = () => {
+        window.location.reload();
       };
 
       var DrawDistanceRange = ['256','512','768','1024','1536','2048','3072','4096','6144','8192','Infinite'];
@@ -753,6 +759,16 @@
           else
             document.getElementById("fullscreenNotice").innerText = "You can toggle fullscreen in-game by tapping the Fullscreen button in the pause menu, or by going to Video Options.";
         }
+
+        // Play / Cancel
+
+        document.getElementById("startbtn").addEventListener("click", _ => {
+          StartLoad();
+        }, false);
+
+        document.getElementById("resetbtn").addEventListener("click", _ => {
+          CancelLoad();
+        }, false);
       };
 
       var InitializeAddons = () => {
@@ -772,6 +788,93 @@
           InitializeAddons();
           InitializeFormFields();
         }
+      }, {once: true});
+      
+      ////////////////////////////////
+      // Storage Management
+      ////////////////////////////////
+
+      var ResetProgramData = () => {
+        if (confirm(`Are you sure? All installed data will be reset!
+
+ Your user data will be preserved.`))
+          ResetProgramData(true, _ => alert('Program data reset.'));
+      };
+
+      var ImportData = (e) => {
+        const elem = e.target;
+        if (elem.files.length) {
+          if (elem.files[0].name.endsWith('.zip'))
+            alert('Your data will be imported when you start the game.');
+          else
+            alert('You must select a ZIP file.');
+        }
+      };
+
+      var ImportDataButtonClick = () => {
+        document.getElementById('importData').click();
+      };
+
+      var ExportData = (fsPath, exportFn, friendlyName) => {
+        alert(`Exporting ${friendlyName}.
+
+${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); 
+        DownloadFS('/home/web_user/.srb2/logs', 'srb2-logs');
+      };
+
+      var DeleteData = (fsPath, friendlyName) => {
+        if (confirm(`Are you sure? All your ${friendlyName} will be deleted!`))
+          DeleteFS(fsPath, true, _ => alert(`${Capitalize(friendlyName)} deleted.`))
+          .except(e => alert(`Delete error: ${e}`));
+      };
+
+      var InitializeStorageManagement = () => {
+        // Reset program assets (srb2.pk3, etc.)
+        document.getElementById("resetProgramData").addEventListener("click", ResetProgramData, false);
+
+        // Import user data
+        document.getElementById("importData").addEventListener("change", ImportData, false);
+        document.getElementById("importDataButton").addEventListener("click", ImportDataButtonClick, false);
+
+        // Export user data
+
+        document.getElementById("exportLogs").addEventListener("click", _ => {
+          ExportData('/home/web_user/.srb2/logs', 'srb2-logs', 'logs');
+        }, false);
+
+        document.getElementById("exportScreenshots").addEventListener("click", _ => {
+          ExportData('/home/web_user/.srb2/screenshots', 'srb2-screenshots', 'screenshots');
+        }, false);
+
+        document.getElementById("exportMovies").addEventListener("click", _ => {
+          ExportData('/home/web_user/.srb2/movies', 'srb2-movies', 'movies');
+        }, false);
+
+        document.getElementById("exportUserData").addEventListener("click", _ => {
+          ExportData('/home/web_user/.srb2', 'srb2-data', 'data');
+        }, false);
+
+        // Delete user data
+
+        document.getElementById("exportLogs").addEventListener("click", _ => {
+          DeleteData('/home/web_user/.srb2/logs', 'logs');
+        }, false);
+
+        document.getElementById("exportScreenshots").addEventListener("click", _ => {
+          DeleteData('/home/web_user/.srb2/screenshots', 'screenshots');
+        }, false);
+
+        document.getElementById("exportMovies").addEventListener("click", _ => {
+          DeleteData('/home/web_user/.srb2/movies', 'movies');
+        }, false);
+
+        document.getElementById("exportUserData").addEventListener("click", _ => {
+          DeleteData('/home/web_user/.srb2', 'data');
+        }, false);
+      };
+
+      window.addEventListener('load', function() {
+        InitializeStorageManagement();
       }, {once: true});
 
       ////////////////////////////////
@@ -905,6 +1008,11 @@
       // Utilities
       ////////////////////////////////
       
+      var Capitalize = (s) => {
+        if (typeof s !== 'string') return '';
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      };
+
       var UserAgentIsiPad = () => ((!!window.navigator.userAgent.match(/iPad/i) || /iPad/.test(navigator.platform) ||
           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
           !window.MSStream);
