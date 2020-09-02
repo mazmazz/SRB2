@@ -820,7 +820,7 @@
         alert(`Exporting ${friendlyName}.
 
 ${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`); 
-        DownloadFS('/home/web_user/.srb2/logs', 'srb2-logs');
+        DownloadFS(fsPath, exportFn);
       };
 
       var DeleteData = (fsPath, friendlyName) => {
