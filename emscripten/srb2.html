@@ -857,19 +857,19 @@ ${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`);
 
         // Delete user data
 
-        document.getElementById("exportLogs").addEventListener("click", _ => {
+        document.getElementById("deleteLogs").addEventListener("click", _ => {
           DeleteData('/home/web_user/.srb2/logs', 'logs');
         }, false);
 
-        document.getElementById("exportScreenshots").addEventListener("click", _ => {
+        document.getElementById("deleteScreenshots").addEventListener("click", _ => {
           DeleteData('/home/web_user/.srb2/screenshots', 'screenshots');
         }, false);
 
-        document.getElementById("exportMovies").addEventListener("click", _ => {
+        document.getElementById("deleteMovies").addEventListener("click", _ => {
           DeleteData('/home/web_user/.srb2/movies', 'movies');
         }, false);
 
-        document.getElementById("exportUserData").addEventListener("click", _ => {
+        document.getElementById("deleteUserData").addEventListener("click", _ => {
           DeleteData('/home/web_user/.srb2', 'data');
         }, false);
       };
