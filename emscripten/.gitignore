@@ -16,5 +16,6 @@ landing/*
 !landing/assets
 !landing/srb2.webmanifest
 !landing/service-worker.js
+!landing/libs
 *.zip
 __pycache__
