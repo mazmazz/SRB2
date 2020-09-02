@@ -27,6 +27,8 @@ const PRECACHE = `_SHELL-${SHELL_VERSION}`;
 const PRECACHE_URLS = [
   'index.html',
   './', // Alias for index.html
+  './version-shell.txt',
+  './version-package.txt',
   './assets/background.jpg',
   './assets/srb2logo.png',
   './assets/srb2.png',
@@ -75,10 +77,16 @@ self.addEventListener('fetch', async (event) => {
 function networkOrCache(request) {
   return fetch(request).then(function (response) {
     if (response.ok) {
-      //* SPECIAL CASE: If retrieving program JS, store in version cache.
-      //* We do this here because program JS is retrieved from a script tag href, not from code.
-      if (request.url.includes('data/') && request.url.includes('srb2.js'))
-        storeVersionCache(request, response);
+      if (request.url.includes('data/')) {
+        //* If retrieving program JS, store in version cache.
+        //* We do this here because program JS is retrieved from a script tag href, not from code.
+        if(request.url.includes('srb2.js'))
+          storeVersionCache(request, response.clone());
+
+        //* If retrieving MD5, store in version cache.
+        if (request.url.includes('.md5'))
+          storeVersionCache(request, response.clone());
+      }
 
       // Server-first response
       return response;
@@ -115,7 +123,7 @@ function useFallback() {
 
 function storeVersionCache(request, response) {
   // Get version string from URL ("landing/data/{VERSION}/srb2.js")
-  var loc = request.url.pathname;
+  var loc = request.url;
   var path = loc.substring(0, loc.lastIndexOf("/"));
   var cacheName = path.substring(path.lastIndexOf("/")+1);
 

@@ -60,8 +60,8 @@
     <link rel="apple-touch-startup-image" href="assets/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <script src="libs/jszip@3.3.0/jszip.min.js"></script>
     <script src="libs/Sortable@1.10.1/Sortable.min.js"></script>
-    <script src="libs/idb-keyval-iife@mazmazz_idb-version_c088f87/dist/idb-keyval-iife.min.js"></script>
-    <script src="libs/FileSaver@2.0.2/distFileSaver.min.js"></script>
+    <script src="libs/idb-keyval@mazmazz_idb-version_c088f87/dist/idb-keyval-iife.min.js"></script>
+    <script src="libs/FileSaver@2.0.2/dist/FileSaver.min.js"></script>
     <script src="libs/es6-promise-pool@2.5.0/es6-promise-pool.min.js"></script>
     <!-- {{{ GTAG }}} -->
 
@@ -1514,14 +1514,7 @@ ${UserAgentIsMobile() ? 'Tap' : 'Click'} to continue.`);
             else if (remoteMd5Text && remoteMd5Text.length == 32) { // sanity check
               // The MD5's do not match: store the server's MD5, and download
               // the file for the current version.
-              const result = await InstallProgramFile(name, version, remoteMd5Text, fullBase);
-
-              // Cache MD5 for service worker
-              const versionCache = await caches.open(version);
-              versionCache.put(remoteMd5Path, remoteMd5Response);
-
-              // Return InstallProgramFile promise
-              return Promise.resolve(result);
+              return await InstallProgramFile(name, version, remoteMd5Text, fullBase);
             } else {
               // Edge case where remote MD5 is not valid: see if there's an older file.
               if (base && base.length && base[0])
