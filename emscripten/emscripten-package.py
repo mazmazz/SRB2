@@ -63,6 +63,24 @@ def populate_shell_template(shell_version, gtag, package_versions, default_packa
     with open(landing_fn, 'w') as f:
         f.write(shell_data)
 
+def populate_service_worker_template(shell_version, package_versions, landing_dir=defaults['landing_dir']):
+    service_worker_data = ''
+    landing_fn = os.path.join(landing_dir, 'service-worker.js')
+    copy(os.path.join(script_dir, 'service-worker.js'), landing_fn)
+
+    package_versions_string = ''
+    for version in package_versions:
+        package_versions_string += f"'{version}',"
+
+    with open(landing_fn, 'r') as f:
+        service_worker_data = f.read()
+
+    service_worker_data = service_worker_data.replace('{{{ SHELL_VERSION }}}', shell_version)
+    service_worker_data = service_worker_data.replace('{{{ PACKAGE_VERSIONS }}}', package_versions_string)
+
+    with open(landing_fn, 'w') as f:
+        f.write(service_worker_data)
+
 def generate_splash_images(splash_image, npm_install=None, landing_dir=defaults['landing_dir']):
     # Generate splash image
     try:
@@ -146,6 +164,10 @@ def main(version, skip_landing=False, package_versions=[], default_package_versi
         populate_shell_template(shell_version, gtag, package_versions=package_versions, default_package_version=default_package_version, landing_dir=landing_dir,
                                 url=url, maintainer=maintainer, maintainer_url=maintainer_url)
     generate_splash_images(splash_image, npm_install=npm_install, landing_dir=landing_dir)
+
+    # Generate service worker
+    if not skip_landing:
+        populate_service_worker_template(shell_version, package_versions, landing_dir=landing_dir)
 
     # Generate MD5
     if os.path.isdir(version_dir):
