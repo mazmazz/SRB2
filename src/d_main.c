@@ -649,7 +649,6 @@ static tic_t oldentertics = 0;
 static void D_SRB2LoopIter(void)
 {
 	tic_t entertic = 0, realtics = 0, rendertimeout = INFTICS;
-	static lumpnum_t gstartuplumpnum;
 
 #if defined(__EMSCRIPTEN__)
 	EM_ASM({
@@ -747,6 +746,8 @@ static void D_SRB2LoopIter(void)
 
 void D_SRB2Loop(void)
 {
+	static lumpnum_t gstartuplumpnum;
+
 	if (dedicated)
 		server = true;
 
