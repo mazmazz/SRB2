@@ -54,6 +54,7 @@ extern consvar_t cv_chatwidth, cv_chatnotifications, cv_chatheight, cv_chattime,
 extern consvar_t cv_crosshair, cv_crosshair2;
 extern consvar_t cv_invertmouse, cv_alwaysfreelook, cv_chasefreelook, cv_mousemove;
 extern consvar_t cv_invertmouse2, cv_alwaysfreelook2, cv_chasefreelook2, cv_mousemove2;
+extern consvar_t cv_allowautoaim;
 
 extern consvar_t cv_useranalog[2], cv_analog[2];
 extern consvar_t cv_directionchar[2];

@@ -4026,6 +4026,255 @@ bounceback:
 		goto retry;
 }
 
+
+//
+// AUTOAIM
+//
+
+mobj_t *linetarget; // who got hit (or NULL)
+static mobj_t *shootthing;
+
+// Height if not aiming up or down
+// ???: use slope for monsters?
+static fixed_t shootz;
+static fixed_t lastz; // The last z height of the bullet when it crossed a line
+
+// More intelligent autoaiming
+static INT32 aim_nofriends; // stores (CTF team #) or (skincolor #+1) or (skinnum #+1)
+
+fixed_t attackrange;
+static fixed_t aimslope;
+
+// slopes to top and bottom of target
+// killough 4/20/98: make static instead of using ones in p_sight.c
+
+fixed_t topslope;
+fixed_t bottomslope;
+
+//
+// PTR_AimTraverse
+// Sets linetarget and aimslope when a target is aimed at.
+//
+//added : 15-02-98: comment
+// Returns true if the thing is not shootable, else continue through..
+//
+static boolean PTR_AimTraverse(intercept_t *in)
+{
+	line_t *li;
+	mobj_t *th;
+	fixed_t slope, thingtopslope, thingbottomslope, dist;
+	INT32 dir;
+
+	if (in->isaline)
+	{
+		li = in->d.line;
+
+		if (!(li->flags & ML_TWOSIDED))
+			return false; // stop
+
+		// Crosses a two sided line.
+		// A two sided line will restrict
+		// the possible target ranges.
+		// tmthing = NULL; // 2.0.7 leftover when P_LineOpening relied on tmthing
+		P_LineOpening(li, NULL);
+
+		if (openbottom >= opentop)
+			return false; // stop
+
+		dist = FixedMul(attackrange, in->frac);
+
+		if (li->frontsector->floorheight != li->backsector->floorheight)
+		{
+			slope = FixedDiv(openbottom - shootz, dist);
+			if (slope > bottomslope)
+				bottomslope = slope;
+		}
+
+		if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
+		{
+			slope = FixedDiv(opentop - shootz, dist);
+			if (slope < topslope)
+				topslope = slope;
+		}
+
+		if (topslope <= bottomslope)
+			return false; // stop
+
+		if (li->frontsector->ffloors || li->backsector->ffloors)
+		{
+			INT32 frontflag = P_PointOnLineSide(shootthing->x, shootthing->y, li);
+
+			dir = aimslope > 0 ? 1 : aimslope < 0 ? -1 : 0;
+
+			//SoM: Check 3D FLOORS!
+			if (li->frontsector->ffloors)
+			{
+				ffloor_t *rover = li->frontsector->ffloors;
+				fixed_t highslope, lowslope;
+
+				for (; rover; rover = rover->next)
+				{
+					if (!(rover->flags & FF_SOLID) || !(rover->flags & FF_EXISTS))
+						continue;
+
+					highslope = FixedDiv(*rover->topheight - shootz, dist);
+					lowslope = FixedDiv(*rover->bottomheight - shootz, dist);
+					if ((aimslope >= lowslope && aimslope <= highslope))
+						return false;
+
+					if (lastz > *rover->topheight && dir == -1 && aimslope < highslope)
+						frontflag |= 0x2;
+
+					if (lastz < *rover->bottomheight && dir == 1 && aimslope > lowslope)
+						frontflag |= 0x2;
+				}
+			}
+
+			if (li->backsector->ffloors)
+			{
+				ffloor_t *rover = li->backsector->ffloors;
+				fixed_t highslope, lowslope;
+
+				for (; rover; rover = rover->next)
+				{
+					if (!(rover->flags & FF_SOLID) || !(rover->flags & FF_EXISTS))
+						continue;
+
+					highslope = FixedDiv(*rover->topheight - shootz, dist);
+					lowslope = FixedDiv(*rover->bottomheight - shootz, dist);
+					if ((aimslope >= lowslope && aimslope <= highslope))
+						return false;
+
+					if (lastz > *rover->topheight && dir == -1 && aimslope < highslope)
+						frontflag |= 0x4;
+
+					if (lastz < *rover->bottomheight && dir == 1 && aimslope > lowslope)
+						frontflag |= 0x4;
+				}
+			}
+			if ((!(frontflag & 0x1) && frontflag & 0x2) || (frontflag & 0x1 && frontflag & 0x4))
+				return false;
+		}
+
+		lastz = FixedMul(aimslope, dist) + shootz;
+
+		return true; // shot continues
+	}
+
+	// shoot a thing
+	th = in->d.thing;
+	if (th == shootthing)
+		return true; // can't shoot self
+
+	if (!(th->flags & MF_SHOOTABLE))
+		return true; // corpse or something
+
+	// friends don't autoaim at friends
+	if (aim_nofriends
+		&& th->player
+		&& (((gametype == GT_CTF || (gametype == GT_TEAMMATCH)) && th->player->ctfteam == aim_nofriends)
+		|| aim_nofriends == -1))
+		return true;
+
+	if (th->flags & MF_MONITOR)
+		return true; // don't autoaim at monitors
+
+	if (th->type == MT_THROWNGRENADE)
+		return true; // don't autoaim at grenades
+
+	if (netgame && th->player && th->player->spectator)
+		return true; // don't autoaim at spectators
+
+	// check angles to see if the thing can be aimed at
+	dist = FixedMul(attackrange, in->frac);
+	thingtopslope = FixedDiv(th->z+th->height - shootz, dist);
+
+	//added : 15-02-98: bottomslope is negative!
+	if (thingtopslope < bottomslope)
+		return true; // shot over the thing
+
+	thingbottomslope = FixedDiv(th->z - shootz, dist);
+
+	if (thingbottomslope > topslope)
+		return true; // shot under the thing
+
+	// this thing can be hit!
+	if (thingtopslope > topslope)
+		thingtopslope = topslope;
+
+	if (thingbottomslope < bottomslope)
+		thingbottomslope = bottomslope;
+
+	//added : 15-02-98: find the slope just in the middle(y) of the thing!
+	aimslope = (thingtopslope + thingbottomslope)/2;
+	linetarget = th;
+
+	return false; // don't go any farther
+}
+
+//
+// P_AimLineAttack
+//
+fixed_t P_AimLineAttack(mobj_t *t1, angle_t angle, fixed_t distance)
+{
+	fixed_t x2, y2;
+	const fixed_t baseaiming = 10*FRACUNIT/16;
+
+	I_Assert(t1 != NULL);
+
+	angle >>= ANGLETOFINESHIFT;
+	shootthing = t1;
+
+	topslope = baseaiming;
+	bottomslope = -baseaiming;
+
+	if (t1->player)
+	{
+		const angle_t aiming = t1->player->aiming>>ANGLETOFINESHIFT;
+		const fixed_t cosineaiming = FINECOSINE(aiming);
+		const fixed_t slopeaiming = FINETANGENT((FINEANGLES/4+aiming) & FINEMASK);
+		x2 = t1->x + FixedMul(FixedMul(distance, FINECOSINE(angle)), cosineaiming);
+		y2 = t1->y + FixedMul(FixedMul(distance, FINESINE(angle)), cosineaiming);
+
+		topslope += slopeaiming;
+		bottomslope += slopeaiming;
+
+		if (gametype == GT_CTF || (gametype == GT_TEAMMATCH)) // Team
+			aim_nofriends = t1->player->ctfteam;
+		else if (gametype == GT_COOP)
+			aim_nofriends = -1; // Don't shoot any players
+	}
+	else
+	{
+		x2 = t1->x + (distance>>FRACBITS)*FINECOSINE(angle);
+		y2 = t1->y + (distance>>FRACBITS)*FINESINE(angle);
+
+		//added : 15-02-98: Fab comments...
+		// Doom's base engine says that at a distance of 160,
+		// the 2d graphics on the plane x, y correspond 1/1 with plane units
+		aim_nofriends = 0;
+	}
+
+	shootz = lastz = t1->z + (t1->height>>1) + 8*FRACUNIT;
+
+	// can't shoot outside view angles
+	attackrange = distance;
+	linetarget = NULL;
+
+	//added : 15-02-98: comments
+	// traverse all linedefs and mobjs from the blockmap containing t1,
+	// to the blockmap containing the dest. point.
+	// Call the function for each mobj/line on the way,
+	// starting with the mobj/linedef at the shortest distance...
+	P_PathTraverse(t1->x, t1->y, x2, y2, PT_ADDLINES|PT_ADDTHINGS, PTR_AimTraverse);
+
+	//added : 15-02-98: linetarget is only for mobjs, not for linedefs
+	if (linetarget)
+		return aimslope;
+
+	return 0;
+}
+
 //
 // RADIUS ATTACK
 //

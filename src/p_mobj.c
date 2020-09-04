@@ -13770,7 +13770,7 @@ void P_ColorTeamMissile(mobj_t *missile, player_t *source)
 // P_SPMAngle
 // Fires missile at angle from what is presumably a player
 //
-mobj_t *P_SPMAngle(mobj_t *source, mobjtype_t type, angle_t angle, UINT8 allowaim, UINT32 flags2)
+mobj_t *P_SPMAngleEx(mobj_t *source, mobjtype_t type, angle_t angle, UINT8 allowaim, boolean allowautoaim, UINT32 flags2)
 {
 	mobj_t *th;
 	angle_t an;
@@ -13780,7 +13780,43 @@ mobj_t *P_SPMAngle(mobj_t *source, mobjtype_t type, angle_t angle, UINT8 allowai
 	an = angle;
 
 	if (allowaim) // aiming allowed?
-		slope = AIMINGTOSLOPE(source->player->aiming);
+	{
+		if (allowautoaim)
+		{
+			if ((source->player->pflags & PF_AUTOAIM) && cv_allowautoaim.value
+				&& !source->player->powers[pw_railring])
+			{
+				// see which target is to be aimed at
+				slope = P_AimLineAttack(source, an, 16*64*FRACUNIT);
+
+				if (!linetarget)
+				{
+					an += 1<<26;
+					slope = P_AimLineAttack(source, an, 16*64*FRACUNIT);
+
+					if (!linetarget)
+					{
+						an -= 2<<26;
+						slope = P_AimLineAttack(source, an, 16*64*FRACUNIT);
+					}
+					if (!linetarget)
+					{
+						an = angle;
+						slope = 0;
+					}
+				}
+			}
+		}
+		else
+			slope = AIMINGTOSLOPE(source->player->aiming);
+
+		// if not autoaim, or if the autoaim didn't aim something, use the mouseaiming
+		if ((!((source->player->pflags & PF_AUTOAIM) && cv_allowautoaim.value)
+			|| (!linetarget)) || (flags2 & MF2_RAILRING))
+		{
+			slope = AIMINGTOSLOPE(source->player->aiming);
+		}
+	}
 
 	x = source->x;
 	y = source->y;

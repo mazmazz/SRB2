@@ -569,6 +569,7 @@ void D_RegisterServerCommands(void)
 	RegisterNetXCmd(XD_RANDOMSEED, Got_RandomSeed);
 
 	CV_RegisterVar(&cv_allowexitlevel);
+	CV_RegisterVar(&cv_allowautoaim);
 	CV_RegisterVar(&cv_restrictskinchange);
 	CV_RegisterVar(&cv_allowteamchange);
 	CV_RegisterVar(&cv_respawntime);
@@ -1562,7 +1563,7 @@ static void Got_WeaponPref(UINT8 **cp,INT32 playernum)
 {
 	UINT8 prefs = READUINT8(*cp);
 
-	players[playernum].pflags &= ~(PF_FLIPCAM|PF_ANALOGMODE|PF_DIRECTIONCHAR|PF_AUTOBRAKE);
+	players[playernum].pflags &= ~(PF_FLIPCAM|PF_ANALOGMODE|PF_DIRECTIONCHAR|PF_AUTOBRAKE|PF_AUTOAIM);
 	if (prefs & 1)
 		players[playernum].pflags |= PF_FLIPCAM;
 	if (prefs & 2)
@@ -1571,6 +1572,8 @@ static void Got_WeaponPref(UINT8 **cp,INT32 playernum)
 		players[playernum].pflags |= PF_DIRECTIONCHAR;
 	if (prefs & 8)
 		players[playernum].pflags |= PF_AUTOBRAKE;
+	if (prefs & (1<<31))
+		players[playernum].pflags |= PF_AUTOAIM;
 }
 
 void D_SendPlayerConfig(void)

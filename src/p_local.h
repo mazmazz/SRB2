@@ -320,8 +320,9 @@ mobj_t *P_SpawnMissile(mobj_t *source, mobj_t *dest, mobjtype_t type);
 mobj_t *P_SpawnXYZMissile(mobj_t *source, mobj_t *dest, mobjtype_t type, fixed_t x, fixed_t y, fixed_t z);
 mobj_t *P_SpawnPointMissile(mobj_t *source, fixed_t xa, fixed_t ya, fixed_t za, mobjtype_t type, fixed_t x, fixed_t y, fixed_t z);
 mobj_t *P_SpawnAlteredDirectionMissile(mobj_t *source, mobjtype_t type, fixed_t x, fixed_t y, fixed_t z, INT32 shiftingAngle);
-mobj_t *P_SPMAngle(mobj_t *source, mobjtype_t type, angle_t angle, UINT8 aimtype, UINT32 flags2);
-#define P_SpawnPlayerMissile(s,t,f) P_SPMAngle(s,t,s->angle,true,f)
+mobj_t *P_SPMAngleEx(mobj_t *source, mobjtype_t type, angle_t angle, UINT8 aimtype, boolean allowautoaim, UINT32 flags2);
+#define P_SPMAngle(s,t,a,aT,f) P_SPMAngleEx(s,t,a,aT,false,f)
+#define P_SpawnPlayerMissile(s,t,f) P_SPMAngleEx(s,t,s->angle,true,true,f)
 #ifdef SEENAMES
 #define P_SpawnNameFinder(s,t) P_SPMAngle(s,t,s->angle,true,0)
 #endif
@@ -421,6 +422,10 @@ void P_DelPrecipSeclist(mprecipsecnode_t *node);
 void P_CreateSecNodeList(mobj_t *thing, fixed_t x, fixed_t y);
 void P_Initsecnode(void);
 
+extern mobj_t *linetarget; // who got hit (or NULL)
+extern fixed_t attackrange;
+
+fixed_t P_AimLineAttack(mobj_t *t1, angle_t angle, fixed_t distance);
 void P_RadiusAttack(mobj_t *spot, mobj_t *source, fixed_t damagedist, UINT8 damagetype, boolean sightcheck);
 
 fixed_t P_FloorzAtPos(fixed_t x, fixed_t y, fixed_t z, fixed_t height);

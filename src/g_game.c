@@ -2443,7 +2443,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	quittime = players[player].quittime;
 	spectator = players[player].spectator;
 	outofcoop = players[player].outofcoop;
-	pflags = (players[player].pflags & (PF_FLIPCAM|PF_ANALOGMODE|PF_DIRECTIONCHAR|PF_AUTOBRAKE|PF_TAGIT|PF_GAMETYPEOVER));
+	pflags = (players[player].pflags & (PF_FLIPCAM|PF_ANALOGMODE|PF_DIRECTIONCHAR|PF_AUTOBRAKE|PF_TAGIT|PF_GAMETYPEOVER|PF_AUTOAIM));
 	playerangleturn = players[player].angleturn;
 	oldrelangleturn = players[player].oldrelangleturn;
 
