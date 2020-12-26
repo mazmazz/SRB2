@@ -93,6 +93,7 @@ ALL_SYSTEMS=\
 	SOLARIS\
 	FREEBSD\
 	MACOSX\
+	EMSCRIPTEN\
 	SDL\
 
 # check for user specified system
@@ -634,10 +635,13 @@ endif
 endif
 
 # mac os x lsdlsrb2 does not like objcopy
+# this also does not apply to emscripten
 ifndef MACOSX
+ifndef EMSCRIPTEN
 	$(OBJCOPY) $(BIN)/$(EXENAME) $(BIN)/$(DBGNAME)
 	$(OBJCOPY) --strip-debug $(BIN)/$(EXENAME)
 	-$(OBJCOPY) --add-gnu-debuglink=$(BIN)/$(DBGNAME) $(BIN)/$(EXENAME)
+endif
 endif
 ifndef NOUPX
 	-$(UPX) $(UPX_OPTS) $(BIN)/$(EXENAME)
