@@ -3155,6 +3155,7 @@ static void Got_KickCmd(UINT8 **p, INT32 playernum)
 		CL_RemovePlayer(pnum, kickreason);
 }
 
+#ifndef NONET
 static void Command_ResendGamestate(void)
 {
 	SINT8 playernum;
@@ -3182,6 +3183,7 @@ static void Command_ResendGamestate(void)
 		return;
 	}
 }
+#endif
 
 static CV_PossibleValue_t netticbuffer_cons_t[] = {{0, "MIN"}, {3, "MAX"}, {0, NULL}};
 consvar_t cv_netticbuffer = CVAR_INIT ("netticbuffer", "1", CV_SAVE, netticbuffer_cons_t, NULL);
@@ -3859,7 +3861,6 @@ static void HandleServerInfo(SINT8 node)
 
 	SL_InsertServer(&netbuffer->u.serverinfo, node);
 }
-#endif
 
 static void PT_WillResendGamestate(void)
 {
@@ -3897,6 +3898,7 @@ static void PT_CanReceiveGamestate(SINT8 node)
 	SV_SendSaveGame(node, true); // Resend a complete game state
 	resendingsavegame[node] = true;
 }
+#endif
 
 /** Handles a packet received from a node that isn't in game
   *
@@ -4183,7 +4185,10 @@ static void HandlePacketFromPlayer(SINT8 node)
 			if (realstart <= gametic && realstart + BACKUPTICS - 1 > gametic && gamestate == GS_LEVEL
 				&& consistancy[realstart%BACKUPTICS] != SHORT(netbuffer->u.clientpak.consistancy)
 				&& !resendingsavegame[node] && savegameresendcooldown[node] <= I_GetTime()
-				&& !SV_ResendingSavegameToAnyone())
+#ifndef NONET
+				&& !SV_ResendingSavegameToAnyone()
+#endif
+			)
 			{
 				if (cv_resynchattempts.value)
 				{
@@ -4337,9 +4342,11 @@ static void HandlePacketFromPlayer(SINT8 node)
 			Net_CloseConnection(node);
 			nodeingame[node] = false;
 			break;
+#ifndef NONET
 		case PT_CANRECEIVEGAMESTATE:
 			PT_CanReceiveGamestate(node);
 			break;
+#endif
 		case PT_ASKLUAFILE:
 			if (server && luafiletransfers && luafiletransfers->nodestatus[node] == LFTNS_ASKED)
 				AddLuaFileToSendQueue(node, luafiletransfers->realfilename);
@@ -4458,9 +4465,11 @@ static void HandlePacketFromPlayer(SINT8 node)
 			if (server)
 				PT_FileReceived();
 			break;
+#ifndef NONET
 		case PT_WILLRESENDGAMESTATE:
 			PT_WillResendGamestate();
 			break;
+#endif
 		case PT_SENDINGLUAFILE:
 			if (client)
 				CL_PrepareDownloadLuaFile();
@@ -5089,9 +5098,11 @@ void NetUpdate(void)
 
 	if (client)
 	{
+#ifndef NONET
 		// If the client just finished redownloading the game state, load it
 		if (cl_redownloadinggamestate && fileneeded[0].status == FS_FOUND)
 			CL_ReloadReceivedSavegame();
+#endif
 
 		CL_SendClientCmd(); // Send tic cmd
 		hu_redownloadinggamestate = cl_redownloadinggamestate;
