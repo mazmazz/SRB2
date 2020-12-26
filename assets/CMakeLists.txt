@@ -56,7 +56,9 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 		DESTINATION .
 		OPTIONAL
 	)
-else()
+elseif(NOT ${CMAKE_SYSTEM} MATCHES Emscripten)
+	# Emscripten packages pre-loaded assets by itself. All other assets are
+	# the user's responsibility to package.
 	if(${SRB2_ASSET_INSTALL})
 		install(DIRECTORY "${SRB2_ASSET_DIRECTORY}/"
 			DESTINATION .

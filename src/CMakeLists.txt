@@ -45,6 +45,9 @@ set(SRB2_CORE_SOURCES
 	st_stuff.c
 	#string.c
 	tables.c
+	ts_main.c
+	ts_draw.c
+	ts_custom.c
 	v_video.c
 	w_wad.c
 	y_inter.c
@@ -112,6 +115,9 @@ set(SRB2_CORE_HEADERS
 	sounds.h
 	st_stuff.h
 	tables.h
+	ts_main.h
+	ts_draw.h
+	ts_custom.h
 	v_video.h
 	w_wad.h
 	y_inter.h
@@ -235,28 +241,30 @@ set(SRB2_CONFIG_HAVE_PNG ON CACHE BOOL
 	"Enable PNG support. Depends on zlib, so will be disabled if you don't enable that too.")
 set(SRB2_CONFIG_HAVE_ZLIB ON CACHE BOOL
 	"Enable zlib support.")
-set(SRB2_CONFIG_HAVE_GME ON CACHE BOOL
-	"Enable GME support.")
-set(SRB2_CONFIG_HAVE_OPENMPT ON CACHE BOOL
-	"Enable OpenMPT support.")
-set(SRB2_CONFIG_HAVE_CURL ON CACHE BOOL
-	"Enable curl support.")
-set(SRB2_CONFIG_HAVE_THREADS ON CACHE BOOL
-	"Enable multithreading support.")
-if(${CMAKE_SYSTEM} MATCHES Windows)
-	set(SRB2_CONFIG_HAVE_MIXERX ON CACHE BOOL
-		"Enable SDL Mixer X support.")
-else()
-	set(SRB2_CONFIG_HAVE_MIXERX OFF)
+if(NOT ${CMAKE_SYSTEM} MATCHES Emscripten)
+	set(SRB2_CONFIG_HAVE_GME ON CACHE BOOL
+		"Enable GME support.")
+	set(SRB2_CONFIG_HAVE_OPENMPT ON CACHE BOOL
+		"Enable OpenMPT support.")
+	set(SRB2_CONFIG_HAVE_CURL ON CACHE BOOL
+		"Enable curl support.")
+	set(SRB2_CONFIG_HAVE_THREADS ON CACHE BOOL
+		"Enable multithreading support.")
+	if(${CMAKE_SYSTEM} MATCHES Windows)
+		set(SRB2_CONFIG_HAVE_MIXERX ON CACHE BOOL
+			"Enable SDL Mixer X support.")
+	else()
+		set(SRB2_CONFIG_HAVE_MIXERX OFF)
+	endif()
+	set(SRB2_CONFIG_HWRENDER ON CACHE BOOL
+		"Enable hardware rendering through OpenGL.")
+	set(SRB2_CONFIG_USEASM OFF CACHE BOOL
+		"Enable NASM tmap implementation for software mode speedup.")
+	set(SRB2_CONFIG_YASM OFF CACHE BOOL
+		"Use YASM in place of NASM.")
+	set(SRB2_CONFIG_STATIC_OPENGL OFF CACHE BOOL
+		"Use statically linked OpenGL. NOT RECOMMENDED.")
 endif()
-set(SRB2_CONFIG_HWRENDER ON CACHE BOOL
-	"Enable hardware rendering through OpenGL.")
-set(SRB2_CONFIG_USEASM OFF CACHE BOOL
-	"Enable NASM tmap implementation for software mode speedup.")
-set(SRB2_CONFIG_YASM OFF CACHE BOOL
-	"Use YASM in place of NASM.")
-set(SRB2_CONFIG_STATIC_OPENGL OFF CACHE BOOL
-	"Use statically linked OpenGL. NOT RECOMMENDED.")
 
 ### use internal libraries?
 if(${CMAKE_SYSTEM} MATCHES "Windows") ###set on Windows only
@@ -423,6 +431,9 @@ if(${SRB2_CONFIG_HAVE_ZLIB})
 		else() # 32-bit
 			set(ZLIB_LIBRARIES "-L${CMAKE_SOURCE_DIR}/libs/zlib/win32 -lz32")
 		endif()
+	elseif(${CMAKE_SYSTEM} MATCHES Emscripten)
+		# \todo handle Emscripten library switches here, not in emscripten/CMakeLists.txt
+		set(ZLIB_FOUND ON)
 	else()
 		find_package(ZLIB)
 	endif()
@@ -444,6 +455,9 @@ if(${SRB2_CONFIG_HAVE_PNG} AND ${SRB2_CONFIG_HAVE_ZLIB})
 			else() # 32-bit
 				set(PNG_LIBRARIES "-L${CMAKE_SOURCE_DIR}/libs/libpng-src/projects -lpng32")
 			endif()
+		elseif(${CMAKE_SYSTEM} MATCHES Emscripten)
+			# \todo handle Emscripten library switches here, not in emscripten/CMakeLists.txt
+			set(PNG_FOUND ON)
 		else()
 			find_package(PNG)
 		endif()

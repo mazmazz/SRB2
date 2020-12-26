@@ -71,6 +71,9 @@ if(${SRB2_CONFIG_USE_INTERNAL_LIBRARIES})
 		set(SDL2_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/libs/SDL2/i686-w64-mingw32/include/SDL2)
 		set(SDL2_LIBRARIES "-L${CMAKE_SOURCE_DIR}/libs/SDL2/i686-w64-mingw32/lib -lSDL2")
 	endif()
+elseif(${CMAKE_SYSTEM} MATCHES Emscripten)
+	# Handled by Emscripten compiler
+	set(SDL2_FOUND ON)
 else()
 	find_package(SDL2)
 endif()
@@ -155,6 +158,10 @@ if(${SDL2_FOUND})
 		set_target_properties(SRB2SDL2 PROPERTIES OUTPUT_NAME lsdlsrb2)
 	else()
 		set_target_properties(SRB2SDL2 PROPERTIES OUTPUT_NAME srb2)
+	endif()
+
+	if(${CMAKE_SYSTEM} MATCHES Emscripten)
+		add_subdirectory(emscripten)
 	endif()
 
 	if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -277,7 +284,7 @@ if(${SDL2_FOUND})
 
 	## strip debug symbols into separate file when using gcc.
 	## to be consistent with Makefile, don't generate for OS X.
-	if((CMAKE_COMPILER_IS_GNUCC) AND NOT (${CMAKE_SYSTEM} MATCHES Darwin))
+	if((CMAKE_COMPILER_IS_GNUCC) AND NOT (${CMAKE_SYSTEM} MATCHES Darwin) AND NOT (${CMAKE_SYSTEM} MATCHES Emscripten))
 		if((${CMAKE_BUILD_TYPE} MATCHES Debug) OR (${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo))
 			if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 				set(OBJCOPY_ONLY_KEEP_DEBUG "--only-keep-debug")
@@ -296,7 +303,8 @@ if(${SDL2_FOUND})
 		install(TARGETS SRB2SDL2
 			BUNDLE DESTINATION .
 		)
-	else()
+	elseif(NOT ${CMAKE_SYSTEM} MATCHES Emscripten)
+		# Handled in emscripten/CMakeLists.txt
 		install(TARGETS SRB2SDL2 SRB2SDL2
 			RUNTIME DESTINATION .
 		)

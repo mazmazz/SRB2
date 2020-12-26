@@ -110,6 +110,10 @@ if(${CMAKE_SYSTEM} MATCHES "Darwin")
 	add_definitions(-DMACOSX)
 endif()
 
+if(${CMAKE_SYSTEM} MATCHES "Emscripten")
+	add_definitions(-DEMSCRIPTEN)
+endif()
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
@@ -136,7 +140,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${CMAKE_CURRENT_BINAR
 set(SRB2_CPACK_GENERATOR "" CACHE STRING "Generator to use for making a package. E.g., ZIP, TGZ, DragNDrop (OSX only). Leave blank for default generator.")
 
 if("${SRB2_CPACK_GENERATOR}" STREQUAL "")
-	if(${CMAKE_SYSTEM} MATCHES "Windows")
+	if((${CMAKE_SYSTEM} MATCHES "Windows") OR (${CMAKE_SYSTEM} MATCHES "Emscripten"))
 		set(SRB2_CPACK_GENERATOR "ZIP")
 	elseif(${CMAKE_SYSTEM} MATCHES "Linux")
 		set(SRB2_CPACK_GENERATOR "TGZ")
