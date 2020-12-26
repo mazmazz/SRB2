@@ -136,7 +136,7 @@ char *strcasestr(const char *in, const char *what);
 	#endif
 #endif //macintosh
 
-#if defined (PC_DOS) || defined (_WIN32) || defined (__HAIKU__)
+#if defined (PC_DOS) || defined (_WIN32) || defined (__HAIKU__) || defined(__EMSCRIPTEN__)
 #define HAVE_DOSSTR_FUNCS
 #endif
 

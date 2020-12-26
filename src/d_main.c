@@ -87,6 +87,10 @@
 #include "win32/win_main.h" // I_DoStartupMouse
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include "sdl/emscripten/i_emscripten.h"
+#endif
+
 #ifdef HW3SOUND
 #include "hardware/hw3sound.h"
 #endif
@@ -653,7 +657,9 @@ tic_t rendergametic;
 
 void D_SRB2Loop(void)
 {
+#ifndef MAINLOOPBYFUNCTION
 	tic_t oldentertics = 0, entertic = 0, realtics = 0, rendertimeout = INFTICS;
+#endif
 	static lumpnum_t gstartuplumpnum;
 
 	if (dedicated)
@@ -713,7 +719,17 @@ void D_SRB2Loop(void)
 		V_DrawScaledPatch(0, 0, 0, W_CachePatchNum(gstartuplumpnum, PU_PATCH));
 	}
 
+#ifdef MAINLOOPBYFUNCTION
+	I_SetupMainLoop();
+}
+
+void D_SRB2LoopIter(void)
+{
+	tic_t entertic = 0, realtics = 0;
+	// oldentertics and lastwipetic are initialized in I_SetupMainLoop()
+#else
 	for (;;)
+#endif
 	{
 		if (lastwipetic)
 		{
@@ -737,7 +753,11 @@ void D_SRB2Loop(void)
 		if (!realtics && !singletics)
 		{
 			I_Sleep();
+#ifdef MAINLOOPBYFUNCTION
+			return;
+#else
 			continue;
+#endif
 		}
 
 #ifdef HW3SOUND
